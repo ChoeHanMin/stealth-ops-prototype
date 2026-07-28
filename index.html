@@ -123,7 +123,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.4.0.0</div>
+  <div id="verText">Ver 1.5.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -305,7 +305,16 @@ const decor = [
   {type:'bench',x:1250,y:1230,w:80,h:20},
   {type:'bench',x:1420,y:1230,w:80,h:20},
   {type:'plant',x:1150,y:1450,r:18},
-  {type:'plant',x:1850,y:1080,r:18}
+  {type:'plant',x:1850,y:1080,r:18},
+
+  // 추가 홈 데코
+  {type:'piano',x:1460,y:850,w:100,h:50,solid:true},
+  {type:'mattress',x:750,y:350,w:80,h:140},
+  {type:'mirror',x:190,y:200,w:8,h:56},
+  {type:'clock',x:300,y:20,r:11},
+  {type:'shoeRack',x:60,y:230,w:50,h:20},
+  {type:'clock',x:1950,y:40,r:11},
+  {type:'mirror',x:1960,y:700,w:8,h:56}
 ];
 const furnitureSolids = decor.filter(d=>d.solid).map(d=>({x:d.x,y:d.y,w:d.w,h:d.h}));
 const solidRects = walls.concat(furnitureSolids);
@@ -388,6 +397,7 @@ const enemies = [
 
 let corpses = [];
 let clouds = [];
+let bullets = [];
 let alarmRaised = false;
 let particles = [];
 let textParticles = [];
@@ -707,7 +717,13 @@ function releaseThrow(type){
   showMsg(type==='smoke' ? '연막탄 투척' : '기절탄 투척');
   setTimeout(()=>{
     playHiss();
-    clouds.push({x:hx,y:hy,type,radius:8,maxRadius:88,age:0,life:8.5});
+    const maxR = type==='smoke' ? 190 : 88;
+    const life = type==='smoke' ? 11 : 8.5;
+    const puffs = type==='smoke' ? Array.from({length:6},()=>({
+      ox:(Math.random()-0.5)*2, oy:(Math.random()-0.5)*2,
+      rScale:0.5+Math.random()*0.4
+    })) : null;
+    clouds.push({x:hx,y:hy,type,radius:8,maxRadius:maxR,age:0,life,puffs});
   }, 430);
 }
 
@@ -899,7 +915,8 @@ function updateEnemy(en,dt){
 function updateClouds(dt){
   for(const c of clouds){
     c.age += dt;
-    if(c.age < 1) c.radius = c.maxRadius*(c.age/1);
+    const growDur = c.type==='smoke' ? 1.8 : 1;
+    if(c.age < growDur) c.radius = c.maxRadius*(c.age/growDur);
     else c.radius = c.maxRadius;
     if(c.age > c.life-2) c.radius = c.maxRadius*Math.max(0,(c.life-c.age)/2);
 
@@ -913,6 +930,11 @@ function updateClouds(dt){
     }
   }
   clouds = clouds.filter(c=>c.age<c.life);
+}
+
+function updateBullets(dt){
+  for(const b of bullets){ b.t += dt; }
+  bullets = bullets.filter(b=>b.t < b.dur);
 }
 
 function updateAbilities(dt){
@@ -987,25 +1009,39 @@ function handleDecoy(){
 
 const FIRE_RANGE = 420;
 const FIRE_TOLERANCE = 4*Math.PI/180;
+const NEAR_MISS_DIST = 46;
+const NEAR_MISS_ALERT_CHANCE = 0.78;
+
+function pointSegDist(px,py,x1,y1,x2,y2){
+  const dx=x2-x1, dy=y2-y1;
+  const len2=dx*dx+dy*dy;
+  let t = len2>0 ? ((px-x1)*dx+(py-y1)*dy)/len2 : 0;
+  t = Math.max(0,Math.min(1,t));
+  const cx=x1+dx*t, cy=y1+dy*t;
+  return {dist:Math.hypot(px-cx,py-cy), t};
+}
+
 function handleFire(){
   if(!firePressed)return;
   firePressed=false;
   if(caught||actionLock||puzzleActive||player.hiddenIn||aimLock)return;
 
+  const ox=player.x, oy=player.y;
+  const {x:tx,y:ty} = rayMarchLanding(ox,oy,player.angle,FIRE_RANGE);
+  bullets.push({x:ox,y:oy,tx,ty,t:0,dur:0.1});
+  playSuppressedShot(0.4);
+
   let best=null, bestDist=Infinity;
   for(const en of enemies){
     if(en.state==='dying')continue;
-    const dx=en.x-player.x, dy=en.y-player.y;
+    const dx=en.x-ox, dy=en.y-oy;
     const dist=Math.hypot(dx,dy);
     if(dist>FIRE_RANGE)continue;
     const ang=Math.atan2(dy,dx);
     if(angleDiff(ang,player.angle) > FIRE_TOLERANCE)continue;
-    if(!hasLineOfSight(player.x,player.y,en.x,en.y))continue;
+    if(!hasLineOfSight(ox,oy,en.x,en.y))continue;
     if(dist<bestDist){bestDist=dist;best=en;}
   }
-
-  const vol = 0.4;
-  playSuppressedShot(vol);
 
   if(best){
     best.state='dying';
@@ -1016,9 +1052,27 @@ function handleFire(){
     }
     showMsg('원거리 저격 성공 (소음기)');
     vibrate(30);
-  } else {
-    showMsg('조준선에 대상 없음');
+    return;
   }
+
+  // 못 맞혔어도 총알이 근처를 스치면 높은 확률로 눈치챔
+  let noticed=false;
+  for(const en of enemies){
+    if(en.state==='dying')continue;
+    const dist=Math.hypot(en.x-ox,en.y-oy);
+    if(dist>FIRE_RANGE)continue;
+    const {dist:perp,t} = pointSegDist(en.x,en.y,ox,oy,tx,ty);
+    if(perp<NEAR_MISS_DIST && t>0 && t<=1 && hasLineOfSight(ox,oy,en.x,en.y)){
+      if(Math.random()<NEAR_MISS_ALERT_CHANCE){
+        en.state='search'; en.target={x:player.x,y:player.y}; en.searchTimer=6;
+        alarmRaised=true; stats.detections++;
+        spawnText(en.x,en.y-28,'?!','#ff8a5a');
+        vibrate(60);
+        noticed=true;
+      }
+    }
+  }
+  showMsg(noticed ? '빗나감 - 근처 적이 눈치챔!' : '빗나감');
 }
 
 function tryHideCorpse(){
@@ -1535,6 +1589,38 @@ function drawDecorItem(d,camX,camY){
       ctx.fillStyle='#5c4020';
       ctx.fillRect(x+3,y+d.h,4,8);ctx.fillRect(x+d.w-7,y+d.h,4,8);
       break;
+    case 'piano':
+      ctx.fillStyle='#1c1c1e';ctx.fillRect(x,y,d.w,d.h);
+      ctx.strokeStyle='#000';ctx.lineWidth=2;ctx.strokeRect(x,y,d.w,d.h);
+      ctx.fillStyle='#f0ecd8';
+      for(let i=0;i<10;i++) ctx.fillRect(x+6+i*(d.w-12)/10, y+d.h-14, (d.w-12)/10-1.5, 12);
+      ctx.fillStyle='#2a2a2c';
+      for(let i=0;i<7;i++) ctx.fillRect(x+9+i*(d.w-18)/7, y+d.h-14, 3, 7);
+      break;
+    case 'mattress':
+      ctx.fillStyle='#b9c4d0';ctx.fillRect(x,y,d.w,d.h);
+      ctx.strokeStyle='#8a97a6';ctx.lineWidth=1.5;ctx.strokeRect(x,y,d.w,d.h);
+      ctx.strokeStyle='rgba(120,130,145,0.5)';ctx.lineWidth=1;
+      for(let i=1;i<4;i++){ctx.beginPath();ctx.moveTo(x,y+d.h*i/4);ctx.lineTo(x+d.w,y+d.h*i/4);ctx.stroke();}
+      break;
+    case 'mirror':
+      ctx.fillStyle='#4a4a52';ctx.fillRect(x-1,y-1,d.w+2,d.h+2);
+      ctx.fillStyle='#aee0ec';ctx.globalAlpha=0.55;
+      ctx.fillRect(x,y,d.w,d.h);
+      ctx.globalAlpha=1;
+      break;
+    case 'clock':
+      ctx.fillStyle='#e8e2d0';ctx.beginPath();ctx.arc(x,y,d.r,0,7);ctx.fill();
+      ctx.strokeStyle='#3a352a';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-d.r*0.6);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+d.r*0.4,y+d.r*0.2);ctx.stroke();
+      break;
+    case 'shoeRack':
+      ctx.fillStyle='#6b5236';ctx.fillRect(x,y,d.w,d.h);
+      ctx.strokeStyle='#3d2f20';ctx.lineWidth=1.2;ctx.strokeRect(x,y,d.w,d.h);
+      ctx.fillStyle='#333';
+      ctx.fillRect(x+4,y+4,10,d.h-8);ctx.fillRect(x+d.w-14,y+4,10,d.h-8);
+      break;
   }
 }
 function drawDecor(camX,camY){
@@ -1546,17 +1632,45 @@ function drawDecor(camX,camY){
 function drawClouds(camX,camY){
   for(const c of clouds){
     if(c.radius<=0)continue;
-    ctx.save();
-    const g=ctx.createRadialGradient(c.x-camX,c.y-camY,c.radius*0.1,c.x-camX,c.y-camY,c.radius);
-    if(c.type==='smoke'){
-      g.addColorStop(0,'rgba(235,235,235,0.75)');
-      g.addColorStop(1,'rgba(220,220,220,0)');
+    if(c.type==='smoke' && c.puffs){
+      for(const p of c.puffs){
+        const px=c.x+p.ox*c.radius*0.55, py=c.y+p.oy*c.radius*0.55;
+        const pr=Math.max(4,c.radius*p.rScale);
+        ctx.save();
+        const g=ctx.createRadialGradient(px-camX,py-camY,pr*0.15,px-camX,py-camY,pr);
+        g.addColorStop(0,'rgba(238,238,238,0.68)');
+        g.addColorStop(1,'rgba(225,225,225,0)');
+        ctx.fillStyle=g;
+        ctx.beginPath();ctx.arc(px-camX,py-camY,pr,0,7);ctx.fill();
+        ctx.restore();
+      }
     } else {
+      ctx.save();
+      const g=ctx.createRadialGradient(c.x-camX,c.y-camY,c.radius*0.1,c.x-camX,c.y-camY,c.radius);
       g.addColorStop(0,'rgba(230,220,90,0.65)');
       g.addColorStop(1,'rgba(220,210,80,0)');
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.arc(c.x-camX,c.y-camY,c.radius,0,7);ctx.fill();
+      ctx.restore();
     }
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.arc(c.x-camX,c.y-camY,c.radius,0,7);ctx.fill();
+  }
+}
+
+function drawBullets(camX,camY){
+  for(const b of bullets){
+    const frac = Math.min(1,b.t/b.dur);
+    const cx = b.x + (b.tx-b.x)*frac;
+    const cy = b.y + (b.ty-b.y)*frac;
+    const trailFrac = Math.max(0,frac-0.2);
+    const tx0 = b.x + (b.tx-b.x)*trailFrac;
+    const ty0 = b.y + (b.ty-b.y)*trailFrac;
+    ctx.save();
+    ctx.strokeStyle='rgba(255,240,180,0.9)';
+    ctx.lineWidth=2.2;
+    ctx.beginPath();
+    ctx.moveTo(tx0-camX,ty0-camY);
+    ctx.lineTo(cx-camX,cy-camY);
+    ctx.stroke();
     ctx.restore();
   }
 }
@@ -1590,6 +1704,7 @@ function drawWorld(camX,camY){
   }
 
   drawClouds(camX,camY);
+  drawBullets(camX,camY);
 
   for(const en of enemies){
     let alpha=1, extraRot=0;
@@ -1886,6 +2001,7 @@ function loop(now){
       updatePlayer(dt);
       for(const en of enemies)updateEnemy(en,dt);
       updateClouds(dt);
+      updateBullets(dt);
       handleDecoy();
       handleFire();
       handleAction();
