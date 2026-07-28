@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Stealth Ops — 아이소메트릭 렌더 PoC</title>
+<style>
+  html,body{margin:0;height:100%;background:#0a0c0f;overflow:hidden;
+    font-family:-apple-system,"Malgun Gothic",sans-serif;color:#e8e8e8;}
+  canvas{display:block;}
+  #ui{position:fixed;top:0;left:0;right:0;padding:10px 12px;
+    background:linear-gradient(#000c,#0000);font-size:12px;line-height:1.5;pointer-events:none;}
+  #ui b{color:#ffcf6e;}
+  #ctrls{position:fixed;bottom:12px;left:12px;display:flex;gap:8px;flex-wrap:wrap;}
+  .tg{padding:9px 13px;border:1px solid #4a5158;border-radius:7px;background:#1a1e24cc;
+    font-size:12px;user-select:none;cursor:pointer;}
+  .tg.on{background:#2f6b4acc;border-color:#6fd39a;color:#d8ffe8;}
+  #fps{position:fixed;top:10px;right:12px;font-size:12px;color:#8fd0ff;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <b>아이소메트릭 렌더 PoC</b> — 실제 맵 데이터(벽 16 · 가구 58 · 적 20) 그대로 투영<br>
+  WASD 이동 · 드래그로 시점 이동 · 휠로 확대
+</div>
+<div id="fps"></div>
+<div id="ctrls">
+  <div class="tg on" id="tHeight">입체 높이</div>
+  <div class="tg on" id="tSort">깊이 정렬</div>
+  <div class="tg on" id="tShade">면 음영</div>
+  <div class="tg" id="tGrid">격자</div>
+  <div class="tg" id="tTop">탑다운 비교</div>
+</div>
+<script>
+const MAP={"W":2000,"H":1500,"walls":[{"x":0,"y":0,"w":2000,"h":20},{"x":0,"y":0,"w":20,"h":1500},{"x":0,"y":1480,"w":2000,"h":20},{"x":1980,"y":0,"w":20,"h":1500},{"x":200,"y":0,"w":20,"h":260},{"x":200,"y":340,"w":20,"h":260},{"x":600,"y":120,"w":20,"h":375},{"x":600,"y":545,"w":20,"h":55},{"x":600,"y":495,"w":20,"h":50,"ventForCrouch":true},{"x":0,"y":600,"w":420,"h":20},{"x":900,"y":0,"w":20,"h":300},{"x":900,"y":420,"w":20,"h":300},{"x":1400,"y":500,"w":200,"h":20},{"x":1750,"y":500,"w":250,"h":20},{"x":900,"y":1000,"w":20,"h":190},{"x":900,"y":1290,"w":20,"h":210}],"lamps":[{"type":"lamp","x":820,"y":660,"r":8},{"type":"lamp","x":1180,"y":500,"r":8},{"type":"lamp","x":1960,"y":60,"r":8},{"type":"lamp","x":1450,"y":900,"r":8},{"type":"lamp","x":750,"y":1400,"r":8}],"decor":[{"type":"bookshelf","x":35,"y":35,"w":50,"h":100},{"type":"bed","x":30,"y":380,"w":90,"h":150},{"type":"nightstand","x":135,"y":390,"w":26,"h":30},{"type":"plant","x":170,"y":555,"r":16},{"type":"closet","x":150,"y":40,"w":40,"h":70},{"type":"sofa","x":40,"y":650,"w":150,"h":55},{"type":"coffeeTable","x":230,"y":672,"w":64,"h":40},{"type":"tv","x":340,"y":625,"w":70,"h":14},{"type":"kitchenCounter","x":240,"y":30,"w":150,"h":34},{"type":"stove","x":260,"y":34,"w":34,"h":26},{"type":"sink","x":340,"y":34,"w":34,"h":26},{"type":"fridge","x":410,"y":30,"w":40,"h":55},{"type":"diningTable","x":330,"y":260,"w":90,"h":60},{"type":"chair","x":322,"y":245,"r":10},{"type":"chair","x":428,"y":245,"r":10},{"type":"chair","x":322,"y":335,"r":10},{"type":"chair","x":428,"y":335,"r":10},{"type":"plant","x":500,"y":250,"r":18},{"type":"desk","x":650,"y":660,"w":80,"h":44},{"type":"deskChair","x":695,"y":715,"r":11},{"type":"bookshelf","x":650,"y":550,"w":60,"h":90},{"type":"lamp","x":820,"y":660,"r":8},{"type":"closet","x":860,"y":660,"w":40,"h":70},{"type":"tv","x":1340,"y":190,"w":16,"h":70},{"type":"plant","x":1020,"y":550,"r":15},{"type":"bookshelf","x":1200,"y":680,"w":60,"h":90},{"type":"lamp","x":1180,"y":500,"r":8},{"type":"tv","x":1600,"y":35,"w":160,"h":16},{"type":"sofa","x":1440,"y":120,"w":180,"h":55},{"type":"sofa","x":1700,"y":120,"w":180,"h":55},{"type":"lamp","x":1960,"y":60,"r":8},{"type":"bed","x":1580,"y":680,"w":90,"h":150},{"type":"nightstand","x":1685,"y":690,"w":26,"h":30},{"type":"bookshelf","x":1900,"y":560,"w":60,"h":90},{"type":"lamp","x":1450,"y":900,"r":8},{"type":"diningTable","x":150,"y":1150,"w":500,"h":70},{"type":"chair","x":220,"y":1130,"r":10},{"type":"chair","x":340,"y":1130,"r":10},{"type":"chair","x":460,"y":1130,"r":10},{"type":"chair","x":580,"y":1130,"r":10},{"type":"chair","x":300,"y":1240,"r":10},{"type":"chair","x":500,"y":1240,"r":10},{"type":"kitchenCounter","x":40,"y":1030,"w":120,"h":34},{"type":"lamp","x":750,"y":1400,"r":8},{"type":"bench","x":1250,"y":1230,"w":80,"h":20},{"type":"bench","x":1420,"y":1230,"w":80,"h":20},{"type":"plant","x":1150,"y":1450,"r":18},{"type":"plant","x":1850,"y":1080,"r":18},{"type":"piano","x":1460,"y":850,"w":100,"h":50},{"type":"mattress","x":750,"y":350,"w":80,"h":140},{"type":"mirror","x":190,"y":200,"w":8,"h":56},{"type":"clock","x":300,"y":20,"r":11},{"type":"shoeRack","x":60,"y":230,"w":50,"h":20},{"type":"clock","x":1950,"y":40,"r":11},{"type":"mirror","x":1960,"y":700,"w":8,"h":56}],"rugs":[{"type":"rug","x":45,"y":160,"w":120,"h":80},{"type":"rug","x":40,"y":730,"w":170,"h":100},{"type":"rug","x":960,"y":470,"w":150,"h":110}],"enemies":[{"x":250,"y":440,"angle":0,"state":"patrol","r":12},{"x":1050,"y":600,"angle":0,"state":"patrol","r":12},{"x":1950,"y":450,"angle":0,"state":"patrol","r":12},{"x":60,"y":1450,"angle":0,"state":"patrol","r":12},{"x":1950,"y":1050,"angle":0,"state":"patrol","r":12},{"x":1500,"y":180,"angle":-1.5707963267948966,"state":"idle","r":12},{"x":1620,"y":180,"angle":-1.5707963267948966,"state":"idle","r":12},{"x":1740,"y":180,"angle":-1.5707963267948966,"state":"idle","r":12},{"x":1860,"y":180,"angle":-1.5707963267948966,"state":"idle","r":12},{"x":1625,"y":740,"angle":1.5707963267948966,"state":"idle","r":12},{"x":700,"y":150,"angle":0,"state":"idle","r":12},{"x":830,"y":230,"angle":3.141592653589793,"state":"idle","r":12},{"x":220,"y":1130,"angle":1.5707963267948966,"state":"idle","r":12},{"x":340,"y":1130,"angle":1.5707963267948966,"state":"idle","r":12},{"x":460,"y":1130,"angle":1.5707963267948966,"state":"idle","r":12},{"x":580,"y":1130,"angle":1.5707963267948966,"state":"idle","r":12},{"x":300,"y":1240,"angle":-1.5707963267948966,"state":"idle","r":12},{"x":500,"y":1240,"angle":-1.5707963267948966,"state":"idle","r":12},{"x":1300,"y":1200,"angle":0.4,"state":"idle","r":12},{"x":1450,"y":1200,"angle":-2.6,"state":"idle","r":12}],"player":{"x":120,"y":120,"r":12}};
+/* ===== 아이소메트릭 투영 =====
+   월드 좌표(x,y)는 기존 게임과 100% 동일하게 유지한다.
+   바뀌는 건 "그리는 순간"뿐 — 충돌, 시야, AI는 손대지 않아도 된다는 게 핵심. */
+const ISO_X = 0.7071;        // 45도 회전
+const ISO_Y = 0.7071 * 0.5;  // 세로 50% 압축 (2:1 비율)
+let zoom = 1.0, camX = 0, camY = 0;
+
+function iso(x, y, h){
+  return {
+    x: (x - y) * ISO_X,
+    y: (x + y) * ISO_Y - (h || 0)
+  };
+}
+function toScreen(x, y, h){
+  const p = iso(x, y, h);
+  return { x: (p.x - camX) * zoom + cv.width / 2, y: (p.y - camY) * zoom + cv.height / 2 };
+}
+
+/* 가구별 높이 — 낮은 건 넘어다보이고, 높은 건 시야를 가린다 */
+const HEIGHT = {
+  wall:58, bookshelf:52, closet:56, fridge:54, piano:42, sofa:22, bed:16, mattress:9,
+  desk:24, deskChair:20, diningTable:24, coffeeTable:14, kitchenCounter:26, stove:26,
+  sink:24, chair:20, bench:16, tv:20, plant:34, mirror:44, clock:38, nightstand:18,
+  shoeRack:14, lamp:40
+};
+const COLOR = {
+  wall:'#5d6570', bookshelf:'#6b4f34', closet:'#5f472f', fridge:'#9aa3ab', piano:'#2a2a30',
+  sofa:'#4a5a6b', bed:'#6a5a72', mattress:'#7a7060', desk:'#7a5a3a', deskChair:'#3a3a42',
+  diningTable:'#7d5c3c', coffeeTable:'#6d4f33', kitchenCounter:'#8a7a62', stove:'#4a4a52',
+  sink:'#8f979e', chair:'#6a4f36', bench:'#6d5438', tv:'#26262c', plant:'#3f6b42',
+  mirror:'#7e93a3', clock:'#8a7550', nightstand:'#6b5238', shoeRack:'#5e4a33', lamp:'#8a7a4a'
+};
+
+/* 면 밝기: 윗면이 가장 밝고, 왼쪽/오른쪽 옆면이 어두워지면서 입체감이 생긴다 */
+function shade(hex, mul){
+  if(!opt.shade) return hex;
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, ((n>>16)&255) * mul) | 0;
+  const g = Math.min(255, ((n>>8)&255) * mul) | 0;
+  const b = Math.min(255, (n&255) * mul) | 0;
+  return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+function quad(pts, fill){
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+/* 직육면체 하나를 아이소메트릭으로 — 윗면 + 남쪽면 + 동쪽면만 보이면 충분하다 */
+function drawBox(x, y, w, h, height, base){
+  const H = opt.height ? height : 0;
+  const x2 = x + w, y2 = y + h;
+  const tl = toScreen(x, y, H),  tr = toScreen(x2, y, H);
+  const br = toScreen(x2, y2, H), bl = toScreen(x, y2, H);
+  const gbr = toScreen(x2, y2, 0), gbl = toScreen(x, y2, 0), gtr = toScreen(x2, y, 0);
+
+  if(H > 0){
+    quad([bl, br, gbr, gbl], shade(base, 0.55));   // 남쪽 면 (어둡게)
+    quad([br, tr, gtr, gbr], shade(base, 0.75));   // 동쪽 면 (중간)
+  }
+  quad([tl, tr, br, bl], shade(base, 1.15));       // 윗면 (밝게)
+
+  ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(tl.x, tl.y); ctx.lineTo(tr.x, tr.y);
+  ctx.lineTo(br.x, br.y); ctx.lineTo(bl.x, bl.y);
+  ctx.closePath(); ctx.stroke();
+}
+
+/* 캐릭터는 정수리가 아니라 "서 있는 몸"으로 — 2.5D의 핵심 차이 */
+function drawActor(x, y, ang, col, isPlayer){
+  const g = toScreen(x, y, 0);
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.42)';
+  ctx.beginPath();
+  ctx.ellipse(g.x, g.y, 11 * zoom, 5.5 * zoom, 0, 0, 7);
+  ctx.fill();
+  ctx.restore();
+
+  const bodyH = 34, headR = 6.2 * zoom;
+  const top = toScreen(x, y, opt.height ? bodyH : 0);
+  const bw = 8.5 * zoom;
+
+  // 몸통
+  ctx.fillStyle = shade(col, 0.85);
+  ctx.beginPath();
+  ctx.moveTo(g.x - bw, g.y);
+  ctx.lineTo(g.x + bw, g.y);
+  ctx.lineTo(top.x + bw * 0.8, top.y + headR);
+  ctx.lineTo(top.x - bw * 0.8, top.y + headR);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // 머리
+  ctx.fillStyle = shade(col, 1.2);
+  ctx.beginPath(); ctx.arc(top.x, top.y, headR, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.stroke();
+
+  // 바라보는 방향 — 바닥에 투영해서 표시하므로 아이소에서도 방향이 읽힌다
+  const fx = x + Math.cos(ang) * 26, fy = y + Math.sin(ang) * 26;
+  const f = toScreen(fx, fy, 0);
+  ctx.strokeStyle = isPlayer ? 'rgba(120,255,150,0.85)' : 'rgba(255,140,120,0.7)';
+  ctx.lineWidth = 2 * zoom;
+  ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(f.x, f.y); ctx.stroke();
+
+  // 시선 방향 점 (머리 쪽)
+  ctx.fillStyle = isPlayer ? '#8dffb0' : '#ff9a80';
+  const hx = top.x + (f.x - g.x) * 0.22, hy = top.y + (f.y - g.y) * 0.22;
+  ctx.beginPath(); ctx.arc(hx, hy, 2.2 * zoom, 0, 7); ctx.fill();
+}
+
+/* ===== 상태 ===== */
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+function resize(){ cv.width = innerWidth; cv.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+
+const opt = { height:true, sort:true, shade:true, grid:false, top:false };
+const player = { x: MAP.player.x, y: MAP.player.y, ang: 0 };
+const keys = {};
+addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+for(const id of ['tHeight','tSort','tShade','tGrid','tTop']){
+  document.getElementById(id).addEventListener('click', function(){
+    const k = { tHeight:'height', tSort:'sort', tShade:'shade', tGrid:'grid', tTop:'top' }[id];
+    opt[k] = !opt[k];
+    this.classList.toggle('on', opt[k]);
+  });
+}
+
+let drag = null;
+cv.addEventListener('mousedown', e => drag = { x:e.clientX, y:e.clientY });
+addEventListener('mouseup', () => drag = null);
+addEventListener('mousemove', e => {
+  if(drag){ camX -= (e.clientX - drag.x) / zoom; camY -= (e.clientY - drag.y) / zoom; drag = { x:e.clientX, y:e.clientY }; }
+});
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoom = Math.max(0.35, Math.min(2.6, zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
+}, { passive:false });
+
+/* ===== 탑다운 비교 모드 (기존 게임과 동일한 방식) ===== */
+function renderTopDown(){
+  const s = zoom * 0.55;
+  const ox = cv.width/2 - player.x*s, oy = cv.height/2 - player.y*s;
+  ctx.fillStyle = '#171a1e';
+  ctx.fillRect(ox, oy, MAP.W*s, MAP.H*s);
+  for(const w of MAP.walls){ ctx.fillStyle='#5d6570'; ctx.fillRect(ox+w.x*s, oy+w.y*s, w.w*s, w.h*s); }
+  for(const d of MAP.decor){
+    ctx.fillStyle = COLOR[d.type] || '#666';
+    const w = d.w || (d.r?d.r*2:20), h = d.h || (d.r?d.r*2:20);
+    ctx.fillRect(ox + (d.x - w/2)*s, oy + (d.y - h/2)*s, w*s, h*s);
+  }
+  for(const e of MAP.enemies){
+    ctx.fillStyle = '#a89878';
+    ctx.beginPath(); ctx.arc(ox+e.x*s, oy+e.y*s, 12*s, 0, 7); ctx.fill();
+    ctx.strokeStyle='#ff9a80'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(ox+e.x*s, oy+e.y*s);
+    ctx.lineTo(ox+(e.x+Math.cos(e.angle)*24)*s, oy+(e.y+Math.sin(e.angle)*24)*s); ctx.stroke();
+  }
+  ctx.fillStyle = '#6a8478';
+  ctx.beginPath(); ctx.arc(ox+player.x*s, oy+player.y*s, 12*s, 0, 7); ctx.fill();
+}
+
+/* ===== 메인 렌더 ===== */
+let fpsT = 0, fpsN = 0, fpsV = 0, lastT = 0;
+
+function render(now){
+  const dt = Math.min((now - lastT)/1000, 0.05); lastT = now;
+  fpsN++; fpsT += dt;
+  if(fpsT > 0.5){ fpsV = Math.round(fpsN/fpsT); fpsN = 0; fpsT = 0; }
+
+  // 이동
+  let mx = 0, my = 0;
+  if(keys['w']) my -= 1; if(keys['s']) my += 1;
+  if(keys['a']) mx -= 1; if(keys['d']) mx += 1;
+  if(mx || my){
+    // 화면 기준 입력을 월드 기준으로 45도 회전 — 아이소에서 필수인 보정
+    const wx = (mx * ISO_Y + my * ISO_X) / (2*ISO_X*ISO_Y);
+    const wy = (my * ISO_X - mx * ISO_Y) / (2*ISO_X*ISO_Y);
+    const L = Math.hypot(wx, wy) || 1;
+    player.x = Math.max(30, Math.min(MAP.W-30, player.x + wx/L * 190 * dt));
+    player.y = Math.max(30, Math.min(MAP.H-30, player.y + wy/L * 190 * dt));
+    player.ang = Math.atan2(wy, wx);
+  }
+
+  const pc = iso(player.x, player.y, 0);
+  camX += (pc.x - camX) * 0.12;
+  camY += (pc.y - camY) * 0.12;
+
+  ctx.fillStyle = '#0a0c0f';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+
+  if(opt.top){ renderTopDown(); requestAnimationFrame(render); updateHud(); return; }
+
+  // 바닥
+  const f = [toScreen(0,0,0), toScreen(MAP.W,0,0), toScreen(MAP.W,MAP.H,0), toScreen(0,MAP.H,0)];
+  quad(f, '#171a1e');
+  quad([toScreen(0,0,0), toScreen(MAP.W,0,0), toScreen(MAP.W,MAP.H,0), toScreen(0,MAP.H,0)], '#171a1e');
+
+  if(opt.grid){
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+    for(let g = 0; g <= MAP.W; g += 100){
+      const a = toScreen(g,0,0), b = toScreen(g,MAP.H,0);
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    }
+    for(let g = 0; g <= MAP.H; g += 100){
+      const a = toScreen(0,g,0), b = toScreen(MAP.W,g,0);
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    }
+  }
+
+  // 러그는 바닥 장식이라 항상 맨 아래
+  for(const r of MAP.rugs){
+    const w = r.w||60, h = r.h||60;
+    quad([toScreen(r.x-w/2,r.y-h/2,0), toScreen(r.x+w/2,r.y-h/2,0),
+          toScreen(r.x+w/2,r.y+h/2,0), toScreen(r.x-w/2,r.y+h/2,0)], '#3a2f2a');
+  }
+
+  // 램프 빛 웅덩이
+  for(const lp of MAP.lamps){
+    const c = toScreen(lp.x, lp.y, 0);
+    const g = ctx.createRadialGradient(c.x, c.y, 2, c.x, c.y, 70*zoom);
+    g.addColorStop(0, 'rgba(255,214,140,0.20)');
+    g.addColorStop(1, 'rgba(255,200,110,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(c.x, c.y, 70*zoom, 35*zoom, 0, 0, 7); ctx.fill();
+  }
+
+  /* --- 깊이 정렬: 아이소에서 가장 중요한 부분 ---
+     (x+y)가 클수록 화면 앞쪽. 이걸 안 하면 벽이 캐릭터를 덮어버린다. */
+  const items = [];
+  for(const w of MAP.walls){
+    items.push({ d: w.x + w.y + w.w + w.h, draw: () => drawBox(w.x, w.y, w.w, w.h, HEIGHT.wall, COLOR.wall) });
+  }
+  for(const o of MAP.decor){
+    const w = o.w || (o.r ? o.r*2 : 22), h = o.h || (o.r ? o.r*2 : 22);
+    const x = o.x - w/2, y = o.y - h/2;
+    const ht = HEIGHT[o.type] || 20, col = COLOR[o.type] || '#6a5a48';
+    items.push({ d: x + y + w + h, draw: () => drawBox(x, y, w, h, ht, col) });
+  }
+  for(const e of MAP.enemies){
+    items.push({ d: e.x + e.y, draw: () => drawActor(e.x, e.y, e.angle, '#a89878', false) });
+  }
+  items.push({ d: player.x + player.y, draw: () => drawActor(player.x, player.y, player.ang, '#6a8478', true) });
+
+  if(opt.sort) items.sort((a, b) => a.d - b.d);
+  for(const it of items) it.draw();
+
+  updateHud();
+  requestAnimationFrame(render);
+}
+
+function updateHud(){
+  document.getElementById('fps').textContent =
+    fpsV + ' FPS · 오브젝트 ' + (MAP.walls.length + MAP.decor.length + MAP.enemies.length + 1) +
+    ' · 배율 ' + zoom.toFixed(2);
+}
+
+requestAnimationFrame(render);
+</script>
+</body>
+</html>
