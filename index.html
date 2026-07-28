@@ -43,19 +43,20 @@
   #msg{position:fixed;top:56px;left:50%;transform:translateX(-50%);color:#fff;font-size:15px;
        background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:6px;display:none;z-index:10;}
   #joyZone{position:fixed;left:0;bottom:0;width:45%;height:45%;display:none;}
-  /* --- 십자키 --- */
-  #dpad{position:fixed;display:none;width:150px;height:150px;z-index:39;}
-  .dkey{position:absolute;width:48px;height:48px;background:rgba(255,255,255,0.14);
-       border:2px solid rgba(255,255,255,0.36);color:#fff;font-size:19px;
-       display:flex;align-items:center;justify-content:center;user-select:none;
-       box-shadow:0 2px 8px rgba(0,0,0,0.45);}
-  .dkey:active,.dkey.on{background:rgba(255,255,255,0.42);}
-  #dU{left:51px;top:0;border-radius:11px 11px 3px 3px;}
-  #dD{left:51px;top:102px;border-radius:3px 3px 11px 11px;}
-  #dL{left:0;top:51px;border-radius:11px 3px 3px 11px;}
-  #dR{left:102px;top:51px;border-radius:3px 11px 11px 3px;}
-  #dC{left:51px;top:51px;width:48px;height:48px;background:rgba(255,255,255,0.06);
-       border:1px solid rgba(255,255,255,0.16);border-radius:4px;}
+  /* --- 원형 이동 패드 (360도) --- */
+  #dpad{position:fixed;display:none;width:150px;height:150px;z-index:39;
+       border-radius:50%;background:rgba(255,255,255,0.07);
+       border:2px solid rgba(255,255,255,0.26);
+       box-shadow:0 3px 12px rgba(0,0,0,0.5);touch-action:none;}
+  #dRing{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px 0 0 -48px;
+       border-radius:50%;border:1px dashed rgba(255,255,255,0.16);pointer-events:none;}
+  #dKnob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;
+       border-radius:50%;background:rgba(255,255,255,0.26);
+       border:2px solid rgba(255,255,255,0.5);pointer-events:none;
+       box-shadow:0 2px 8px rgba(0,0,0,0.5);transition:none;}
+  #dpad.on #dKnob{background:rgba(140,235,180,0.42);border-color:#8fe8b4;}
+  /* 8방향 눈금 */
+  #dTicks{position:absolute;inset:0;pointer-events:none;opacity:0.30;}
   #joyBase{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.12);
        border:2px solid rgba(255,255,255,0.3);display:none;}
   #joyStick{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.5);display:none;}
@@ -68,7 +69,9 @@
        transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,0.45);}
   .btn:active{background:rgba(255,255,255,0.38);}
   .btn.active{background:rgba(120,220,160,0.42);border-color:#8fe8b4;box-shadow:0 0 12px rgba(120,220,160,0.55);}
-  #btnAction{background:rgba(255,205,110,0.22);border-color:rgba(255,205,110,0.65);font-weight:bold;}
+  .btn.armed{background:rgba(120,220,160,0.20);border-color:rgba(143,232,180,0.7);}
+  #btnFire{background:rgba(120,255,120,0.18);border-color:rgba(160,255,160,0.6);font-weight:bold;}
+  #btnAction{background:rgba(255,205,110,0.20);border-color:rgba(255,205,110,0.55);}
   /* 토글류(야투/열화상)는 우상단 알약 형태로 분리 */
   .btnPill{position:fixed;right:8px;border-radius:16px;width:88px;height:30px;
        background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.34);
@@ -79,7 +82,6 @@
   #btnStun{background:rgba(230,220,120,0.2);}
   #btnNVG{background:rgba(120,220,140,0.2);}
   #btnThermal{background:rgba(230,140,80,0.2);}
-  #btnFire{background:rgba(120,255,120,0.18);}
   #aimCancelBtn{position:fixed;display:none;align-items:center;justify-content:center;
        width:104px;height:38px;background:rgba(200,40,40,0.55);border:1px solid rgba(255,255,255,0.5);
        border-radius:8px;color:#fff;font-size:11px;text-align:center;z-index:45;
@@ -170,11 +172,20 @@
 <div id="aimCancelBtn">✕ 취소 (←스와이프)</div>
 
 <div id="dpad">
-  <div class="dkey" id="dU">▲</div>
-  <div class="dkey" id="dL">◀</div>
-  <div id="dC"></div>
-  <div class="dkey" id="dR">▶</div>
-  <div class="dkey" id="dD">▼</div>
+  <svg id="dTicks" viewBox="0 0 150 150">
+    <g stroke="#fff" stroke-width="2" stroke-linecap="round">
+      <line x1="75" y1="8"   x2="75" y2="18"/>
+      <line x1="75" y1="132" x2="75" y2="142"/>
+      <line x1="8"  y1="75"  x2="18" y2="75"/>
+      <line x1="132" y1="75" x2="142" y2="75"/>
+      <line x1="28" y1="28"  x2="35" y2="35"/>
+      <line x1="122" y1="28" x2="115" y2="35"/>
+      <line x1="28" y1="122" x2="35" y2="115"/>
+      <line x1="122" y1="122" x2="115" y2="115"/>
+    </g>
+  </svg>
+  <div id="dRing"></div>
+  <div id="dKnob"></div>
 </div>
 <div id="joyZone">
   <div id="joyBase"></div>
@@ -200,7 +211,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.9.0.0</div>
+  <div id="verText">Ver 2.1.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -327,10 +338,10 @@ function resize(){
 var btnLayoutReady = false;   // var: 호이스팅되어 resize()보다 먼저 평가돼도 안전
 const BTN_LAYOUT = [
   // id,          크기, 반경, 각도(deg), 글자크기
-  ['btnAction',    86,   0,     0,   12  ],
-  ['btnFire',      68, 112,   168,   10  ],
-  ['btnCrouch',    60, 112,   116,   10  ],
-  ['btnSprint',    56, 112,    66,   10  ],
+  ['btnFire',      94,   0,     0,   12  ],   // 주 액션 → 중심, 가장 크게
+  ['btnAction',    56, 118,   170,    9.5],   // 상호작용 → 왼쪽, 작게
+  ['btnCrouch',    62, 118,   118,   10  ],
+  ['btnSprint',    58, 118,    66,   10  ],
   ['btnDecoy',     52, 178,   135,    9.5],
   ['btnSmoke',     52, 178,   105,    9.5],
   ['btnStun',      52, 178,    75,    9.5]
@@ -465,7 +476,14 @@ const decor = [
   {type:'clock',x:1950,y:40,r:11},
   {type:'mirror',x:1960,y:700,w:8,h:56}
 ];
-const furnitureSolids = decor.filter(d=>d.solid).map(d=>({x:d.x,y:d.y,w:d.w,h:d.h}));
+/* 낮은 가구는 웅크린 상태에서 아래로 기어들어갈 수 있다.
+   장롱·냉장고·피아노처럼 높은 가구는 제외. */
+const CROUCH_PASSABLE = new Set(['bed','desk','diningTable','sofa','kitchenCounter','coffeeTable','bench']);
+const furnitureSolids = decor.filter(d=>d.solid).map(d=>({
+  x:d.x, y:d.y, w:d.w, h:d.h,
+  crouchPassable: CROUCH_PASSABLE.has(d.type),
+  src: d
+}));
 const solidRects = walls.concat(furnitureSolids);
 const lamps = decor.filter(d=>d.type==='lamp');
 const hidingSpots = decor.filter(d=>d.isHidingSpot);
@@ -481,7 +499,7 @@ let missionsComplete=false;
 let puzzleActive=null;
 
 let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0,
-              firePose:0, recoil:0};
+              firePose:0, recoil:0, under:null};
 
 function makeGuard(opts){
   const rank = opts.rank || 'rookie';
@@ -666,7 +684,7 @@ btnLayoutReady = true; layoutButtons();
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, shotKills:0};
 
 /* --- 신규: 스태미나 / 슬로우모션 / 발각 프리즈 / 점호 --- */
-let stamina = 100, sprintHeld = false, sprinting = false;
+let stamina = 100, sprintHeld = false, sprinting = false, sprintReady = true;
 let slowmo = 0;
 let spotFreeze = 0, spotEnemy = null;
 let rollCallTimer = 60;
@@ -674,7 +692,7 @@ let paused = false;
 let deathMenuOpen = false;
 let shakeAmt = 0;          // 화면 흔들림 강도
 let camLeadX = 0, camLeadY = 0;
-const dpad = {u:false,d:false,l:false,r:false};
+const dpad = {x:0, y:0};   // 원형 패드의 아날로그 입력 벡터 (-1 ~ 1)
 
 /* 행동별 소음 반경 (한 곳에서 관리) */
 const NOISE = {
@@ -698,6 +716,11 @@ function initAudio(){ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||w
    복귀 시 resume하지 않으면 그때부터 소리가 전혀 나지 않는다. */
 function resumeAudio(){
   if(audioCtx && audioCtx.state==='suspended'){ audioCtx.resume().catch(()=>{}); }
+}
+/* 백그라운드로 가면 소리를 실제로 멈춘다.
+   (paused 플래그만 세우면 BGM/사이렌은 계속 울린다) */
+function suspendAudio(){
+  if(audioCtx && audioCtx.state==='running'){ audioCtx.suspend().catch(()=>{}); }
 }
 /* 소리가 나는 지점을 좌우로 분리해준다 — 스텔스에서 위치 파악의 핵심 단서 */
 function audioOut(pan){
@@ -799,20 +822,34 @@ function playScream(volScale){
   playNoise(0.22, 0.14*volScale, 900, 'bandpass');
 }
 function playSuppressedShot(volScale, pan){
-  // 발소리(짧은 고역 스침)와 겹치지 않도록 저역 타격음 + 금속 슬라이드로 구성
-  playNoise(0.06, 0.40*volScale, 380, 'lowpass', pan);      // 둔탁한 '툭'
-  playTone(150, 0.10, 0.26*volScale, 'triangle', pan);      // 저역 몸통
-  setTimeout(()=>{                                          // 슬라이드 왕복 금속음
-    playTone(2100, 0.03, 0.09*volScale, 'square', pan);
-    playNoise(0.04, 0.10*volScale, 5200, 'highpass', pan);
-  }, 55);
+  /* 소음기라 크지는 않지만 '묵직해야' 한다.
+     - 초저역(55Hz) 서브베이스로 몸통을 만들고
+     - 저역 노이즈를 길게 깔아 공기가 밀리는 느낌을 주고
+     - 금속 슬라이드는 작게, 뒤에 붙여 존재감만 남긴다 */
+  playTone(55,  0.26, 0.52*volScale, 'sine',     pan);   // 서브베이스 (묵직함의 핵심)
+  playTone(88,  0.20, 0.34*volScale, 'triangle', pan);   // 저역 몸통
+  playNoise(0.20, 0.34*volScale, 190, 'lowpass',  pan);  // 길게 깔리는 저역 압력
+  playNoise(0.05, 0.16*volScale, 900, 'bandpass', pan);  // 발사 순간의 심지
+  setTimeout(()=>{                                       // 슬라이드 왕복 (작고 늦게)
+    playTone(1700, 0.025, 0.05*volScale, 'square', pan);
+    playNoise(0.03, 0.05*volScale, 4800, 'highpass', pan);
+  }, 75);
+}
+function playGearOff(){
+  if(!audioCtx) return;
+  playTone(520, 0.07, 0.10, 'sine');
+  setTimeout(()=>playTone(330, 0.09, 0.08, 'sine'), 70);
 }
 function playAlarmBell(){
   if(!audioCtx) return;
   for(let i=0;i<3;i++){
     setTimeout(()=>{
+      if(document.hidden || paused) return;   // 화면을 벗어난 사이 예약분은 취소
       playTone(880, 0.16, 0.13, 'square');
-      setTimeout(()=>playTone(660, 0.16, 0.13, 'square'), 170);
+      setTimeout(()=>{
+        if(document.hidden || paused) return;
+        playTone(660, 0.16, 0.13, 'square');
+      }, 170);
     }, i*360);
   }
 }
@@ -835,7 +872,8 @@ function updateBGM(){
   if(!bgmNodes) return;
   const now=audioCtx.currentTime;
   const calmTarget = 0.05*settings.bgmVol;
-  const alertTarget = alarmRaised ? 0.06*settings.bgmVol*(0.6+0.4*Math.sin(now*9)) : 0.0001;
+  const alertTarget = (alarmRaised && !paused && !document.hidden)
+    ? 0.06*settings.bgmVol*(0.6+0.4*Math.sin(now*9)) : 0.0001;
   bgmNodes.g.gain.linearRampToValueAtTime(calmTarget, now+0.4);
   bgmNodes.alertGain.gain.linearRampToValueAtTime(Math.max(0.0001,alertTarget), now+0.08);
 }
@@ -888,10 +926,10 @@ document.getElementById('closeSettings').addEventListener('click',()=>{document.
     settings.showCones = diff().cones;
     return diff().label;
   });
-  mkRow('조작 방식', settings.controlMode==='dpad'?'십자키':'조이스틱', ()=>{
+  mkRow('조작 방식', settings.controlMode==='dpad'?'원형패드':'드래그', ()=>{
     settings.controlMode = settings.controlMode==='dpad' ? 'joy' : 'dpad';
     layoutDpad();
-    return settings.controlMode==='dpad'?'십자키':'조이스틱';
+    return settings.controlMode==='dpad'?'원형패드':'드래그';
   });
 })();
 document.getElementById('closeResult').addEventListener('click',()=>{document.getElementById('resultModal').style.display='none';});
@@ -917,20 +955,64 @@ function joyMove(x,y){if(!joy.active)return;let dx=x-joy.startX,dy=y-joy.startY;
   const dist=Math.hypot(dx,dy);if(dist>max){dx=dx/dist*max;dy=dy/dist*max;}
   joy.dx=dx/max;joy.dy=dy/max;joyStick.style.left=(joy.startX+dx-22)+'px';joyStick.style.top=(joy.startY+dy-22)+'px';}
 function joyEnd(){joy.active=false;joy.dx=0;joy.dy=0;joyBase.style.display='none';joyStick.style.display='none';}
-/* ===== 십자키 ===== */
-(function initDpad(){
-  const map={dU:'u',dD:'d',dL:'l',dR:'r'};
-  for(const id in map){
-    const el=document.getElementById(id), k=map[id];
-    const on =e=>{ if(e.cancelable)e.preventDefault(); dpad[k]=true;  el.classList.add('on'); };
-    const off=e=>{ if(e&&e.cancelable)e.preventDefault(); dpad[k]=false; el.classList.remove('on'); };
-    el.addEventListener('touchstart',on,{passive:false});
-    el.addEventListener('touchend',off);
-    el.addEventListener('touchcancel',off);
-    el.addEventListener('mousedown',on);
-    el.addEventListener('mouseleave',off);
-    window.addEventListener('mouseup',off);
+/* ===== 원형 이동 패드 =====
+   제자리에 고정된 아날로그 스틱. 중심에서 끌어낸 방향/거리가 그대로 이동 벡터가 된다.
+   십자키와 달리 대각선을 포함한 360도 전 방향이 자연스럽게 나온다. */
+(function initPad(){
+  const el=document.getElementById('dpad'), knob=document.getElementById('dKnob');
+  const MAXR=52;              // 노브가 벗어날 수 있는 최대 반경
+  const DEAD=0.14;            // 데드존 (미세한 떨림 무시)
+  let padId=null;             // 추적 중인 터치 식별자
+
+  function setVec(cx, cy, px, py){
+    let dx=px-cx, dy=py-cy;
+    const L=Math.hypot(dx,dy);
+    if(L>MAXR){ dx=dx/L*MAXR; dy=dy/L*MAXR; }
+    knob.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
+    let nx=dx/MAXR, ny=dy/MAXR;
+    const m=Math.hypot(nx,ny);
+    if(m<DEAD){ dpad.x=0; dpad.y=0; el.classList.remove('on'); return; }
+    // 데드존 바깥을 0~1로 다시 펴서 미세 조작이 가능하게 한다
+    const scaled=(m-DEAD)/(1-DEAD);
+    dpad.x=nx/m*scaled; dpad.y=ny/m*scaled;
+    el.classList.add('on');
   }
+  function release(){
+    padId=null; dpad.x=0; dpad.y=0;
+    knob.style.transform='translate(0px,0px)';
+    el.classList.remove('on');
+  }
+  function center(){
+    const r=el.getBoundingClientRect();
+    return {x:r.left+r.width/2, y:r.top+r.height/2};
+  }
+
+  el.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const t=e.changedTouches[0]; padId=t.identifier;
+    const c=center(); setVec(c.x,c.y,t.clientX,t.clientY);
+  }, {passive:false});
+  el.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    const c=center();
+    for(const t of e.changedTouches){
+      if(t.identifier===padId){ setVec(c.x,c.y,t.clientX,t.clientY); }
+    }
+  }, {passive:false});
+  const endT=e=>{
+    for(const t of e.changedTouches){ if(t.identifier===padId) release(); }
+  };
+  el.addEventListener('touchend', endT);
+  el.addEventListener('touchcancel', endT);
+
+  let mouseOn=false;
+  el.addEventListener('mousedown', e=>{
+    mouseOn=true; const c=center(); setVec(c.x,c.y,e.clientX,e.clientY);
+  });
+  window.addEventListener('mousemove', e=>{
+    if(!mouseOn)return; const c=center(); setVec(c.x,c.y,e.clientX,e.clientY);
+  });
+  window.addEventListener('mouseup', ()=>{ if(mouseOn){ mouseOn=false; release(); } });
 })();
 function layoutDpad(){
   const dp=document.getElementById('dpad');
@@ -939,6 +1021,7 @@ function layoutDpad(){
   if(settings.leftHanded){ dp.style.left='auto'; dp.style.right='18px'; }
   else { dp.style.right='auto'; dp.style.left='18px'; }
   const useD = settings.controlMode==='dpad';
+  dp.style.width='150px'; dp.style.height='150px';
   dp.style.display = (gameStarted && useD) ? 'block' : 'none';
   const jz=document.getElementById('joyZone');
   if(jz) jz.style.display = (gameStarted && !useD) ? 'block' : 'none';
@@ -954,12 +1037,11 @@ window.addEventListener('mouseup',()=>{mouseDown=false;joyEnd();});
 
 let crouchHeld=false, actionPressed=false, decoyPressed=false, firePressed=false;
 (function(){
+  // 웅크리기와 동일하게 '토글'로 통일. 누르고 있을 필요 없음.
   const sb = document.getElementById('btnSprint');
-  sb.addEventListener('touchstart',e=>{e.preventDefault();sprintHeld=true;});
-  sb.addEventListener('touchend',e=>{e.preventDefault();sprintHeld=false;});
-  sb.addEventListener('touchcancel',()=>{sprintHeld=false;});
-  sb.addEventListener('mousedown',()=>{sprintHeld=true;});
-  window.addEventListener('mouseup',()=>{sprintHeld=false;});
+  const toggle = e=>{ if(e&&e.cancelable)e.preventDefault(); sprintHeld=!sprintHeld; };
+  sb.addEventListener('touchstart',toggle,{passive:false});
+  sb.addEventListener('click',e=>{ if(e.detail!==0) toggle(e); });
 })();
 document.getElementById('btnCrouch').addEventListener('touchstart',e=>{e.preventDefault();crouchHeld=!crouchHeld;});
 document.getElementById('btnCrouch').addEventListener('click',()=>{crouchHeld=!crouchHeld;});
@@ -970,11 +1052,32 @@ document.getElementById('btnDecoy').addEventListener('click',()=>{decoyPressed=t
 document.getElementById('btnFire').addEventListener('touchstart',e=>{e.preventDefault();firePressed=true;});
 document.getElementById('btnFire').addEventListener('click',()=>{firePressed=true;});
 
+/* 장비는 사용 중 다시 누르면 즉시 끌 수 있다.
+   남은 시간에 비례해 쿨다운이 줄어들어, 아껴 쓰면 이득이 되도록 했다. */
+const GEAR_DURATION = 10, GEAR_COOLDOWN = 15;
+function gearCooldownFor(remain){
+  const used = Math.max(0, GEAR_DURATION - remain) / GEAR_DURATION;
+  return Math.max(4, GEAR_COOLDOWN * used);   // 최소 4초는 보장
+}
 document.getElementById('btnNVG').addEventListener('click',()=>{
-  if(!nvgActive && nvgCooldown<=0){ nvgActive=true; nvgTimer=10; playNVGSound(); }
+  if(nvgActive){
+    nvgCooldown = gearCooldownFor(nvgTimer);
+    nvgActive=false; nvgTimer=0;
+    playGearOff();
+    showMsg('야간투시 해제 (재사용 '+Math.ceil(nvgCooldown)+'s)');
+    return;
+  }
+  if(nvgCooldown<=0){ nvgActive=true; nvgTimer=GEAR_DURATION; playNVGSound(); }
 });
 document.getElementById('btnThermal').addEventListener('click',()=>{
-  if(!thermalActive && thermalCooldown<=0){ thermalActive=true; thermalTimer=10; playThermalSound(); }
+  if(thermalActive){
+    thermalCooldown = gearCooldownFor(thermalTimer);
+    thermalActive=false; thermalTimer=0;
+    playGearOff();
+    showMsg('열화상 해제 (재사용 '+Math.ceil(thermalCooldown)+'s)');
+    return;
+  }
+  if(thermalCooldown<=0){ thermalActive=true; thermalTimer=GEAR_DURATION; playThermalSound(); }
 });
 
 function cancelAim(){ if(!aimLock)return; aimLock=null; hideCancelBtn(); showMsg('투척 취소'); }
@@ -1142,21 +1245,22 @@ function updatePlayer(dt){
   if(player.hiddenIn){ return; }
 
   let mx=joy.dx*settings.joySens, my=joy.dy*settings.joySens;
-  // 십자키 입력을 합산 (조이스틱과 동시 사용 가능)
-  if(dpad.l) mx-=1; if(dpad.r) mx+=1;
-  if(dpad.u) my-=1; if(dpad.d) my+=1;
+  // 원형 패드 입력을 합산 (조이스틱과 동시 사용 가능)
+  mx += dpad.x; my += dpad.y;
   {
     const L=Math.hypot(mx,my);
-    if(L>1){ mx/=L; my/=L; }   // 대각선이 빨라지지 않도록 정규화
+    if(L>1){ mx/=L; my/=L; }   // 어느 방향이든 최대 속도가 같도록 정규화
   }
   if(keys['w'])my=-1; if(keys['s'])my=1; if(keys['a'])mx=-1; if(keys['d'])mx=1;
   const mag=Math.hypot(mx,my);
 
   // --- 달리기 / 스태미나 ---
-  sprinting = sprintHeld && !crouchHeld && stamina > 5 && mag > 0.15;
+  // 히스테리시스: 지쳐서 멈춰도 토글은 유지되고, 25까지 회복되면 자동으로 다시 달린다.
+  if(sprinting && stamina <= 0)      sprintReady = false;
+  if(!sprintReady && stamina >= 25)  sprintReady = true;
+  sprinting = sprintHeld && sprintReady && !crouchHeld && mag > 0.15;
   if(sprinting){
     stamina = Math.max(0, stamina - 30*dt);
-    if(stamina<=0) sprintHeld=false;
   } else {
     stamina = Math.min(100, stamina + 20*dt);
   }
@@ -1168,13 +1272,24 @@ function updatePlayer(dt){
     const nx=player.x+ (mx/mag)*stepLen;
     const ny=player.y+ (my/mag)*stepLen;
     let blocked=false;
+    // 가구 안에 있는 동안은 손을 떼도 웅크린 상태로 취급해야 빠져나올 수 있다
+    const effCrouch = crouchHeld || !!player.under;
     for(const w of solidRects){
-      if(w.ventForCrouch && player.crouch) continue;
+      if(w.ventForCrouch && effCrouch) continue;
+      if(w.crouchPassable && effCrouch) continue;      // 웅크리면 낮은 가구 통과
       if(circleRectCollide(nx,ny,player.r,w)){blocked=true;break;}
     }
     if(!blocked){player.x=nx;player.y=ny;moved=stepLen;}
   }
-  player.crouch=crouchHeld;
+  // 웅크림 여부와 무관하게 '지금 가구 안에 있는지'를 먼저 판정한다
+  player.under = null;
+  for(const w of furnitureSolids){
+    if(!w.crouchPassable) continue;
+    if(player.x > w.x-2 && player.x < w.x+w.w+2 &&
+       player.y > w.y-2 && player.y < w.y+w.h+2){ player.under = w; break; }
+  }
+  // 가구 안이면 버튼을 떼도 일어설 수 없다 (끼임 방지)
+  player.crouch = crouchHeld || !!player.under;
 
   if(moved>0){
     player.stepAccum += moved;
@@ -1365,6 +1480,7 @@ function updateEnemy(en,dt){
     let visRange=en.visionRange*diff().vision;
     if(alarmRaised) visRange*=1.15;    // 경계 태세라 더 멀리 본다
     if(player.crouch) visRange*=0.55;
+    if(player.under)  visRange*=0.32;  // 가구 아래에 들어가 있으면 거의 안 보인다
     if(sprinting) visRange*=1.25;
     if(en.state==='caution') visRange*=1.2;
 
@@ -1444,14 +1560,16 @@ function updateFirePose(dt){
 }
 
 function updateAbilities(dt){
-  if(nvgActive){ nvgTimer-=dt; if(nvgTimer<=0){nvgActive=false; nvgCooldown=15;} }
+  if(nvgActive){ nvgTimer-=dt; if(nvgTimer<=0){nvgActive=false; nvgCooldown=GEAR_COOLDOWN;} }
   else if(nvgCooldown>0){ nvgCooldown=Math.max(0,nvgCooldown-dt); }
-  if(thermalActive){ thermalTimer-=dt; if(thermalTimer<=0){thermalActive=false; thermalCooldown=15;} }
+  if(thermalActive){ thermalTimer-=dt; if(thermalTimer<=0){thermalActive=false; thermalCooldown=GEAR_COOLDOWN;} }
   else if(thermalCooldown>0){ thermalCooldown=Math.max(0,thermalCooldown-dt); }
 
   const nvgBtn=document.getElementById('btnNVG'), thBtn=document.getElementById('btnThermal');
-  nvgBtn.textContent = nvgActive ? ('야간 '+Math.ceil(nvgTimer)+'s') : (nvgCooldown>0 ? ('대기 '+Math.ceil(nvgCooldown)+'s') : '야간투시');
-  thBtn.textContent = thermalActive ? ('열화상 '+Math.ceil(thermalTimer)+'s') : (thermalCooldown>0 ? ('대기 '+Math.ceil(thermalCooldown)+'s') : '열화상');
+  nvgBtn.textContent = nvgActive ? ('야간 '+Math.ceil(nvgTimer)+'s ✕') : (nvgCooldown>0 ? ('대기 '+Math.ceil(nvgCooldown)+'s') : '야간투시');
+  thBtn.textContent  = thermalActive ? ('열화상 '+Math.ceil(thermalTimer)+'s ✕') : (thermalCooldown>0 ? ('대기 '+Math.ceil(thermalCooldown)+'s') : '열화상');
+  nvgBtn.style.background = nvgActive ? 'rgba(120,220,160,0.34)' : 'rgba(255,255,255,0.13)';
+  thBtn.style.background  = thermalActive ? 'rgba(255,140,90,0.34)' : 'rgba(255,255,255,0.13)';
 }
 
 function triggerCaught(){
@@ -1466,7 +1584,11 @@ function respawn(){
   player.hiddenIn=null;
   caught=false;
   alarmRaised=false; alarmTimer=0; alarmPoint=null;
-  player.firePose=0; player.recoil=0;
+  player.firePose=0; player.recoil=0; player.under=null;
+  sprintHeld=false; sprintReady=true;
+  dpad.x=0; dpad.y=0;
+  const kn=document.getElementById('dKnob');
+  if(kn) kn.style.transform='translate(0px,0px)';
   actionLock=null;
   stamina=100; sprintHeld=false; slowmo=0; spotFreeze=0;
   document.getElementById('spotFlash').style.display='none';
@@ -1517,6 +1639,7 @@ document.getElementById('pauseResume').addEventListener('click',()=>{
 /* ===== 백그라운드 전환 처리 ===== */
 document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){
+    suspendAudio();                 // 사이렌·BGM 포함 모든 소리 정지
     if(gameStarted && !caught && !puzzleActive){
       paused=true;
       document.getElementById('pauseOverlay').style.display='flex';
@@ -2494,6 +2617,24 @@ function drawWorld(camX,camY){
     ctx.rotate(player.angle);
     drawPlayerSprite(player.crouch);
     ctx.restore();
+
+    // 가구 아래에 들어가 있으면 그 가구를 위에 반투명으로 덮어 실루엣만 남긴다
+    if(player.under && player.under.src){
+      ctx.save();
+      ctx.globalAlpha = 0.72;
+      drawDecorItem(player.under.src, camX, camY);
+      ctx.restore();
+      // 어디 있는지 알 수 있도록 얇은 윤곽선
+      ctx.save();
+      ctx.setLineDash([3,3]);
+      ctx.strokeStyle='rgba(150,235,190,0.75)';
+      ctx.lineWidth=1.6;
+      ctx.beginPath();
+      ctx.arc(player.x-camX, player.y-camY, player.r+2, 0, 7);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
   } else {
     ctx.save();
     ctx.globalAlpha=0.4;
@@ -2831,9 +2972,14 @@ function loop(now){
       fb.style.borderColor='rgba(255,255,255,0.34)';
     }
 
-    document.getElementById('crouchTag').style.display = player.crouch ? 'block' : 'none';
+    const ct=document.getElementById('crouchTag');
+    ct.style.display = player.crouch ? 'block' : 'none';
+    ct.textContent = player.under ? '▼ 가구 아래 은폐' : '▼ 웅크림';
     document.getElementById('btnCrouch').className = 'btn' + (player.crouch ? ' active' : '');
-    document.getElementById('btnSprint').className = 'btn' + (sprinting ? ' active' : '');
+    // 토글이 켜져 있으면 항상 표시하되, 실제로 달리는 중과 지친 상태를 구분
+    const spBtn = document.getElementById('btnSprint');
+    spBtn.className = 'btn' + (sprinting ? ' active' : (sprintHeld ? ' armed' : ''));
+    spBtn.textContent = sprintHeld ? (sprintReady ? '달리는 중' : '지침...') : '달리기';
 
     const anySearch = enemies.some(e=>e.state==='search');
     const anyCaution = enemies.some(e=>e.state==='caution');
