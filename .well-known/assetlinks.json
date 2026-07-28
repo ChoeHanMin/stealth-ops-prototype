@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.choehanmin.stealthops",
+        "sha256_cert_fingerprints": ["98:0E:49:C1:C4:34:BD:72:7B:13:99:73:48:EC:6E:8D:6A:10:85:3B:F8:12:44:71:37:EB:11:D8:07:52:07:B3"]
+      }
+    }]
