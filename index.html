@@ -16,6 +16,11 @@
   #detBar{height:100%;width:0%;background:#e0a030;transition:width 0.1s;}
   #detBar.alert{background:#e03030;}
   #stateText{font-weight:bold;margin-top:2px;}
+  #stamWrap{width:160px;height:6px;background:#22262a;border:1px solid #4a5158;border-radius:3px;overflow:hidden;margin-top:3px;}
+  #stamBar{height:100%;width:100%;background:#5ecbe8;transition:width 0.08s;}
+  #stamBar.low{background:#e07a30;}
+  #spotFlash{position:fixed;inset:0;pointer-events:none;display:none;z-index:20;
+       box-shadow:inset 0 0 120px 30px rgba(220,30,30,0.55);}
   #timerText{font-size:11px;opacity:0.85;margin-top:2px;}
   #msg{position:fixed;top:56px;left:50%;transform:translateX(-50%);color:#fff;font-size:15px;
        background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:6px;display:none;z-index:10;}
@@ -94,8 +99,10 @@
 <div id="hud">
   <div id="stateText">잠입중</div>
   <div id="detBarWrap"><div id="detBar"></div></div>
+  <div id="stamWrap"><div id="stamBar"></div></div>
   <div id="timerText">00:00</div>
 </div>
+<div id="spotFlash"></div>
 <div id="msg"></div>
 <div id="gearBtn">⚙</div>
 <div id="aimCancelBtn">✕ 취소 (←스와이프)</div>
@@ -111,6 +118,7 @@
   <div class="btn" id="btnStun">기절탄</div>
   <div class="btn" id="btnNVG">야간투시</div>
   <div class="btn" id="btnThermal">열화상</div>
+  <div class="btn" id="btnSprint">달리기</div>
   <div class="btn" id="btnCrouch">웅크리기</div>
   <div class="btn" id="btnAction">처치/상호작용</div>
 </div>
@@ -123,7 +131,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.5.0.0</div>
+  <div id="verText">Ver 1.6.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -352,7 +360,10 @@ function makeGuard(opts){
     stunned:false, stunTimer:0,
     activity: opts.activity || null,
     buddyId: opts.buddyId,
-    buddyAlertDone:false, buddyMissTimer:0
+    buddyAlertDone:false, buddyMissTimer:0,
+    homeState: state, homeX: opts.x, homeY: opts.y,
+    homeAngle: (opts.angle!==undefined?opts.angle:0),
+    cautionTimer: 0, lastKnown: null
   };
 }
 
@@ -395,6 +406,38 @@ const enemies = [
   makeGuard({x:1450,y:1200,angle:-2.6,state:'idle',activity:'chat',visionRange:75,visionAngle:90,hair:'#555'})
 ];
 
+/* === 초기 랜덤화 & 버디 편성 === */
+let initialEnemyCount = 0;
+(function initRandomize(){
+  const d3 = [0,0,0].map(()=>Math.floor(Math.random()*10));
+  const c4 = Array.from({length:4},()=>Math.floor(Math.random()*10)).join('');
+  const mCard = missions.find(m=>m.id==='card');
+  const mCctv = missions.find(m=>m.id==='cctv');
+  if(mCard) mCard.target = d3;
+  if(mCctv) mCctv.target = c4;
+  const n1 = decor.find(d=>d.type==='note' && d.text==='472');
+  const n2 = decor.find(d=>d.type==='note' && d.text==='1376');
+  if(n1) n1.text = d3.join('');
+  if(n2) n2.text = c4;
+
+  // 순찰 시작 지점 셔플
+  for(const en of enemies){
+    if(en.state==='patrol' && en.path.length){
+      en.wp = Math.floor(Math.random()*en.path.length);
+      const wpt = en.path[en.wp];
+      en.x = wpt.x; en.y = wpt.y; en.homeX = wpt.x; en.homeY = wpt.y;
+    }
+  }
+
+  // 순찰 인원 전원을 2인 1조 버디로 편성
+  const patrols = enemies.map((e,i)=>({e,i})).filter(o=>o.e.state==='patrol');
+  for(let k=0;k+1<patrols.length;k+=2){
+    patrols[k].e.buddyId   = patrols[k+1].i;
+    patrols[k+1].e.buddyId = patrols[k].i;
+  }
+  initialEnemyCount = enemies.length;
+})();
+
 let corpses = [];
 let clouds = [];
 let bullets = [];
@@ -413,8 +456,24 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function enemyById(id){return enemies.find(e=>e._id===id);}
 enemies.forEach((e,i)=>e._id=i);
 
-let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false};
-let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0};
+let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, showCones:false};
+let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, shotKills:0};
+
+/* --- 신규: 스태미나 / 슬로우모션 / 발각 프리즈 / 점호 --- */
+let stamina = 100, sprintHeld = false, sprinting = false;
+let slowmo = 0;
+let spotFreeze = 0, spotEnemy = null;
+let rollCallTimer = 60;
+
+/* 행동별 소음 반경 (한 곳에서 관리) */
+const NOISE = {
+  crouchStep: 38,
+  walkStep:   145,
+  sprintStep: 250,
+  scream:     170,
+  coin:       260,
+  bodyDrop:   90
+};
 
 /* 야간투시/열화상 */
 let nvgActive=false, nvgTimer=0, nvgCooldown=0;
@@ -562,6 +621,17 @@ document.getElementById('gearBtn').addEventListener('click',()=>{document.getEle
 document.getElementById('howModal').addEventListener('click',e=>{if(e.target.id==='howModal')e.target.style.display='none';});
 document.getElementById('devModal').addEventListener('click',e=>{if(e.target.id==='devModal')e.target.style.display='none';});
 document.getElementById('closeSettings').addEventListener('click',()=>{document.getElementById('settingsModal').style.display='none';});
+(function(){
+  const box = document.getElementById('closeSettings').parentNode;
+  const row = document.createElement('div');
+  row.className='row';
+  row.innerHTML = '<label>적 시야 표시 (쉬움)</label>';
+  const tg = document.createElement('div');
+  tg.className='closeBtn'; tg.style.width='70px'; tg.style.marginTop='0'; tg.textContent='OFF';
+  tg.addEventListener('click',()=>{ settings.showCones=!settings.showCones; tg.textContent = settings.showCones?'ON':'OFF'; });
+  row.appendChild(tg);
+  box.insertBefore(row, document.getElementById('closeSettings'));
+})();
 document.getElementById('closeResult').addEventListener('click',()=>{document.getElementById('resultModal').style.display='none';});
 
 document.getElementById('sfxSlider').addEventListener('input',e=>{settings.sfxVol=parseFloat(e.target.value);});
@@ -593,6 +663,14 @@ window.addEventListener('mousemove',e=>{if(mouseDown)joyMove(e.clientX,e.clientY
 window.addEventListener('mouseup',()=>{mouseDown=false;joyEnd();});
 
 let crouchHeld=false, actionPressed=false, decoyPressed=false, firePressed=false;
+(function(){
+  const sb = document.getElementById('btnSprint');
+  sb.addEventListener('touchstart',e=>{e.preventDefault();sprintHeld=true;});
+  sb.addEventListener('touchend',e=>{e.preventDefault();sprintHeld=false;});
+  sb.addEventListener('touchcancel',()=>{sprintHeld=false;});
+  sb.addEventListener('mousedown',()=>{sprintHeld=true;});
+  window.addEventListener('mouseup',()=>{sprintHeld=false;});
+})();
 document.getElementById('btnCrouch').addEventListener('touchstart',e=>{e.preventDefault();crouchHeld=!crouchHeld;});
 document.getElementById('btnCrouch').addEventListener('click',()=>{crouchHeld=!crouchHeld;});
 document.getElementById('btnAction').addEventListener('touchstart',e=>{e.preventDefault();actionPressed=true;});
@@ -688,15 +766,42 @@ function rayMarchLanding(x0,y0,angle,range){
 
 function checkNoiseHearing(x,y,baseRadius){
   for(const en of enemies){
-    if(en.state==='patrol' && !en.stunned){
-      const radius = baseRadius*en.hearMul;
-      const d=Math.hypot(x-en.x,y-en.y);
-      if(d<radius){
+    if(en.stunned || en.state==='dying') continue;
+    const radius = baseRadius*en.hearMul*(en.state==='caution'?1.3:1);
+    const d=Math.hypot(x-en.x,y-en.y);
+    if(d>=radius) continue;
+
+    if(en.state==='patrol' || en.state==='caution'){
+      en.state='investigate';
+      en.target={x,y};
+      en.investigateTimer=2.5;
+    } else if(en.state==='idle'){
+      // 앉아있는 인원은 자리를 뜨지 않고 소리 쪽으로 고개만 돌림
+      en.angle = Math.atan2(y-en.y, x-en.x);
+      en.detect = Math.min(100, en.detect + 12);
+      if(d < radius*0.45){
         en.state='investigate';
         en.target={x,y};
         en.investigateTimer=2.5;
       }
     }
+  }
+}
+
+/* 목격 정보 공유: 근처 동료에게 마지막 목격 지점 전파 */
+function broadcastAlert(src, x, y){
+  for(const en of enemies){
+    if(en===src || en.stunned || en.state==='dying') continue;
+    if(en.state==='search') continue;
+    const d = Math.hypot(en.x-x, en.y-y);
+    if(d > 620) continue;
+    en.lastKnown = {x,y};
+    if(en.state==='idle') continue;   // 앉아있는 인원은 그대로 둠
+    en.state='investigate';
+    // 지점 주변으로 흩어져서 수색
+    const a = Math.random()*Math.PI*2, r = 40+Math.random()*90;
+    en.target = {x: x+Math.cos(a)*r, y: y+Math.sin(a)*r};
+    en.investigateTimer = 4;
   }
 }
 
@@ -750,7 +855,15 @@ function updatePlayer(dt){
   if(keys['w'])my=-1; if(keys['s'])my=1; if(keys['a'])mx=-1; if(keys['d'])mx=1;
   const mag=Math.hypot(mx,my);
 
-  const spd = player.speed * (crouchHeld?0.55:1);
+  // --- 달리기 / 스태미나 ---
+  sprinting = sprintHeld && !crouchHeld && stamina > 5 && mag > 0.15;
+  if(sprinting){
+    stamina = Math.max(0, stamina - 30*dt);
+    if(stamina<=0) sprintHeld=false;
+  } else {
+    stamina = Math.min(100, stamina + 20*dt);
+  }
+  const spd = player.speed * (crouchHeld?0.55:(sprinting?1.7:1));
   let moved=0;
   if(mag>0.15){
     player.angle=Math.atan2(my,mx);
@@ -768,17 +881,44 @@ function updatePlayer(dt){
 
   if(moved>0){
     player.stepAccum += moved;
-    const stepDist = player.crouch ? 46 : 26;
+    const stepDist = player.crouch ? 46 : (sprinting ? 30 : 26);
     if(player.stepAccum >= stepDist){
       player.stepAccum = 0;
       playerFootstep(player.crouch);
-      const noiseRadius = player.crouch ? 38 : 145;
+      const noiseRadius = player.crouch ? NOISE.crouchStep : (sprinting ? NOISE.sprintStep : NOISE.walkStep);
       checkNoiseHearing(player.x,player.y,noiseRadius);
     }
   }
 }
 
 /* ===================== 적 AI ===================== */
+/* 수색 실패 후 곧장 평상시로 돌아가지 않고 '경계' 단계를 거침 */
+function enterCaution(en, dur){
+  en.state = 'caution';
+  en.cautionTimer = dur || 28;
+  en.detect = Math.min(en.detect, 45);
+  en.target = null;
+  if(en.prevState!=='caution') spawnText(en.x,en.y-28,'...계속 살펴보자','#ffd08a');
+}
+
+/* 60초마다 무전 점호 — 사라진 인원이 있으면 전원 경계 */
+function updateRollCall(dt){
+  rollCallTimer -= dt;
+  if(rollCallTimer > 0) return;
+  rollCallTimer = 60;
+  const missing = initialEnemyCount - enemies.length;
+  if(missing <= 0 || alarmRaised) return;
+  alarmRaised = true;
+  stats.detections++;
+  vibrate(60);
+  for(const en of enemies){
+    if(en.state==='patrol' || en.state==='idle') enterCaution(en, 35);
+  }
+  const lead = enemies.find(e=>e.state==='caution');
+  if(lead) spawnText(lead.x, lead.y-30, '무전 점호 — 응답 없음!', '#ff8a5a');
+  showMsg('⚠ 무전 점호: 인원 미확인 — 전원 경계');
+}
+
 function updateEnemy(en,dt){
   if(en.state==='dying')return;
 
@@ -788,23 +928,35 @@ function updateEnemy(en,dt){
     return;
   }
 
+  // 경계(caution) 단계 감쇠
+  if(en.state==='caution'){
+    en.cautionTimer -= dt;
+    if(en.cautionTimer<=0){ en.state = en.homeState; en.detect = 0; }
+  }
+
   let goal=null;
-  if(en.state==='patrol'){
-    goal=en.path[en.wp];
-    if(Math.hypot(goal.x-en.x,goal.y-en.y)<8){en.wp=(en.wp+1)%en.path.length;}
+  if(en.state==='patrol' || en.state==='caution'){
+    // 경로가 없는 인원(정지 근무자)은 제자리 유지 — 빈 배열 접근 크래시 방지
+    if(en.path && en.path.length){
+      goal=en.path[en.wp];
+      if(goal && Math.hypot(goal.x-en.x,goal.y-en.y)<8){en.wp=(en.wp+1)%en.path.length;}
+    } else if(en.state==='patrol'){
+      en.state = en.homeState;
+      en.angle = en.homeAngle;
+    }
   } else if(en.state==='search'){
     goal=en.target;
     if(goal && Math.hypot(goal.x-en.x,goal.y-en.y)<10){
       en.target=null;
       en.searchTimer-=dt;
-      if(en.searchTimer<=0){en.state='patrol';}
+      if(en.searchTimer<=0){ enterCaution(en); }
     }
   } else if(en.state==='investigate'){
     goal=en.target;
     if(goal && Math.hypot(goal.x-en.x,goal.y-en.y)<10){
       en.target=null;
       en.investigateTimer-=dt;
-      if(en.investigateTimer<=0){en.state='patrol';}
+      if(en.investigateTimer<=0){ enterCaution(en, 12); }
     }
   }
   let moved=0;
@@ -812,17 +964,18 @@ function updateEnemy(en,dt){
     const dx=goal.x-en.x, dy=goal.y-en.y, d=Math.hypot(dx,dy);
     if(d>1){
       en.angle=Math.atan2(dy,dx);
-      const nx=en.x+(dx/d)*en.speed, ny=en.y+(dy/d)*en.speed;
+      const mvSpd = en.speed * (en.state==='search'?1.35:(en.state==='caution'?1.2:1));
+      const nx=en.x+(dx/d)*mvSpd, ny=en.y+(dy/d)*mvSpd;
       let blocked=false;
       for(const w of solidRects){if(circleRectCollide(nx,ny,en.r,w)){blocked=true;break;}}
       if(!blocked){en.x=nx;en.y=ny;moved=en.speed;}
     }
   } else if(en.state==='search'){
     en.searchTimer-=dt;
-    if(en.searchTimer<=0)en.state='patrol';
+    if(en.searchTimer<=0) enterCaution(en);
   } else if(en.state==='investigate'){
     en.investigateTimer-=dt;
-    if(en.investigateTimer<=0)en.state='patrol';
+    if(en.investigateTimer<=0) enterCaution(en, 12);
   }
 
   if(moved>0){
@@ -852,6 +1005,7 @@ function updateEnemy(en,dt){
       alarmRaised=true; stats.detections++;
       en.state='search'; en.target={x:c.x,y:c.y}; en.searchTimer=8;
       vibrate(80);
+      broadcastAlert(en, c.x, c.y);
     }
   }
 
@@ -877,6 +1031,8 @@ function updateEnemy(en,dt){
     const ang=Math.atan2(dy,dx);
     let visRange=en.visionRange;
     if(player.crouch) visRange*=0.55;
+    if(sprinting) visRange*=1.25;
+    if(en.state==='caution') visRange*=1.2;
 
     const inCone = dist<visRange && angleDiff(ang,en.angle) < (en.visionAngle*Math.PI/180);
     const seen = inCone && hasLineOfSight(en.x,en.y,player.x,player.y);
@@ -889,12 +1045,22 @@ function updateEnemy(en,dt){
     }
 
     if(en.detect>=100 && en.state!=='search' || (seen && en.detect>=100)){
-      if(en.state!=='search'){ stats.detections++; }
+      if(en.state!=='search'){
+        stats.detections++;
+        // 발각 스팅어: 아주 짧게 화면이 멈추고 '!' 표시 → 반응할 시간을 줌
+        spotFreeze = 0.42; spotEnemy = en;
+        playTone(880, 0.09, 0.16, 'square');
+        setTimeout(()=>playTone(1320, 0.14, 0.13, 'square'), 90);
+        document.getElementById('spotFlash').style.display='block';
+        setTimeout(()=>{document.getElementById('spotFlash').style.display='none';}, 420);
+      }
       en.state='search';
       en.target={x:player.x,y:player.y};
+      en.lastKnown={x:player.x,y:player.y};
       en.searchTimer=6;
       alarmRaised=true;
       vibrate(80);
+      broadcastAlert(en, player.x, player.y);
     }
     if(en.state==='search'){
       if(seen){en.target={x:player.x,y:player.y};en.searchTimer=6;}
@@ -908,6 +1074,7 @@ function updateEnemy(en,dt){
   if(en.prevState!==en.state){
     if(en.state==='investigate') spawnText(en.x,en.y-28,'인기척인가?','#ffe27a');
     if(en.state==='search') spawnText(en.x,en.y-28,'게 섰거라!','#ff6a6a');
+    if(en.state==='caution' && en.prevState==='search') spawnText(en.x,en.y-28,'놓쳤나...','#ffd08a');
   }
   en.prevState = en.state;
 }
@@ -961,7 +1128,13 @@ function respawn(){
   caught=false;
   alarmRaised=false;
   actionLock=null;
-  for(const en of enemies){en.detect=0;en.state='patrol';en.target=null;en.stunned=false;}
+  stamina=100; sprintHeld=false; slowmo=0; spotFreeze=0;
+  document.getElementById('spotFlash').style.display='none';
+  for(const en of enemies){
+    en.detect=0; en.target=null; en.stunned=false; en.lastKnown=null;
+    en.state=en.homeState; en.cautionTimer=0;
+    if(en.homeState==='idle'){ en.x=en.homeX; en.y=en.homeY; en.angle=en.homeAngle; }
+  }
 }
 function afterRespawnHideExec(){document.getElementById('execOverlay').style.display='none';}
 
@@ -974,8 +1147,27 @@ function showResultScreen(){
   const elapsed = Math.floor((performance.now()-stats.startTime)/1000);
   const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
   const ss = String(elapsed%60).padStart(2,'0');
-  let stars = 3;
-  if(stats.caughtCount>0) stars=1; else if(stats.detections>0) stars=2;
+  const totalKills = stats.knifeKills + stats.chokeKills + stats.shotKills;
+
+  // --- 챌린지 3종 ---
+  const ch = [
+    {key:'ghost', name:'유령 (무발각)',      ok: stats.detections===0 && stats.caughtCount===0},
+    {key:'pacif', name:'불살 (무살상)',      ok: totalKills===0},
+    {key:'speed', name:'전격전 (5분 이내)',  ok: elapsed<=300}
+  ];
+  let chLines = '';
+  for(const c of ch){
+    const stored = localStorage.getItem('stealthOps_ch_'+c.key)==='1';
+    if(c.ok && !stored) localStorage.setItem('stealthOps_ch_'+c.key,'1');
+    const done = c.ok || stored;
+    chLines += (c.ok?'✔ ':(done?'· ':'✗ ')) +
+      '<span style="color:'+(c.ok?'#7ee08a':(done?'#9a9a8a':'#8a6a6a'))+'">'+c.name+'</span>'+
+      (c.ok?' <b style="color:#ffcf6e">달성!</b>':(done?' (기록 보유)':''))+'<br>';
+  }
+
+  let stars = ch.filter(c=>c.ok).length;
+  if(stats.caughtCount>0) stars = Math.min(stars, 1);
+
   const best = localStorage.getItem('stealthOpsBestTime');
   let bestLine='';
   if(!best || elapsed < parseInt(best)){
@@ -988,7 +1180,10 @@ function showResultScreen(){
     '클리어 시간: '+mm+':'+ss+'<br>'+
     '발각 횟수: '+stats.detections+'회<br>'+
     '체포당한 횟수: '+stats.caughtCount+'회<br>'+
-    '기습 처치(칼): '+stats.knifeKills+' / 은밀 조르기: '+stats.chokeKills+'<br>'+
+    '처치 — 칼 '+stats.knifeKills+' / 조르기 '+stats.chokeKills+' / 저격 '+stats.shotKills+'<br>'+
+    '<hr style="border-color:#3a3a30;margin:10px 0">'+
+    '<b style="color:#ffcf6e">챌린지</b><br>'+ chLines +
+    '<hr style="border-color:#3a3a30;margin:10px 0">'+
     '평가: '+'★'.repeat(stars)+'☆'.repeat(3-stars)+
     bestLine;
   document.getElementById('resultModal').style.display='flex';
@@ -1051,6 +1246,8 @@ function handleFire(){
       particles.push({x:best.x,y:best.y,vx:(Math.random()-0.5)*3,vy:(Math.random()-0.5)*3,life:30,color:'#d43030'});
     }
     showMsg('원거리 저격 성공 (소음기)');
+    stats.shotKills++;
+    slowmo = 0.4;
     vibrate(30);
     return;
   }
@@ -1148,6 +1345,7 @@ function handleAction(){
         showMsg('은밀 조르기 처치');
         stats.chokeKills++;
       }
+      slowmo = 0.55;              // 킬캠: 잠깐 시간이 느려짐
       vibrate(30);
       return;
     }
@@ -1755,6 +1953,36 @@ function drawWorld(camX,camY){
       }
     }
 
+    // --- 적 시야 콘 (설정에서 켤 때만) ---
+    if(settings.showCones && en.state!=='dying' && !en.stunned){
+      const vr = en.visionRange, va = en.visionAngle*Math.PI/180;
+      const alert = (en.state==='search');
+      ctx.save();
+      ctx.globalAlpha = 0.13;
+      ctx.fillStyle = alert ? '#ff5050' : (en.state==='caution' ? '#ffc060' : '#ffffff');
+      ctx.beginPath();
+      ctx.moveTo(en.x-camX, en.y-camY);
+      ctx.arc(en.x-camX, en.y-camY, vr, en.angle-va, en.angle+va);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // --- 경계도 링: 얼마나 들켰는지 실시간 표시 ---
+    if(en.state!=='dying' && !en.stunned && en.detect>3){
+      const pct = Math.min(100, en.detect)/100;
+      const col = pct>=1 ? '#ff3030' : (pct>0.55 ? '#ff9030' : '#ffe27a');
+      ctx.save();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.beginPath(); ctx.arc(en.x-camX, en.y-camY-26, 11, 0, Math.PI*2); ctx.stroke();
+      ctx.strokeStyle = col;
+      ctx.beginPath();
+      ctx.arc(en.x-camX, en.y-camY-26, 11, -Math.PI/2, -Math.PI/2 + Math.PI*2*pct);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     if(en.state!=='dying' && !en.stunned && !actionLock && !caught && !player.hiddenIn){
       const dist=Math.hypot(player.x-en.x,player.y-en.y);
       if(dist<48){
@@ -1828,9 +2056,11 @@ function drawWorld(camX,camY){
   }
 }
 
+let lastCamX=0, lastCamY=0;
 function render(){
   let camX = Math.max(0,Math.min(player.x-canvas.width/2, WORLD_W-canvas.width));
   let camY = Math.max(0,Math.min(player.y-canvas.height/2, WORLD_H-canvas.height));
+  lastCamX=camX; lastCamY=camY;
 
   if(caught){
     camX += (Math.random()-0.5)*6;
@@ -1986,7 +2216,10 @@ function drawMinimap(camX,camY){
 let simTime=0;
 let last=performance.now();
 function loop(now){
-  const dt=Math.min((now-last)/1000, 0.05); last=now;
+  const rdt=Math.min((now-last)/1000, 0.05); last=now;
+  if(slowmo>0) slowmo -= rdt;
+  if(spotFreeze>0) spotFreeze -= rdt;
+  const dt = rdt * (slowmo>0 ? 0.32 : 1);
 
   if(gameStarted){
     updateAbilities(dt);
@@ -1997,7 +2230,8 @@ function loop(now){
     if(caught){
       execTimer-=dt;
       if(execTimer<=0){ respawn(); afterRespawnHideExec(); }
-    } else {
+    } else if(spotFreeze<=0){
+      updateRollCall(dt);
       updatePlayer(dt);
       for(const en of enemies)updateEnemy(en,dt);
       updateClouds(dt);
@@ -2051,7 +2285,30 @@ function loop(now){
     const bar=document.getElementById('detBar');
     bar.style.width=maxDetect+'%';
     bar.className = alarmRaised?'alert':'';
-    document.getElementById('stateText').textContent = caught?'처형됨':(alarmRaised?'⚠ 경계/수색중':'잠입중');
+
+    const stam=document.getElementById('stamBar');
+    stam.style.width=stamina+'%';
+    stam.className = stamina<25 ? 'low' : '';
+
+    const anySearch = enemies.some(e=>e.state==='search');
+    const anyCaution = enemies.some(e=>e.state==='caution');
+    document.getElementById('stateText').textContent =
+      caught ? '처형됨'
+      : anySearch ? '⚠ 수색중'
+      : anyCaution ? '△ 경계중'
+      : alarmRaised ? '△ 경계중'
+      : '잠입중';
+    if(!anySearch && !anyCaution && alarmRaised) alarmRaised=false;
+
+    // 발각 순간 '!' 표시
+    if(spotFreeze>0 && spotEnemy){
+      ctx.save();
+      ctx.font='bold 44px sans-serif'; ctx.textAlign='center';
+      ctx.fillStyle='#ff4040'; ctx.strokeStyle='#000'; ctx.lineWidth=5;
+      const sx=spotEnemy.x-lastCamX, sy=spotEnemy.y-lastCamY-46;
+      ctx.strokeText('!', sx, sy); ctx.fillText('!', sx, sy);
+      ctx.restore();
+    }
     if(!missionsComplete){
       const elapsed=Math.floor((performance.now()-stats.startTime)/1000);
       const mm=String(Math.floor(elapsed/60)).padStart(2,'0'), ss=String(elapsed%60).padStart(2,'0');
