@@ -29,8 +29,24 @@
   #armedTag{display:none;margin-top:4px;font-size:11.5px;font-weight:bold;
        color:#ffb0a0;background:rgba(70,20,20,0.7);border:1px solid #a04848;
        border-radius:4px;padding:2px 6px;width:fit-content;}
+  #blackoutTag{display:none;margin-top:4px;font-size:11.5px;font-weight:bold;
+       color:#a8d8ff;background:rgba(20,35,60,0.75);border:1px solid #4a6a9a;
+       border-radius:4px;padding:2px 6px;width:fit-content;}
   #hurtVig{position:fixed;inset:0;pointer-events:none;display:none;z-index:19;
        box-shadow:inset 0 0 150px 40px rgba(180,0,0,0.6);}
+  /* --- 튜토리얼 --- */
+  #tutBox{position:fixed;left:50%;transform:translateX(-50%);bottom:auto;top:96px;
+       width:min(400px,90vw);z-index:44;display:none;
+       background:rgba(14,18,24,0.94);border:1px solid #4a5a68;border-radius:10px;
+       padding:12px 14px;box-shadow:0 4px 18px rgba(0,0,0,0.6);}
+  #tutStep{font-size:11px;color:#8fd0ff;font-weight:bold;letter-spacing:1px;}
+  #tutTitle{font-size:15px;font-weight:bold;margin:3px 0 5px;color:#e8f0f6;}
+  #tutDesc{font-size:12.5px;color:#aeb8c2;line-height:1.5;}
+  #tutBar{height:4px;background:#22303c;border-radius:2px;margin-top:9px;overflow:hidden;}
+  #tutFill{height:100%;width:0;background:#6ee8b4;transition:width 0.3s;}
+  #tutSkip{position:fixed;top:98px;right:10px;z-index:45;display:none;
+       font-size:11px;color:#9aa3ab;background:rgba(20,24,30,0.9);
+       border:1px solid #3a4149;border-radius:6px;padding:5px 9px;user-select:none;}
   #crouchTag{display:none;margin-top:5px;font-size:12px;font-weight:bold;color:#8fe8b4;
        background:rgba(20,50,35,0.65);border:1px solid #4f8f6c;border-radius:5px;
        padding:2px 7px;letter-spacing:1px;width:fit-content;}
@@ -179,11 +195,19 @@
   <div id="stamWrap"><div id="stamBar"></div></div>
   <div id="ammoTag">30 / 30</div>
   <div id="armedTag">⚠ 경비 무장 — 반격 중</div>
+  <div id="blackoutTag">⚡ 정전</div>
   <div id="crouchTag">▼ 웅크림</div>
   <div id="timerText">00:00</div>
 </div>
 <div id="spotFlash"></div>
 <div id="hurtVig"></div>
+<div id="tutBox">
+  <div id="tutStep">단계 1 / 8</div>
+  <div id="tutTitle">이동</div>
+  <div id="tutDesc">왼쪽 원형 패드를 끌어 움직이세요.</div>
+  <div id="tutBar"><div id="tutFill"></div></div>
+</div>
+<div id="tutSkip">튜토리얼 건너뛰기</div>
 
 <div id="deathMenu">
   <div class="dmBox">
@@ -247,7 +271,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 2.6.0.0</div>
+  <div id="verText">Ver 3.1.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -446,165 +470,457 @@ resize(); window.addEventListener('resize',resize);
 
 const WORLD_W = 2000, WORLD_H = 1500;
 
-const walls = [
-  {x:0,y:0,w:WORLD_W,h:20},{x:0,y:0,w:20,h:WORLD_H},
-  {x:0,y:WORLD_H-20,w:WORLD_W,h:20},{x:WORLD_W-20,y:0,w:20,h:WORLD_H},
-  {x:200,y:0,w:20,h:260},
-  {x:200,y:340,w:20,h:260},
-  {x:600,y:120,w:20,h:375},
-  {x:600,y:545,w:20,h:55},
-  {x:600,y:495,w:20,h:50,ventForCrouch:true},
-  {x:0,y:600,w:420,h:20},
-  {x:900,y:0,w:20,h:300},
-  {x:900,y:420,w:20,h:300},
-  // 동쪽 확장동: 라운지(위)/침실2(아래) 구분벽 (x1600~1750 사이 통로)
-  {x:1400,y:500,w:200,h:20},
-  {x:1750,y:500,w:250,h:20},
-  // 남쪽 확장동: 연회장(왼쪽)/파티오(오른쪽) 구분벽 (y1190~1290 사이 통로)
-  {x:900,y:1000,w:20,h:190},
-  {x:900,y:1290,w:20,h:210}
-];
+/* ===================== 절차적 맵 생성 =====================
+   방 격자를 나누고 → 벽과 문을 세우고 → 테마별 가구를 배치하고
+   → 미션·경비를 분산시킨 뒤 → 연결성을 검증한다.
+   시드가 같으면 항상 같은 저택이 나오므로 일일 챌린지에 그대로 쓸 수 있다. */
 
-const decor = [
-  {type:'bookshelf',x:35,y:35,w:50,h:100},
-  /* ===== v2.2 추가 가구 : 방 구조는 그대로, 빈 공간만 채움 ===== */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function todaySeed(){
+  const d=new Date();
+  return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+}
 
-  // --- 침실1 : 생활감 보강 ---
-  {type:'deskChair',x:120,y:250,w:28,h:28},
-  {type:'desk',x:100,y:200,w:70,h:40,solid:true},
-  {type:'lamp',x:150,y:200,r:9},
-  {type:'shoeRack',x:35,y:560,w:44,h:20},
-  {type:'plant',x:60,y:300,r:13},
+const ROOM_THEMES = ['bedroom','study','lounge','dining','storage','patio'];
 
-  // --- 거실 : 소파 세트 + 수납 ---
-  {type:'sofa',x:260,y:80,w:110,h:44,solid:true},
-  {type:'coffeeTable',x:290,y:140,w:56,h:34},
-  {type:'rug',x:250,y:70,w:180,h:120,color:'#4a4038'},
-  {type:'tv',x:300,y:40,w:60,h:16},
-  {type:'bookshelf',x:520,y:35,w:46,h:90},
-  {type:'plant',x:560,y:200,r:15},
-  {type:'closet',x:520,y:300,w:38,h:64,solid:true,isHidingSpot:true},
-  {type:'mirror',x:230,y:300,w:14,h:50},
-  {type:'nightstand',x:250,y:460,w:26,h:28},
+function generateMap(seed){
+  const rnd = mulberry32(seed);
+  const ri  = (a,b)=> a + Math.floor(rnd()*(b-a+1));
+  const pick= (arr)=> arr[Math.floor(rnd()*arr.length)];
+  const T = 20;                       // 벽 두께
+  const DOOR = 96;                    // 문 폭
+  const VENT = 64;                    // 환풍구 폭
 
-  // --- 서재 : 여기가 제일 휑했다 ---
-  {type:'desk',x:680,y:300,w:90,h:46,solid:true},
-  {type:'deskChair',x:715,y:356,w:28,h:28},
-  {type:'bookshelf',x:640,y:35,w:46,h:110},
-  {type:'bookshelf',x:840,y:35,w:46,h:110},
-  {type:'bookshelf',x:640,y:420,w:46,h:100},
-  {type:'lamp',x:790,y:300,r:9},
-  {type:'rug',x:660,y:200,w:150,h:90,color:'#3f4a52'},
-  {type:'plant',x:860,y:330,r:14},
-  {type:'clock',x:760,y:30,r:11},
-  {type:'closet',x:850,y:165,w:40,h:66,solid:true,isHidingSpot:true},
+  // --- 1. 방 격자 ---
+  // 세로 분할 2~3개, 가로 분할 1~2개 → 방 6~12개
+  const vCount = ri(2,3), hCount = ri(1,2);
+  const vs = [], hs = [];
+  for(let i=1;i<=vCount;i++){
+    const base = WORLD_W*i/(vCount+1);
+    vs.push(Math.round(base + (rnd()-0.5)*WORLD_W*0.10));
+  }
+  for(let i=1;i<=hCount;i++){
+    const base = WORLD_H*i/(hCount+1);
+    hs.push(Math.round(base + (rnd()-0.5)*WORLD_H*0.10));
+  }
+  const xEdges=[T, ...vs, WORLD_W-T];
+  const yEdges=[T, ...hs, WORLD_H-T];
 
-  // --- 라운지 : TV 앞 배치 보강 ---
-  {type:'sofa',x:1480,y:250,w:130,h:46,solid:true},
-  {type:'coffeeTable',x:1660,y:255,w:70,h:38},
-  {type:'plant',x:1420,y:400,r:16},
-  {type:'bookshelf',x:1930,y:120,w:44,h:100},
-  {type:'nightstand',x:1380,y:60,w:26,h:28},
+  const rooms=[];
+  for(let r=0;r<yEdges.length-1;r++){
+    for(let c=0;c<xEdges.length-1;c++){
+      rooms.push({
+        gx:c, gy:r,
+        x: xEdges[c] + (c?T/2:0),
+        y: yEdges[r] + (r?T/2:0),
+        w: xEdges[c+1]-xEdges[c] - (c?T/2:0) - (c<xEdges.length-2?T/2:0),
+        h: yEdges[r+1]-yEdges[r] - (r?T/2:0) - (r<yEdges.length-2?T/2:0),
+        theme: null, doors: []
+      });
+    }
+  }
+  const cols = xEdges.length-1, rowsN = yEdges.length-1;
+  const roomAt=(c,r)=> (c<0||r<0||c>=cols||r>=rowsN) ? null : rooms[r*cols+c];
 
-  // --- 침실2 ---
-  {type:'closet',x:1900,y:860,w:40,h:70,solid:true,isHidingSpot:true},
-  {type:'desk',x:1000,y:640,w:80,h:42,solid:true},
-  {type:'deskChair',x:1030,y:690,w:28,h:28},
-  {type:'rug',x:1500,y:820,w:170,h:110,color:'#5a4a52'},
-  {type:'shoeRack',x:960,y:960,w:44,h:20},
+  // 테마 배정 — 같은 테마가 몰리지 않게 섞어서 순환
+  const bag=[];
+  while(bag.length < rooms.length){
+    const shuffled = ROOM_THEMES.slice();
+    for(let i=shuffled.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]; }
+    bag.push(...shuffled);
+  }
+  rooms.forEach((rm,i)=> rm.theme = bag[i]);
 
-  // --- 연회장 : 식탁 주변 의자 보강 ---
-  {type:'chair',x:200,y:1080,w:24,h:24},
-  {type:'chair',x:320,y:1080,w:24,h:24},
-  {type:'chair',x:440,y:1080,w:24,h:24},
-  {type:'chair',x:560,y:1080,w:24,h:24},
-  {type:'plant',x:840,y:700,r:15},
-  {type:'bookshelf',x:40,y:700,w:44,h:96},
+  // --- 2. 벽과 문 ---
+  const walls = [
+    {x:0,y:0,w:WORLD_W,h:T}, {x:0,y:0,w:T,h:WORLD_H},
+    {x:0,y:WORLD_H-T,w:WORLD_W,h:T}, {x:WORLD_W-T,y:0,w:T,h:WORLD_H}
+  ];
+  /* 문과 환풍구를 기록하면서 벽을 세운다.
+     문   : 잠글 수 있는 통로. 잠그면 적이 부술 때까지 막힌다.
+     환풍구: 웅크려야만 지나갈 수 있는 지름길. */
+  const doors=[], vents=[];
+  // 세로 벽
+  for(const vx of vs){
+    for(let r=0;r<rowsN;r++){
+      const y0=yEdges[r], y1=yEdges[r+1];
+      const nDoor = ri(1,2);
+      const gaps=[];
+      for(let d=0; d<nDoor; d++){
+        const seg=(y1-y0)/nDoor;
+        const gy = y0 + seg*d + ri(30, Math.max(31, Math.floor(seg-DOOR-30)));
+        gaps.push([gy, gy+DOOR]);
+      }
+      gaps.sort((a,b)=>a[0]-b[0]);
+      let cur=y0;
+      for(const [ga,gb] of gaps){
+        if(ga>cur){
+          const seg={x:vx, y:cur, w:T, h:ga-cur};
+          // 충분히 긴 벽 구간에는 낮은 확률로 환풍구를 뚫는다
+          if(seg.h>190 && rnd()<0.30){
+            const vy = seg.y + 50 + rnd()*(seg.h-50-VENT-50);
+            walls.push({x:vx, y:seg.y, w:T, h:vy-seg.y});
+            walls.push({x:vx, y:vy+VENT, w:T, h:seg.y+seg.h-(vy+VENT)});
+            vents.push({x:vx, y:Math.round(vy), w:T, h:VENT});
+          } else walls.push(seg);
+        }
+        doors.push({x:vx, y:ga, w:T, h:gb-ga, vertical:true});
+        cur=gb;
+      }
+      if(cur<y1) walls.push({x:vx, y:cur, w:T, h:y1-cur});
+    }
+  }
+  // 가로 벽
+  for(const hy of hs){
+    for(let c=0;c<cols;c++){
+      const x0=xEdges[c], x1=xEdges[c+1];
+      const nDoor = ri(1,2);
+      const gaps=[];
+      for(let d=0; d<nDoor; d++){
+        const seg=(x1-x0)/nDoor;
+        const gx = x0 + seg*d + ri(30, Math.max(31, Math.floor(seg-DOOR-30)));
+        gaps.push([gx, gx+DOOR]);
+      }
+      gaps.sort((a,b)=>a[0]-b[0]);
+      let cur=x0;
+      for(const [ga,gb] of gaps){
+        if(ga>cur){
+          const seg={x:cur, y:hy, w:ga-cur, h:T};
+          if(seg.w>190 && rnd()<0.30){
+            const vx2 = seg.x + 50 + rnd()*(seg.w-50-VENT-50);
+            walls.push({x:seg.x, y:hy, w:vx2-seg.x, h:T});
+            walls.push({x:vx2+VENT, y:hy, w:seg.x+seg.w-(vx2+VENT), h:T});
+            vents.push({x:Math.round(vx2), y:hy, w:VENT, h:T});
+          } else walls.push(seg);
+        }
+        doors.push({x:ga, y:hy, w:gb-ga, h:T, vertical:false});
+        cur=gb;
+      }
+      if(cur<x1) walls.push({x:cur, y:hy, w:x1-cur, h:T});
+    }
+  }
 
-  // --- 파티오 : 여기도 휑했다 ---
-  {type:'bench',x:1000,y:1330,w:90,h:24},
-  {type:'bench',x:1750,y:1330,w:90,h:24},
-  {type:'coffeeTable',x:1200,y:1330,w:64,h:40},
-  {type:'diningTable',x:1500,y:1080,w:200,h:64,solid:true},
-  {type:'chair',x:1520,y:1170,w:24,h:24},
-  {type:'chair',x:1620,y:1170,w:24,h:24},
-  {type:'plant',x:1900,y:1080,r:17},
-  {type:'plant',x:980,y:1450,r:14},
-  {type:'lamp',x:1350,y:1400,r:10},
-  {type:'rug',x:1050,y:1200,w:160,h:100,color:'#4a4438'},
-  {type:'sofa',x:1780,y:1150,w:100,h:42,solid:true}
-,
-  {type:'bed',x:30,y:380,w:90,h:150,solid:true},
-  {type:'nightstand',x:135,y:390,w:26,h:30},
-  {type:'note',x:132,y:378,w:22,h:14,text:'472',rot:-0.18},
-  {type:'rug',x:45,y:160,w:120,h:80,color:'#7a5a4a'},
-  {type:'plant',x:170,y:555,r:16},
-  {type:'closet',x:150,y:40,w:40,h:70,solid:true,isHidingSpot:true},
+  // --- 3. 가구 ---
+  const decor=[];
+  const placed=[];   // 겹침 방지용
+  function fits(x,y,w,h,pad){
+    const m=pad===undefined?26:pad;
+    if(x-m<T || y-m<T || x+w+m>WORLD_W-T || y+h+m>WORLD_H-T) return false;
+    for(const w2 of walls){
+      if(x-m < w2.x+w2.w && x+w+m > w2.x && y-m < w2.y+w2.h && y+h+m > w2.y) return false;
+    }
+    for(const q of placed){
+      if(x-16 < q.x+q.w && x+w+16 > q.x && y-16 < q.y+q.h && y+h+16 > q.y) return false;
+    }
+    return true;
+  }
+  function place(rm, type, w, h, opts){
+    for(let tries=0; tries<26; tries++){
+      const x = rm.x + 30 + rnd()*Math.max(1, rm.w-60-w);
+      const y = rm.y + 30 + rnd()*Math.max(1, rm.h-60-h);
+      if(!fits(x,y,w,h)) continue;
+      const d = Object.assign({type, x:Math.round(x), y:Math.round(y), w, h}, opts||{});
+      decor.push(d);
+      if(d.solid) placed.push({x, y, w, h});
+      return d;
+    }
+    return null;
+  }
+  function placeRound(rm, type, r){
+    for(let tries=0; tries<20; tries++){
+      const x = rm.x + 30 + rnd()*Math.max(1, rm.w-60);
+      const y = rm.y + 30 + rnd()*Math.max(1, rm.h-60);
+      if(!fits(x-r,y-r,r*2,r*2,12)) continue;
+      decor.push({type, x:Math.round(x), y:Math.round(y), r});
+      return true;
+    }
+    return false;
+  }
 
-  {type:'sofa',x:40,y:650,w:150,h:55,solid:true},
-  {type:'coffeeTable',x:230,y:672,w:64,h:40},
-  {type:'tv',x:340,y:625,w:70,h:14},
-  {type:'rug',x:40,y:730,w:170,h:100,color:'#5a6a56'},
+  const THEME_SET = {
+    bedroom: rm=>{
+      place(rm,'bed',90,150,{solid:true});
+      place(rm,'nightstand',26,28);
+      place(rm,'closet',40,68,{solid:true,isHidingSpot:true});
+      place(rm,'mirror',14,50);
+      place(rm,'rug',150,100,{color:'#4a3a3a'});
+      place(rm,'shoeRack',44,20);
+      placeRound(rm,'lamp',9);
+    },
+    study: rm=>{
+      place(rm,'desk',90,46,{solid:true});
+      place(rm,'deskChair',28,28);
+      place(rm,'bookshelf',46,110);
+      place(rm,'bookshelf',46,100);
+      place(rm,'closet',40,66,{solid:true,isHidingSpot:true});
+      place(rm,'rug',150,90,{color:'#3f4a52'});
+      placeRound(rm,'lamp',9);
+      placeRound(rm,'clock',11);
+    },
+    lounge: rm=>{
+      place(rm,'sofa',130,46,{solid:true});
+      place(rm,'coffeeTable',70,38);
+      place(rm,'tv',60,16);
+      place(rm,'rug',180,120,{color:'#4a4038'});
+      place(rm,'bookshelf',44,100);
+      placeRound(rm,'plant',15);
+      placeRound(rm,'lamp',10);
+    },
+    dining: rm=>{
+      place(rm,'diningTable',200,64,{solid:true});
+      for(let i=0;i<4;i++) place(rm,'chair',24,24);
+      place(rm,'kitchenCounter',120,34,{solid:true});
+      place(rm,'fridge',40,44,{solid:true});
+      place(rm,'stove',44,34);
+      place(rm,'sink',40,30);
+    },
+    storage: rm=>{
+      place(rm,'closet',40,70,{solid:true,isHidingSpot:true});
+      place(rm,'closet',38,64,{solid:true,isHidingSpot:true});
+      place(rm,'bookshelf',46,100);
+      place(rm,'mattress',80,50);
+      place(rm,'shoeRack',44,20);
+      placeRound(rm,'plant',13);
+    },
+    patio: rm=>{
+      place(rm,'bench',90,24);
+      place(rm,'bench',90,24);
+      place(rm,'coffeeTable',64,40);
+      place(rm,'sofa',100,42,{solid:true});
+      place(rm,'rug',160,100,{color:'#4a4438'});
+      placeRound(rm,'plant',16);
+      placeRound(rm,'plant',14);
+      placeRound(rm,'lamp',10);
+    }
+  };
+  for(const rm of rooms) THEME_SET[rm.theme](rm);
 
-  {type:'kitchenCounter',x:240,y:30,w:150,h:34,solid:true,hideable:true},
-  {type:'stove',x:260,y:34,w:34,h:26},
-  {type:'sink',x:340,y:34,w:34,h:26},
-  {type:'fridge',x:410,y:30,w:40,h:55,solid:true},
-  {type:'diningTable',x:330,y:260,w:90,h:60,solid:true,hideable:true},
-  {type:'chair',x:322,y:245,r:10},
-  {type:'chair',x:428,y:245,r:10},
-  {type:'chair',x:322,y:335,r:10},
-  {type:'chair',x:428,y:335,r:10},
-  {type:'plant',x:500,y:250,r:18},
+  // --- 4. 시작 지점 : 가장 구석 방의 빈 자리 ---
+  const cornerRoom = rooms[0];
+  let checkpoint = {x: cornerRoom.x+60, y: cornerRoom.y+60};
+  // 가구와 겹치지 않는 지점 찾기
+  const solidsTmp = walls.concat(decor.filter(d=>d.solid).map(d=>({x:d.x,y:d.y,w:d.w,h:d.h})));
+  function freeSpot(rm, pad){
+    const m=pad===undefined?26:pad;
+    for(let tries=0; tries<80; tries++){
+      const x = rm.x + 40 + rnd()*Math.max(1, rm.w-80);
+      const y = rm.y + 40 + rnd()*Math.max(1, rm.h-80);
+      let ok=true;
+      for(const w of solidsTmp){
+        if(x>w.x-m && x<w.x+w.w+m && y>w.y-m && y<w.y+w.h+m){ ok=false; break; }
+      }
+      if(ok) return {x:Math.round(x), y:Math.round(y)};
+    }
+    return {x:Math.round(rm.x+rm.w/2), y:Math.round(rm.y+rm.h/2)};
+  }
+  checkpoint = freeSpot(cornerRoom, 30);
 
-  {type:'desk',x:650,y:660,w:80,h:44,solid:true,hideable:true},
-  {type:'note',x:702,y:670,w:24,h:15,text:'1376',rot:0.14},
-  {type:'deskChair',x:695,y:715,r:11},
-  {type:'bookshelf',x:650,y:550,w:60,h:90},
-  {type:'lamp',x:820,y:660,r:8},
-  {type:'closet',x:860,y:660,w:40,h:70,solid:true,isHidingSpot:true},
+  // --- 5. 미션 5개 : 서로 다른 방에 ---
+  const code3 = [ri(0,9),ri(0,9),ri(0,9)];
+  const code4 = ''+ri(0,9)+ri(0,9)+ri(0,9)+ri(0,9);
+  const missionDefs = [
+    {id:'wire', label:'선 연결',      color:'#e8d060', puzzleType:'wires'},
+    {id:'card', label:'카드키 단말기', color:'#5ecbe8', puzzleType:'dial', target:code3},
+    {id:'cctv', label:'CCTV 해킹',    color:'#c586e8', puzzleType:'code', target:code4},
+    {id:'lock', label:'금고 락픽',    color:'#e89a5e', puzzleType:'lock'},
+    {id:'seq',  label:'배전반 복구',   color:'#6ee8b4', puzzleType:'seq'}
+  ];
+  // 시작 방을 제외하고 먼 방부터 배정
+  const candidates = rooms.slice(1).sort((a,b)=>{
+    const da=Math.hypot(a.x-checkpoint.x, a.y-checkpoint.y);
+    const db=Math.hypot(b.x-checkpoint.x, b.y-checkpoint.y);
+    return db-da;
+  });
+  const missions=[];
+  for(let i=0;i<missionDefs.length;i++){
+    const rm = candidates[i % candidates.length];
+    const spot = freeSpot(rm, 34);
+    missions.push(Object.assign({x:spot.x, y:spot.y, r:16, done:false}, missionDefs[i]));
+  }
+  // 코드 쪽지 2장 — 미션이 없는 방 우선
+  const noteRooms = rooms.filter(rm => !missions.some(m => m.x>rm.x && m.x<rm.x+rm.w && m.y>rm.y && m.y<rm.y+rm.h));
+  const nr = noteRooms.length ? noteRooms : rooms;
+  const n1 = freeSpot(nr[0], 26), n2 = freeSpot(nr[nr.length-1], 26);
+  decor.push({type:'note', x:n1.x, y:n1.y, text:code3.join('')});
+  decor.push({type:'note', x:n2.x, y:n2.y, text:code4});
 
-  {type:'tv',x:1340,y:190,w:16,h:70},
-  {type:'plant',x:1020,y:550,r:15},
-  {type:'bookshelf',x:1200,y:680,w:60,h:90},
-  {type:'rug',x:960,y:470,w:150,h:110,color:'#6a5a48'},
-  {type:'lamp',x:1180,y:500,r:8},
+  // --- 6. 경비 배치 ---
+  const enemyDefs=[];
+  const hairs=['#3a2a1e','#4a3a28','#333','#555','#2a2015','#5a4530'];
+  // 경로점이 벽·가구에 막히지 않는지 확인 (막히면 그 순찰로는 쓰지 않는다)
+  function clearPoint(x,y,m){
+    const pad = m===undefined?22:m;
+    if(x<T+pad || y<T+pad || x>WORLD_W-T-pad || y>WORLD_H-T-pad) return false;
+    for(const w of solidsTmp){
+      const nx=Math.max(w.x,Math.min(x,w.x+w.w));
+      const ny=Math.max(w.y,Math.min(y,w.y+w.h));
+      if(Math.hypot(x-nx,y-ny) < pad) return false;
+    }
+    return true;
+  }
+  function makeLoop(rm, inset){
+    const x0=Math.round(rm.x+inset), y0=Math.round(rm.y+inset);
+    const x1=Math.round(rm.x+rm.w-inset), y1=Math.round(rm.y+rm.h-inset);
+    if(x1-x0 < 90 || y1-y0 < 90) return null;
+    const path=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}];
+    for(const pt of path) if(!clearPoint(pt.x, pt.y)) return null;
+    return path;
+  }
 
-  // 동쪽 확장동 - 라운지(TV룸)
-  {type:'tv',x:1600,y:35,w:160,h:16},
-  {type:'sofa',x:1440,y:120,w:180,h:55,solid:true},
-  {type:'sofa',x:1700,y:120,w:180,h:55,solid:true},
-  {type:'lamp',x:1960,y:60,r:8},
+  // 순찰 15명 — 방마다 직사각형 순찰로 (여러 크기를 시도해 막히지 않는 걸 고른다)
+  let patrolMade=0;
+  const patrolRooms = rooms.slice().sort(()=> rnd()-0.5);
+  for(let round=0; round<8 && patrolMade<15; round++){
+    for(const rm of patrolRooms){
+      if(patrolMade>=15) break;
+      let path=null;
+      for(const inset of [58, 76, 96, 120, 46]){
+        path = makeLoop(rm, inset + rnd()*10);
+        if(path) break;
+      }
+      if(!path) continue;
+      const vet = rnd()<0.35;
+      enemyDefs.push({x:path[0].x, y:path[0].y, state:'patrol',
+        rank: vet?'veteran':'rookie', bandana: vet && rnd()<0.7,
+        hair: pick(hairs), path});
+      patrolMade++;
+    }
+  }
+  // 그래도 모자라면 시작 방 주변 통로를 도는 예비 순찰로
+  while(patrolMade < 15){
+    const rm = rooms[patrolMade % rooms.length];
+    const c = freeSpot(rm, 26);
+    enemyDefs.push({x:c.x, y:c.y, state:'patrol', rank:'rookie',
+      hair: pick(hairs), path:[{x:c.x,y:c.y}]});
+    patrolMade++;
+  }
+  // 정지 근무 15명 — 방 테마에 맞는 활동
+  const ACT = { bedroom:'sleep', study:'read', lounge:'tv', dining:'eat', storage:'chat', patio:'chat' };
+  let idleMade=0;
+  const idleRooms = rooms.slice().sort(()=> rnd()-0.5);
+  while(idleMade < 15){
+    for(const rm of idleRooms){
+      if(idleMade>=15) break;
+      const spot = freeSpot(rm, 30);
+      const act = ACT[rm.theme] || 'chat';
+      enemyDefs.push({x:spot.x, y:spot.y, angle: rnd()*Math.PI*2, state:'idle',
+        activity: act,
+        visionRange: act==='sleep' ? 0 : (act==='tv' ? 55 : 85),
+        visionAngle: act==='sleep' ? 0 : 70,
+        hair: pick(hairs), bandana: rnd()<0.25});
+      idleMade++;
+    }
+  }
+  // 경비견 3마리
+  let dogsMade=0;
+  for(let round=0; round<6 && dogsMade<3; round++){
+    for(let i=0;i<rooms.length && dogsMade<3;i++){
+      const rm = rooms[(i*2+1+round) % rooms.length];
+      let path=null;
+      for(const inset of [70, 92, 112]){ path = makeLoop(rm, inset); if(path) break; }
+      if(!path) continue;
+      enemyDefs.push({x:path[0].x, y:path[0].y, kind:'dog', state:'patrol',
+        hair:pick(hairs), path});
+      dogsMade++;
+    }
+  }
+  // CCTV 4대 — 방 모서리 벽면
+  for(let i=0;i<4;i++){
+    const rm = rooms[(i*3) % rooms.length];
+    const corner = i%4;
+    const cx = corner<2 ? rm.x+26 : rm.x+rm.w-26;
+    const cy = (corner%2===0) ? rm.y+26 : rm.y+rm.h-26;
+    const facing = Math.atan2((rm.y+rm.h/2)-cy, (rm.x+rm.w/2)-cx);
+    const spot = clearPoint(cx, cy, 14) ? {x:cx, y:cy} : freeSpot(rm, 16);
+    enemyDefs.push({x:Math.round(spot.x), y:Math.round(spot.y), kind:'cam', state:'idle',
+      angle:facing, camSweep:0.45+rnd()*0.3});
+  }
 
-  // 동쪽 확장동 - 침실2
-  {type:'bed',x:1580,y:680,w:90,h:150,solid:true},
-  {type:'nightstand',x:1685,y:690,w:26,h:30},
-  {type:'bookshelf',x:1900,y:560,w:60,h:90},
-  {type:'lamp',x:1450,y:900,r:8},
+  // --- 7. 환경 장치 ---
+  // 두꺼비집 1~2개 : 내리면 저택 전체가 정전된다
+  const breakers=[];
+  const brRooms = rooms.slice().sort(()=>rnd()-0.5).slice(0, ri(1,2));
+  for(const rm of brRooms){
+    const sp = freeSpot(rm, 28);
+    breakers.push({x:sp.x, y:sp.y, r:15, on:true});
+  }
+  // 경보기 : 방마다 1개. 부수면 그 주변에서는 비상벨이 울리지 않는다
+  const alarmPanels=[];
+  for(const rm of rooms){
+    const sp = freeSpot(rm, 26);
+    alarmPanels.push({x:sp.x, y:sp.y, r:13, alive:true, room:rm.theme});
+  }
 
-  // 남쪽 확장동 - 연회장
-  {type:'diningTable',x:150,y:1150,w:500,h:70,solid:true},
-  {type:'chair',x:220,y:1130,r:10},{type:'chair',x:340,y:1130,r:10},
-  {type:'chair',x:460,y:1130,r:10},{type:'chair',x:580,y:1130,r:10},
-  {type:'chair',x:300,y:1240,r:10},{type:'chair',x:500,y:1240,r:10},
-  {type:'kitchenCounter',x:40,y:1030,w:120,h:34,solid:true},
-  {type:'lamp',x:750,y:1400,r:8},
+  return { seed, walls, decor, checkpoint, missions, enemyDefs, rooms,
+           doors, vents, breakers, alarmPanels };
+}
 
-  // 남쪽 확장동 - 파티오
-  {type:'bench',x:1250,y:1230,w:80,h:20},
-  {type:'bench',x:1420,y:1230,w:80,h:20},
-  {type:'plant',x:1150,y:1450,r:18},
-  {type:'plant',x:1850,y:1080,r:18},
+/* 연결성 검증 — 시작 지점에서 모든 미션에 도달할 수 있어야 한다.
+   실패하면 다음 시드로 재생성한다. */
+function validateMap(map){
+  const CELL=40;
+  const gw=Math.ceil(WORLD_W/CELL), gh=Math.ceil(WORLD_H/CELL);
+  const solids = map.walls.concat(map.decor.filter(d=>d.solid).map(d=>({x:d.x,y:d.y,w:d.w,h:d.h})));
+  const grid=new Uint8Array(gw*gh);
+  for(let gy=0;gy<gh;gy++) for(let gx=0;gx<gw;gx++){
+    const cx=gx*CELL+CELL/2, cy=gy*CELL+CELL/2;
+    let ok=1;
+    for(const w of solids){
+      const nx=Math.max(w.x,Math.min(cx,w.x+w.w));
+      const ny=Math.max(w.y,Math.min(cy,w.y+w.h));
+      if(Math.hypot(cx-nx,cy-ny) < 17){ ok=0; break; }
+    }
+    grid[gy*gw+gx]=ok;
+  }
+  const idx=(x,y)=> Math.floor(y/CELL)*gw + Math.floor(x/CELL);
+  const seen=new Uint8Array(gw*gh);
+  const start=idx(map.checkpoint.x, map.checkpoint.y);
+  if(!grid[start]) return false;
+  const q=[start]; seen[start]=1;
+  while(q.length){
+    const i=q.pop(), cx=i%gw, cy=(i/gw)|0;
+    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+      if(!dx&&!dy)continue;
+      const nx=cx+dx, ny=cy+dy;
+      if(nx<0||ny<0||nx>=gw||ny>=gh) continue;
+      const ni=ny*gw+nx;
+      if(!grid[ni]||seen[ni]) continue;
+      seen[ni]=1; q.push(ni);
+    }
+  }
+  for(const m of map.missions){ if(!seen[idx(m.x,m.y)]) return false; }
+  let reach=0, walkable=0;
+  for(let i=0;i<grid.length;i++){ if(grid[i]){walkable++; if(seen[i]) reach++;} }
+  return reach/walkable > 0.80;   // 고립 구역이 20% 넘으면 실패
+}
 
-  // 추가 홈 데코
-  {type:'piano',x:1460,y:850,w:100,h:50,solid:true},
-  {type:'mattress',x:750,y:350,w:80,h:140},
-  {type:'mirror',x:190,y:200,w:8,h:56},
-  {type:'clock',x:300,y:20,r:11},
-  {type:'shoeRack',x:60,y:230,w:50,h:20},
-  {type:'clock',x:1950,y:40,r:11},
-  {type:'mirror',x:1960,y:700,w:8,h:56}
-];
+function buildMap(){
+  let seed;
+  try{
+    const daily = localStorage.getItem('stealthOps_dailyMode')==='1';
+    seed = daily ? todaySeed() : (Math.floor(Math.random()*1e9));
+  }catch(e){ seed = Math.floor(Math.random()*1e9); }
+  for(let attempt=0; attempt<24; attempt++){
+    const m = generateMap(seed + attempt*7919);
+    if(validateMap(m)) return m;
+  }
+  return generateMap(seed);   // 끝내 실패하면 마지막 것을 그대로 사용
+}
+
+const MAPGEN = buildMap();
+
+const walls = MAPGEN.walls.concat(
+  MAPGEN.vents.map(v=>Object.assign({ventForCrouch:true}, v))
+);
+
+const decor = MAPGEN.decor;
 /* 낮은 가구는 웅크린 상태에서 아래로 기어들어갈 수 있다.
    장롱·냉장고·피아노처럼 높은 가구는 제외. */
 const CROUCH_PASSABLE = new Set(['bed','desk','diningTable','sofa','kitchenCounter','coffeeTable','bench']);
@@ -618,43 +934,56 @@ const lamps = decor.filter(d=>d.type==='lamp');
 const hidingSpots = decor.filter(d=>d.isHidingSpot);
 const hideableFurn = decor.filter(d=>d.hideable);
 
-const checkpoint = {x:120,y:120};
-const missions = [
-  {id:'wire', x:1150,y:180, r:16, done:false, label:'선 연결', color:'#e8d060', puzzleType:'wires'},
-  {id:'card', x:500,y:900, r:16, done:false, label:'카드키 단말기', color:'#5ecbe8', puzzleType:'dial', target:[4,7,2]},
-  {id:'cctv', x:1250,y:850, r:16, done:false, label:'CCTV 해킹', color:'#c586e8', puzzleType:'code', target:'1376'},
-  {id:'lock', x:770,y:230, r:16, done:false, label:'금고 락픽', color:'#e89a5e', puzzleType:'lock'},
-  {id:'seq',  x:1300,y:1400, r:16, done:false, label:'배전반 복구', color:'#6ee8b4', puzzleType:'seq'}
-];
+const checkpoint = MAPGEN.checkpoint;
+const missions = MAPGEN.missions;
 let missionsComplete=false;
 let puzzleActive=null;
 
 let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0,
               firePose:0, recoil:0, under:null,
-              hp:100, maxHp:100, hurtTimer:0, regenDelay:0, stunTimer:0};
+              hp:100, maxHp:100, hurtTimer:0, regenDelay:0, stunTimer:0,
+              walkPhase:0, breathPhase:0};
 
 function makeGuard(opts){
   const rank = opts.rank || 'rookie';
   const state = opts.state || 'patrol';
+  const kind = opts.kind || 'guard';   // guard | dog | cam
   return {
-    x:opts.x, y:opts.y, r:12, angle: opts.angle!==undefined?opts.angle:0,
-    speed: state==='patrol' ? (rank==='veteran'?1.0:1.1) : 0.95,
+    x:opts.x, y:opts.y,
+    r: kind==='dog' ? 8 : (kind==='cam' ? 9 : 12),
+    angle: opts.angle!==undefined?opts.angle:0,
+    speed: kind==='cam' ? 0
+         : kind==='dog' ? 1.25
+         : (state==='patrol' ? (rank==='veteran'?0.85:0.92) : 0.80),
     state, prevState:state,
     path: opts.path || [], wp:0,
     detect:0,
-    visionRange: opts.visionRange!==undefined ? opts.visionRange : (rank==='veteran'?250:200),
-    visionAngle: opts.visionAngle!==undefined ? opts.visionAngle : (rank==='veteran'?60:45),
+    visionRange: opts.visionRange!==undefined ? opts.visionRange
+      : (kind==='dog' ? 130 : kind==='cam' ? 300 : (rank==='veteran'?250:200)),
+    visionAngle: opts.visionAngle!==undefined ? opts.visionAngle
+      : (kind==='dog' ? 70 : kind==='cam' ? 34 : (rank==='veteran'?60:45)),
     target:null, searchTimer:0, investigateTimer:0,
     hair: opts.hair || '#3a2a1e', bandana: !!opts.bandana,
     dieTimer:0, dieType:null, stepAccum:0,
+    /* 경비견: 작고 빠르며 시야는 짧지만 청각이 매우 예민하다.
+       CCTV: 움직이지 않고 좌우로 훑는다. 근접 처치가 불가능하다. */
+    ...(kind==='dog' ? {} : {}),
     idleSoundTimer:6+Math.random()*8,
-    rank, hearMul: rank==='veteran'?1.25:0.75,
+    kind,
+    commander: !!opts.commander,
+    camSweep: opts.camSweep || 0.55,        // CCTV 회전 폭(라디안)
+    camBase: opts.angle!==undefined?opts.angle:0,
+    camT: Math.random()*6.28,
+    barkCd: 0,
+    rank,
+    hearMul: kind==='dog' ? 2.6 : (rank==='veteran'?1.25:0.75),
     /* 계급별 내구도 — 한 발 즉사를 없애 사격에 판단이 들어가게 한다 */
-    hp:    opts.armored ? 3 : (rank==='veteran' ? 2 : 1),
-    maxHp: opts.armored ? 3 : (rank==='veteran' ? 2 : 1),
+    hp:    kind==='dog' ? 1 : kind==='cam' ? 1 : (opts.armored ? 3 : (rank==='veteran' ? 2 : 1)),
+    maxHp: kind==='dog' ? 1 : kind==='cam' ? 1 : (opts.armored ? 3 : (rank==='veteran' ? 2 : 1)),
     armored: !!opts.armored,
     hitFlash: 0,
-    weapon: opts.armored ? 'rifle' : (rank==='veteran' ? 'rifle' : 'taser'),
+    weapon: (kind==='dog'||kind==='cam') ? 'none'
+          : (opts.armored ? 'rifle' : (rank==='veteran' ? 'rifle' : 'taser')),
     fireCd: 1 + Math.random()*1.5,
     stunned:false, stunTimer:0,
     activity: opts.activity || null,
@@ -665,73 +994,27 @@ function makeGuard(opts){
     cautionTimer: 0, lastKnown: null,
     returnTimer: 0, stuckTimer: 0,
     navPath: null, navGoal: null, navStall: 0, navLastD: undefined, navLosCache: undefined,
-    navBlockT: 0, navGoalLastD: undefined, navForceT: 0
+    navBlockT: 0, navGoalLastD: undefined, navForceT: 0,
+    walkPhase: Math.random()*6.28, breathPhase: Math.random()*6.28,
+    losCache: undefined
   };
 }
 
-const enemies = [
-  // ---- 순찰 경비 5명 ----
-  makeGuard({x:350,y:440,state:'patrol',rank:'rookie',hair:'#3a2a1e',
-    path:[{x:250,y:440},{x:250,y:560},{x:560,y:560},{x:560,y:440}], buddyId:1}),
-  makeGuard({x:1050,y:300,state:'patrol',rank:'veteran',bandana:true,hair:'#555',
-    path:[{x:1050,y:120},{x:1300,y:120},{x:1300,y:600},{x:1050,y:600}], buddyId:0}),
-  makeGuard({x:1450,y:60,state:'patrol',rank:'rookie',hair:'#4a3a28',
-    path:[{x:1450,y:60},{x:1450,y:450},{x:1950,y:450},{x:1950,y:60}]}),
-  makeGuard({x:100,y:1100,state:'patrol',rank:'veteran',bandana:true,hair:'#333',
-    path:[{x:100,y:1100},{x:100,y:1450},{x:850,y:1450},{x:850,y:1100}]}),
-  makeGuard({x:950,y:1050,state:'patrol',rank:'rookie',hair:'#2a2015',
-    path:[{x:950,y:1050},{x:950,y:1450},{x:1950,y:1450},{x:1950,y:1050}]}),
-
-  // ---- 라운지에서 TV 보는 4명 ----
-  makeGuard({x:1500,y:180,angle:-Math.PI/2,state:'idle',activity:'tv',visionRange:55,visionAngle:70,hair:'#3a2a1e'}),
-  makeGuard({x:1620,y:180,angle:-Math.PI/2,state:'idle',activity:'tv',visionRange:55,visionAngle:70,hair:'#4a3a28'}),
-  makeGuard({x:1740,y:180,angle:-Math.PI/2,state:'idle',activity:'tv',visionRange:55,visionAngle:70,bandana:true}),
-  makeGuard({x:1860,y:180,angle:-Math.PI/2,state:'idle',activity:'tv',visionRange:55,visionAngle:70,hair:'#555'}),
-
-  // ---- 침실2에서 자는 1명 ----
-  makeGuard({x:1625,y:740,angle:Math.PI/2,state:'idle',activity:'sleep',visionRange:15,visionAngle:40,hair:'#333'}),
-
-  // ---- 서재에서 책 읽는 2명 ----
-  makeGuard({x:700,y:150,angle:0,state:'idle',activity:'read',visionRange:60,visionAngle:70,hair:'#4a3a28'}),
-  makeGuard({x:830,y:230,angle:Math.PI,state:'idle',activity:'read',visionRange:60,visionAngle:70,bandana:true}),
-
-  // ---- 연회장에서 밥 먹는 6명 ----
-  makeGuard({x:220,y:1130,angle:Math.PI/2,state:'idle',activity:'eat',visionRange:50,visionAngle:80,hair:'#3a2a1e'}),
-  makeGuard({x:340,y:1130,angle:Math.PI/2,state:'idle',activity:'eat',visionRange:50,visionAngle:80,hair:'#555'}),
-  makeGuard({x:460,y:1130,angle:Math.PI/2,state:'idle',activity:'eat',visionRange:50,visionAngle:80,bandana:true}),
-  makeGuard({x:580,y:1130,angle:Math.PI/2,state:'idle',activity:'eat',visionRange:50,visionAngle:80,hair:'#4a3a28'}),
-  makeGuard({x:300,y:1240,angle:-Math.PI/2,state:'idle',activity:'eat',visionRange:50,visionAngle:80,hair:'#333'}),
-  makeGuard({x:500,y:1240,angle:-Math.PI/2,state:'idle',activity:'eat',visionRange:50,visionAngle:80,bandana:true}),
-
-  // ---- 파티오에서 잡담하는 2명 ----
-  makeGuard({x:1300,y:1200,angle:0.4,state:'idle',activity:'chat',visionRange:75,visionAngle:90,hair:'#3a2a1e'}),
-  makeGuard({x:1450,y:1200,angle:-2.6,state:'idle',activity:'chat',visionRange:75,visionAngle:90,hair:'#555'}),
-
-  /* ===== v2.2 추가 순찰 10명 (총 순찰 15 + 정지 15 = 30명) ===== */
-  makeGuard({x:120,y:180,state:'patrol',rank:'rookie',hair:'#3a2a1e',
-    path:[{x:120,y:330},{x:170,y:330},{x:170,y:180},{x:120,y:180}]}),
-  makeGuard({x:300,y:230,state:'patrol',rank:'rookie',hair:'#4a3a28',
-    path:[{x:300,y:230},{x:300,y:560},{x:420,y:560},{x:420,y:230}]}),
-  makeGuard({x:480,y:120,state:'patrol',rank:'veteran',bandana:true,hair:'#555',
-    path:[{x:480,y:120},{x:560,y:120},{x:560,y:400},{x:480,y:400}]}),
-  makeGuard({x:700,y:480,state:'patrol',rank:'rookie',hair:'#2a2015',
-    path:[{x:700,y:480},{x:860,y:480},{x:860,y:560},{x:700,y:560}]}),
-  makeGuard({x:960,y:60,state:'patrol',rank:'veteran',bandana:true,hair:'#333',
-    path:[{x:960,y:60},{x:960,y:440},{x:1180,y:440},{x:1180,y:60}]}),
-  makeGuard({x:1000,y:560,state:'patrol',rank:'rookie',hair:'#4a3a28',
-    path:[{x:1000,y:560},{x:1000,y:950},{x:1300,y:950},{x:1300,y:560}]}),
-  makeGuard({x:1450,y:600,state:'patrol',rank:'veteran',bandana:true,hair:'#555',
-    path:[{x:1450,y:600},{x:1450,y:950},{x:1900,y:950},{x:1900,y:600}]}),
-  makeGuard({x:230,y:730,state:'patrol',rank:'rookie',hair:'#3a2a1e',
-    path:[{x:230,y:730},{x:820,y:730},{x:820,y:870},{x:230,y:870}]}),
-  makeGuard({x:250,y:960,state:'patrol',rank:'rookie',hair:'#333',
-    path:[{x:250,y:960},{x:820,y:960},{x:820,y:1000},{x:250,y:1000}]}),
-  makeGuard({x:1000,y:1040,state:'patrol',rank:'veteran',bandana:true,hair:'#3a2a1e',
-    path:[{x:1000,y:1040},{x:1900,y:1040},{x:1900,y:1420},{x:1000,y:1420}]})
-];
+const enemies = MAPGEN.enemyDefs.map(makeGuard);
+// 지휘관 지정 — 순찰 베테랑 중 2명
+(function assignCommanders(){
+  const vets = enemies.filter(e=>e.kind==='guard' && e.rank==='veteran' && e.homeState!=='idle');
+  for(let i=0;i<Math.min(2,vets.length);i++){
+    const v = vets[Math.floor(i*vets.length/2)];
+    v.commander = true;
+    v.hp = v.maxHp = 3;
+    v.visionRange *= 1.15;
+  }
+})();
 
 /* === 초기 랜덤화 & 버디 편성 === */
 let initialEnemyCount = 0;
+let enemyRoster = null;      // 레벨 재시작 시 복구할 초기 명단
 (function initRandomize(){
   const d3 = [0,0,0].map(()=>Math.floor(Math.random()*10));
   const c4 = Array.from({length:4},()=>Math.floor(Math.random()*10)).join('');
@@ -760,6 +1043,8 @@ let initialEnemyCount = 0;
     patrols[k+1].e.buddyId = patrols[k].i;
   }
   initialEnemyCount = enemies.length;
+  // 초기 명단을 얕은 복사로 보관 (path는 공유해도 변형하지 않는다)
+  enemyRoster = enemies.map(e=>Object.assign({}, e));
 })();
 
 let corpses = [];
@@ -800,11 +1085,14 @@ function spawnReinforcements(dt){
   if(!alarmRaised) return;
   reinfTimer -= dt;
   if(reinfTimer > 0) return;
-  reinfTimer = REINF_INTERVAL;
+  // 지휘관이 살아 있으면 증원이 빨리 들어온다 — 지휘관 제거에 의미를 준다
+  const cmdAlive = enemies.some(e=>e.commander && e.state!=='dying');
+  reinfTimer = cmdAlive ? REINF_INTERVAL : REINF_INTERVAL*2.2;
   const have = reinforcementCount();
-  if(have >= REINF_MAX) return;
+  const cap = cmdAlive ? REINF_MAX : Math.round(REINF_MAX*0.45);
+  if(have >= cap) return;
   const target = alarmPoint || {x:player.x, y:player.y};
-  for(let i=0; i<REINF_PER_WAVE && reinforcementCount()<REINF_MAX; i++){
+  for(let i=0; i<REINF_PER_WAVE && reinforcementCount()<cap; i++){
     const sp = findSpawnPoint();
     if(!sp) break;
     const g = makeGuard({
@@ -865,6 +1153,22 @@ function clearReinforcements(){
    순찰 인원 전원이 목격 지점으로 향하고,
    앉아있는 근무자는 자리를 지키되 일어나 경계 태세로 전환한다. */
 function raiseAlarm(x, y, reason){
+  // 그 구역 경보기가 전부 파괴되었으면 전체 경보가 울리지 않는다.
+  // 근처 경비만 개별적으로 반응한다.
+  if(!alarmCovered(x, y)){
+    if(!alarmRaised){
+      showMsg('경보기가 파괴된 구역 — 비상벨이 울리지 않았습니다');
+      for(const en of enemies){
+        if(en.stunned || en.state==='dying' || en.kind==='cam') continue;
+        if(Math.hypot(en.x-x, en.y-y) > 420) continue;
+        if(en.state==='search') continue;
+        en.state='investigate';
+        en.target={x:x+(Math.random()-0.5)*90, y:y+(Math.random()-0.5)*90};
+        en.investigateTimer=6;
+      }
+      return;
+    }
+  }
   const first = !alarmRaised;
   alarmRaised = true;
   alarmTimer = 45;
@@ -992,10 +1296,258 @@ const DMG_TASER  = 6;            // 테이저 피해(주 효과는 기절)
 const TASER_STUN = 1.3;          // 테이저 기절 시간
 let bloodDecals = [];            // 바닥 혈흔
 
+/* ===================== 환경 상호작용 =====================
+   두꺼비집 · 문 잠그기 · 환풍구 · 경보기 파괴.
+   "도망친다"에서 "판을 짠다"로 넘어가게 하는 장치들. */
+const doors       = MAPGEN.doors.map(d=>Object.assign({}, d, {locked:false, hp:0, breaking:0}));
+const breakers    = MAPGEN.breakers.map(b=>Object.assign({}, b));
+const alarmPanels = MAPGEN.alarmPanels.map(a=>Object.assign({}, a));
+const vents       = MAPGEN.vents;
+
+const BLACKOUT_TIME  = 26;   // 정전 지속(초)
+const BREAKER_RESET  = 45;   // 두꺼비집 재사용 대기
+const DOOR_BREAK_TIME= 11;   // 적이 잠긴 문을 부수는 데 걸리는 시간
+const ALARM_PANEL_R  = 720;  // 경보기 유효 반경
+let blackout = 0;            // 남은 정전 시간
+
+function updateEnvironment(dt){
+  if(blackout>0) blackout -= dt;
+  for(const b of breakers) if(b.cooldown>0) b.cooldown -= dt;
+
+  for(const d of doors){
+    if(!d.locked) { d.breaking=0; continue; }
+    // 잠긴 문 앞에 적이 붙어 있으면 부수기 시작
+    let attacker=false;
+    const cx=d.x+d.w/2, cy=d.y+d.h/2;
+    for(const en of enemies){
+      if(en.state==='dying'||en.kind==='cam') continue;
+      if(Math.hypot(en.x-cx, en.y-cy) < 46){ attacker=true; break; }
+    }
+    if(attacker){
+      d.breaking += dt;
+      if(d.breaking > DOOR_BREAK_TIME){
+        d.locked=false; d.breaking=0; d.broken=true;
+        rebuildDoorSolids();
+        spawnText(cx, cy-20, '문이 부서졌다!', '#ff8a6a');
+        if(audioCtx){ playNoise(0.16, 0.4, 260, 'lowpass', panOf(cx)); }
+      }
+    } else {
+      d.breaking = Math.max(0, d.breaking - dt*0.5);
+    }
+  }
+}
+
+/* 잠긴 문은 실제 충돌체로 편입해야 적을 막는다.
+   solidRects는 const 배열이므로 내용만 갈아끼우고 격자를 다시 만든다. */
+let doorSolids = [];
+function rebuildDoorSolids(){
+  // 이전 문 충돌체 제거
+  for(const ds of doorSolids){
+    const i = solidRects.indexOf(ds);
+    if(i>=0) solidRects.splice(i,1);
+  }
+  doorSolids = [];
+  for(const d of doors){
+    if(!d.locked) continue;
+    const ds = {x:d.x, y:d.y, w:d.w, h:d.h, isDoor:true};
+    doorSolids.push(ds);
+    solidRects.push(ds);
+  }
+  buildCollisionGrid();
+  buildNavGrid();
+  for(const en of enemies){ en.navPath=null; en.navLosCache=undefined; }
+}
+
+function toggleDoor(d){
+  if(d.broken){ showMsg('부서진 문은 잠글 수 없습니다'); return; }
+  d.locked = !d.locked;
+  d.breaking = 0;
+  rebuildDoorSolids();
+  showMsg(d.locked ? '문을 잠갔습니다 (적이 부수는 데 약 11초)' : '문을 열었습니다');
+  if(audioCtx){
+    playTone(d.locked?420:300, 0.07, 0.16, 'square', panOf(d.x));
+    setTimeout(()=>playTone(d.locked?300:420, 0.06, 0.12, 'square', panOf(d.x)), 80);
+  }
+  vibrate(20);
+}
+
+function pullBreaker(b){
+  if(b.cooldown>0){ showMsg('차단기 과열 — '+Math.ceil(b.cooldown)+'초 후 가능'); return; }
+  b.cooldown = BREAKER_RESET;
+  blackout = BLACKOUT_TIME;
+  showMsg('⚡ 정전 — 경비 시야가 크게 줄어듭니다 ('+BLACKOUT_TIME+'초)');
+  spawnText(b.x, b.y-24, '차단기 내림', '#8fd0ff');
+  if(audioCtx){
+    playNoise(0.10, 0.30, 900, 'bandpass', panOf(b.x));
+    playTone(140, 0.22, 0.26, 'sawtooth', panOf(b.x));
+    setTimeout(()=>playNoise(0.5, 0.10, 220, 'lowpass', panOf(b.x)), 120);
+  }
+  vibrate([30,40,30]);
+}
+
+function smashPanel(a){
+  a.alive = false;
+  spawnText(a.x, a.y-22, '경보기 파괴', '#ff8a6a');
+  showMsg('경보기 파괴 — 이 구역은 비상벨이 울리지 않습니다');
+  for(let i=0;i<10;i++) particles.push({
+    x:a.x, y:a.y, vx:(Math.random()-0.5)*3, vy:(Math.random()-0.5)*3,
+    life:24, color:'#c0c8d0'
+  });
+  if(audioCtx){
+    playNoise(0.09, 0.34, 3200, 'highpass', panOf(a.x));
+    playNoise(0.14, 0.22, 700, 'bandpass', panOf(a.x));
+  }
+  vibrate(30);
+}
+
+/* 그 지점을 담당하는 경보기가 살아 있는지 */
+function alarmCovered(x, y){
+  for(const a of alarmPanels){
+    if(a.alive && Math.hypot(a.x-x, a.y-y) < ALARM_PANEL_R) return true;
+  }
+  return false;
+}
+
+/* ===== 플레이 기록 =====
+   테스트 기간에만 얻을 수 있는 데이터를 남긴다.
+   어디서 죽는지 / 어느 미션에서 막히는지 / 언제 그만두는지가 핵심.
+   서버 없이 localStorage에 쌓고 결과창에서 복사할 수 있게 한다. */
+const ANALYTICS_KEY = 'stealthOps_analytics';
+let analytics = null;
+let sessionStart = 0;
+
+function loadAnalytics(){
+  try{
+    analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
+  }catch(e){ analytics = null; }
+  if(!analytics || typeof analytics!=='object'){
+    analytics = { version:'3.1.0.0', sessions:0, totalPlaySec:0,
+                  deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
+  }
+  if(!analytics.deaths) analytics.deaths=[];
+  if(!analytics.missionTimes) analytics.missionTimes={};
+  if(!analytics.runs) analytics.runs=[];
+}
+function saveAnalytics(){
+  try{ localStorage.setItem(ANALYTICS_KEY, JSON.stringify(analytics)); }catch(e){}
+}
+function logDeath(cause){
+  if(!analytics) return;
+  analytics.deaths.push({
+    x: Math.round(player.x), y: Math.round(player.y),
+    cause: cause || 'unknown',
+    tSec: Math.round((performance.now()-stats.startTime)/1000),
+    missions: missions.filter(m=>m.done).length,
+    armed: guardsArmed ? 1 : 0,
+    enemies: enemies.length
+  });
+  if(analytics.deaths.length>200) analytics.deaths.splice(0, analytics.deaths.length-200);
+  saveAnalytics();
+}
+function logMission(id){
+  if(!analytics) return;
+  const sec = Math.round((performance.now()-stats.startTime)/1000);
+  if(!analytics.missionTimes[id]) analytics.missionTimes[id]=[];
+  analytics.missionTimes[id].push(sec);
+  saveAnalytics();
+}
+function logRunEnd(cleared){
+  if(!analytics) return;
+  analytics.runs.push({
+    cleared: cleared?1:0,
+    sec: Math.round((performance.now()-stats.startTime)/1000),
+    missions: missions.filter(m=>m.done).length,
+    deaths: stats.caughtCount,
+    detections: stats.detections,
+    kills: stats.knifeKills+stats.chokeKills+stats.shotKills,
+    armed: guardsArmed?1:0
+  });
+  if(analytics.runs.length>100) analytics.runs.splice(0, analytics.runs.length-100);
+  saveAnalytics();
+}
+/* 세션 종료(이탈) 시점 기록 — 어디서 그만두는지가 이탈 분석의 핵심 */
+function markSeen(){
+  if(!analytics) return;
+  analytics.lastSeen = Date.now();
+  analytics.totalPlaySec = Math.round((analytics.totalPlaySec||0) +
+    (sessionStart ? (performance.now()-sessionStart)/1000 : 0));
+  sessionStart = performance.now();
+  saveAnalytics();
+}
+function analyticsSummary(){
+  if(!analytics) return '(기록 없음)';
+  const L=[];
+  L.push('=== Stealth Ops 플레이 기록 ===');
+  L.push('빌드 '+analytics.version+' / 세션 '+analytics.sessions+'회 / 누적 '+
+    Math.round(analytics.totalPlaySec/60)+'분');
+  L.push('');
+  L.push('[판수 '+analytics.runs.length+']');
+  if(analytics.runs.length){
+    const cl=analytics.runs.filter(r=>r.cleared).length;
+    const avgM=(analytics.runs.reduce((a,r)=>a+r.missions,0)/analytics.runs.length).toFixed(1);
+    const avgD=(analytics.runs.reduce((a,r)=>a+r.deaths,0)/analytics.runs.length).toFixed(1);
+    L.push('  클리어 '+cl+'회 / 평균 미션 '+avgM+'개 / 평균 사망 '+avgD+'회');
+  }
+  L.push('');
+  L.push('[사망 지점 '+analytics.deaths.length+'건]');
+  for(const d of analytics.deaths.slice(-15)){
+    L.push('  ('+d.x+','+d.y+') '+d.tSec+'s 미션'+d.missions+'/5 '+
+      (d.armed?'교전':'잠입')+' 적'+d.enemies+' ['+d.cause+']');
+  }
+  L.push('');
+  L.push('[미션별 소요시간(초)]');
+  for(const id in analytics.missionTimes){
+    const a=analytics.missionTimes[id];
+    const avg=Math.round(a.reduce((x,y)=>x+y,0)/a.length);
+    L.push('  '+id+' : '+a.length+'회, 평균 '+avg+'s');
+  }
+  return L.join('\n');
+}
+
 /* ===================== 경로탐색 (A*) =====================
    맵을 40px 격자로 나눠 통행 가능 여부를 미리 계산해 둔다.
    적마다 매 프레임 계산하면 130명에서 감당이 안 되므로
    (1) 경로는 재사용하고 (2) 프레임당 계산 횟수에 상한을 둔다. */
+/* ===== 충돌 공간 분할 =====
+   solidRects는 고정이므로 한 번만 격자에 담아두고,
+   질의 시 해당 위치 주변 칸의 사각형만 검사한다.
+   적 137명이 매 프레임 이동 판정을 하므로 이 최적화가 크게 작용한다. */
+const COL_CELL = 200;
+let colW=0, colH=0, colGrid=null;
+function buildCollisionGrid(){
+  colW = Math.ceil(WORLD_W/COL_CELL);
+  colH = Math.ceil(WORLD_H/COL_CELL);
+  colGrid = new Array(colW*colH);
+  for(let i=0;i<colGrid.length;i++) colGrid[i]=[];
+  for(const w of solidRects){
+    const x0=Math.max(0, Math.floor(w.x/COL_CELL));
+    const y0=Math.max(0, Math.floor(w.y/COL_CELL));
+    const x1=Math.min(colW-1, Math.floor((w.x+w.w)/COL_CELL));
+    const y1=Math.min(colH-1, Math.floor((w.y+w.h)/COL_CELL));
+    for(let gy=y0; gy<=y1; gy++)
+      for(let gx=x0; gx<=x1; gx++)
+        colGrid[gy*colW+gx].push(w);
+  }
+}
+/* 주어진 원과 겹칠 수 있는 사각형만 돌려준다 */
+function solidsNear(x, y, r){
+  if(!colGrid) buildCollisionGrid();
+  const gx=Math.floor(x/COL_CELL), gy=Math.floor(y/COL_CELL);
+  if(gx<0||gy<0||gx>=colW||gy>=colH) return solidRects;
+  const cell = colGrid[gy*colW+gx];
+  // 반지름이 칸 경계를 넘으면 이웃 칸도 포함
+  const ex = (x - gx*COL_CELL), ey = (y - gy*COL_CELL);
+  if(ex>r && ey>r && ex<COL_CELL-r && ey<COL_CELL-r) return cell;
+  const out = cell.slice();
+  for(let dy=-1; dy<=1; dy++) for(let dx=-1; dx<=1; dx++){
+    if(!dx && !dy) continue;
+    const nx=gx+dx, ny=gy+dy;
+    if(nx<0||ny<0||nx>=colW||ny>=colH) continue;
+    for(const w of colGrid[ny*colW+nx]) if(out.indexOf(w)<0) out.push(w);
+  }
+  return out;
+}
+
 const NAV_CELL = 40;
 let navW = 0, navH = 0, navGrid = null;
 
@@ -1103,6 +1655,7 @@ function findPath(sx, sy, tx, ty){
 }
 
 /* 프레임당 탐색 횟수 상한 — 130명이 동시에 요청해도 부하가 튀지 않게 */
+buildCollisionGrid();
 buildNavGrid();   // 상수 선언이 끝난 뒤 여기서 생성
 
 let navBudget = 0;
@@ -1346,28 +1899,34 @@ function playScream(volScale){
   playNoise(0.22, 0.14*volScale, 900, 'bandpass');
 }
 function playSuppressedShot(volScale, pan){
-  /* 소음기 제거 — 실탄 총성.
-     "타앙" = 날카로운 크랙(순간 고압) + 묵직한 저역 + 실내 잔향(꼬리) */
+  /* 실탄 총성 "탕".
+     이전 버전은 78Hz 서브베이스가 중심이라 "두웅"에 가까웠다.
+     '탕'은 저역이 아니라 (1) 아주 빠른 상승 (2) 짧은 감쇠에서 나온다.
+     게다가 폰 스피커는 200Hz 아래를 거의 못 내므로,
+     에너지를 중고역으로 올려야 실제로 더 크고 날카롭게 들린다. */
   const v = volScale;
 
-  // 1) 크랙 — 총알이 공기를 찢는 순간. 아주 짧고 밝다
-  playNoise(0.018, 0.85*v, 5200, 'highpass', pan);
-  playNoise(0.030, 0.70*v, 2400, 'bandpass', pan);
+  // 1) 어택 — 극히 짧고 밝은 파열음. '탕'의 첫 자음에 해당
+  playNoise(0.012, 1.00*v, 7000, 'highpass', pan);
+  playNoise(0.022, 0.85*v, 3600, 'bandpass', pan);
 
-  // 2) 몸통 — 저역이 실려야 '묵직'해진다
-  playTone(78,  0.30, 0.78*v, 'sine',     pan);
-  playTone(124, 0.22, 0.52*v, 'triangle', pan);
-  playNoise(0.16, 0.60*v, 300, 'lowpass',  pan);
+  // 2) 크랙 몸통 — 중고역. 폰 스피커에서 가장 잘 들리는 대역
+  playNoise(0.05, 0.78*v, 1250, 'bandpass', pan);
+  playTone(430, 0.055, 0.42*v, 'square',   pan);
 
-  // 3) 잔향 꼬리 — 실내에서 벽에 부딪혀 돌아오는 소리
-  setTimeout(()=>playNoise(0.22, 0.20*v, 900,  'lowpass', pan),  60);
-  setTimeout(()=>playNoise(0.30, 0.11*v, 620,  'lowpass', pan), 150);
+  // 3) 펀치 — 짧게. 길면 '두웅'이 된다
+  playTone(210, 0.075, 0.55*v, 'triangle', pan);
+  playTone(95,  0.085, 0.34*v, 'sine',     pan);
 
-  // 4) 슬라이드 왕복
+  // 4) 짧은 실내 잔향 — 꼬리를 길게 끌지 않는다
+  setTimeout(()=>playNoise(0.09, 0.20*v, 1500, 'bandpass', pan), 42);
+  setTimeout(()=>playNoise(0.13, 0.10*v, 800,  'lowpass',  pan), 105);
+
+  // 5) 슬라이드 왕복
   setTimeout(()=>{
-    playTone(1900, 0.03, 0.12*v, 'square', pan);
-    playNoise(0.04, 0.14*v, 5600, 'highpass', pan);
-  }, 95);
+    playTone(2100, 0.025, 0.11*v, 'square', pan);
+    playNoise(0.035, 0.13*v, 6000, 'highpass', pan);
+  }, 88);
 }
 function playGearOff(){
   if(!audioCtx) return;
@@ -1402,10 +1961,12 @@ function playTaserSound(pan){
 function playEnemyShot(pan, vol){
   if(!audioCtx) return;
   const v=vol===undefined?0.5:vol;
-  playNoise(0.016, 0.5*v, 4600, 'highpass', pan);
-  playTone(92, 0.22, 0.5*v, 'sine', pan);
-  playNoise(0.13, 0.4*v, 320, 'lowpass', pan);
-  setTimeout(()=>playNoise(0.18, 0.14*v, 800, 'lowpass', pan), 70);
+  // 플레이어 총성과 같은 계열이되 조금 더 멀고 둔하게
+  playNoise(0.012, 0.8*v, 6000, 'highpass', pan);
+  playNoise(0.045, 0.62*v, 1100, 'bandpass', pan);
+  playTone(190, 0.07, 0.44*v, 'triangle', pan);
+  playTone(88,  0.08, 0.26*v, 'sine', pan);
+  setTimeout(()=>playNoise(0.11, 0.16*v, 900, 'bandpass', pan), 45);
 }
 function playPlayerHurt(){
   if(!audioCtx) return;
@@ -1454,8 +2015,27 @@ function updateBGM(){
 /* ===================== 시작 화면 / 모달 ===================== */
 let gameStarted=false;
 const startOverlay=document.getElementById('startOverlay');
+(function showMapInfo(){
+  const el=document.getElementById('btnStart');
+  if(!el || !el.parentNode) return;
+  const info=document.createElement('div');
+  info.style.cssText='font-size:11px;color:#8a939b;margin-top:8px;text-align:center;';
+  let daily=false;
+  try{ daily = localStorage.getItem('stealthOps_dailyMode')==='1'; }catch(e){}
+  info.textContent = (daily?'매일 챌린지 · ':'') + '맵 시드 ' + MAPGEN.seed +
+                     ' · 방 ' + MAPGEN.rooms.length + '개';
+  el.parentNode.insertBefore(info, el.nextSibling);
+})();
+
 document.getElementById('btnStart').addEventListener('click',()=>{
   layoutButtons();
+  loadAnalytics();
+  analytics.sessions=(analytics.sessions||0)+1;
+  sessionStart=performance.now();
+  saveAnalytics();
+  let tutDone=false;
+  try{ tutDone = localStorage.getItem('stealthOps_tutDone')==='1'; }catch(e){}
+  if(!tutDone) setTimeout(startTutorial, 600);
   document.getElementById('btnNVG').style.display='flex';
   document.getElementById('btnThermal').style.display='flex';
   initAudio();
@@ -1499,6 +2079,20 @@ document.getElementById('closeSettings').addEventListener('click',()=>{document.
     settings.showCones = diff().cones;
     return diff().label;
   });
+  // 매일 챌린지 — 날짜를 시드로 쓰면 전 세계가 같은 저택을 플레이한다
+  let daily=false;
+  try{ daily = localStorage.getItem('stealthOps_dailyMode')==='1'; }catch(e){}
+  mkRow('매일 챌린지', daily?'ON':'OFF', ()=>{
+    daily=!daily;
+    try{ localStorage.setItem('stealthOps_dailyMode', daily?'1':'0'); }catch(e){}
+    showMsg('다음 새로고침부터 적용됩니다');
+    return daily?'ON':'OFF';
+  });
+  mkRow('현재 맵 시드', String(MAPGEN.seed), ()=>{
+    showMsg('시드 '+MAPGEN.seed+' — 새로고침하면 새 저택이 생성됩니다');
+    return String(MAPGEN.seed);
+  });
+
   mkRow('조작 방식', settings.controlMode==='dpad'?'원형패드':'드래그', ()=>{
     settings.controlMode = settings.controlMode==='dpad' ? 'joy' : 'dpad';
     layoutDpad();
@@ -1885,7 +2479,7 @@ function updatePlayer(dt){
     let blocked=false;
     // 가구 안에 있는 동안은 손을 떼도 웅크린 상태로 취급해야 빠져나올 수 있다
     const effCrouch = crouchHeld || !!player.under;
-    for(const w of solidRects){
+    for(const w of solidsNear(nx,ny,player.r)){
       if(w.ventForCrouch && effCrouch) continue;
       if(w.crouchPassable && effCrouch) continue;      // 웅크리면 낮은 가구 통과
       if(circleRectCollide(nx,ny,player.r,w)){blocked=true;break;}
@@ -1901,11 +2495,13 @@ function updatePlayer(dt){
   }
   // 가구에 걸쳐 있으면 버튼을 떼도 일어설 수 없다 (끼임 방지)
   player.crouch = crouchHeld || !!player.under;
+  player.breathPhase += dt*(sprinting?4.2:2.0);
 
   resolveStuck();
 
   if(moved>0){
     player.stepAccum += moved;
+    player.walkPhase += moved*0.34;
     const stepDist = player.crouch ? 46 : (sprinting ? 30 : 26);
     if(player.stepAccum >= stepDist){
       player.stepAccum = 0;
@@ -1915,6 +2511,80 @@ function updatePlayer(dt){
     }
   }
 }
+
+/* ===================== 튜토리얼 ===================== */
+let tutorialOn = false;
+let tutorialStep = 0;
+let tutStartPos = null;
+const TUTORIAL = [
+  { t:'이동',        d:'왼쪽 원형 패드를 끌어 움직이세요. 살짝 밀면 천천히, 끝까지 밀면 빠르게 움직입니다.',
+    ok:()=> tutStartPos && Math.hypot(player.x-tutStartPos.x, player.y-tutStartPos.y) > 160 },
+  { t:'웅크리기',    d:'웅크리기 버튼을 누르세요. 발소리가 작아지고 적 시야에 잘 띄지 않습니다.',
+    ok:()=> player.crouch },
+  { t:'가구 아래 숨기',
+    d:'웅크린 채로 침대·책상·소파 안으로 들어가 보세요. 실루엣만 보이고 거의 발각되지 않습니다.',
+    ok:()=> !!player.under },
+  { t:'달리기',      d:'달리기 버튼을 누르세요. 빠르지만 발소리가 크고 스태미나를 소모합니다.',
+    ok:()=> sprinting },
+  { t:'동전으로 유인',
+    d:'유인 버튼을 길게 눌러 조준하고, 손을 떼서 동전을 던지세요. 주변 경비가 소리 쪽으로 몰려옵니다.',
+    ok:()=> tutFlags.decoy },
+  { t:'은밀 처치',   d:'적의 뒤로 다가가면 사격 버튼이 "처치"로 바뀝니다. 정면이면 기습, 뒤면 조르기입니다.',
+    ok:()=> tutFlags.takedown },
+  { t:'미션 수행',   d:'화면 가장자리 화살표를 따라 미션 지점으로 가서 상호작용 버튼을 누르세요. 미션은 모두 5개입니다.',
+    ok:()=> missions.some(m=>m.done) },
+  { t:'사격은 최후의 수단',
+    d:'총에는 소음기가 없습니다. 한 발이라도 쏘면 비상벨이 울리고 경비 전원이 무장해 반격합니다.',
+    ok:()=> guardsArmed || tutFlags.shot }
+];
+const tutFlags = { decoy:false, takedown:false, shot:false };
+
+function startTutorial(){
+  tutorialOn = true;
+  tutorialStep = 0;
+  tutFlags.decoy = tutFlags.takedown = tutFlags.shot = false;
+  tutStartPos = {x:player.x, y:player.y};
+  document.getElementById('tutBox').style.display='block';
+  document.getElementById('tutSkip').style.display='block';
+  renderTutorial();
+}
+function endTutorial(){
+  tutorialOn = false;
+  document.getElementById('tutBox').style.display='none';
+  document.getElementById('tutSkip').style.display='none';
+  try{ localStorage.setItem('stealthOps_tutDone','1'); }catch(e){}
+}
+function renderTutorial(){
+  const s = TUTORIAL[tutorialStep];
+  if(!s) return;
+  document.getElementById('tutStep').textContent = '단계 '+(tutorialStep+1)+' / '+TUTORIAL.length;
+  document.getElementById('tutTitle').textContent = s.t;
+  document.getElementById('tutDesc').textContent = s.d;
+  document.getElementById('tutFill').style.width = (tutorialStep/TUTORIAL.length*100)+'%';
+}
+function updateTutorial(){
+  if(!tutorialOn) return;
+  const s = TUTORIAL[tutorialStep];
+  if(!s) return;
+  let done=false;
+  try{ done = !!s.ok(); }catch(e){ done=false; }
+  if(!done) return;
+  playTone(880, 0.09, 0.12, 'triangle');
+  setTimeout(()=>playTone(1320, 0.12, 0.11, 'triangle'), 90);
+  spawnText(player.x, player.y-40, s.t+' 완료', '#6ee8b4');
+  tutorialStep++;
+  if(tutorialStep >= TUTORIAL.length){
+    showMsg('튜토리얼 완료 — 남은 미션을 수행하세요');
+    endTutorial();
+    return;
+  }
+  if(tutorialStep===1) tutStartPos={x:player.x,y:player.y};
+  renderTutorial();
+}
+document.getElementById('tutSkip').addEventListener('click', ()=>{
+  endTutorial();
+  showMsg('튜토리얼을 건너뛰었습니다');
+});
 
 /* ===================== 적 AI ===================== */
 /* 수색 실패 후 곧장 평상시로 돌아가지 않고 '경계' 단계를 거침 */
@@ -1958,6 +2628,12 @@ function updateRollCall(dt){
 }
 
 function updateEnemy(en,dt){
+  /* CCTV는 이동하지 않고 좌우로 시야를 훑는다.
+     상태 머신 대부분이 필요 없으므로 별도로 처리한다. */
+  if(en.kind==='cam'){
+    updateCamera(en,dt);
+    return;
+  }
   // 끼임 해제는 비용이 있으므로 적마다 8프레임에 한 번씩 분산해서 검사
   if(en.state!=='dying' && ((navTick + (en._id|0)) % 8) === 0) resolveEnemyStuck(en);
   if(en.state==='dying')return;
@@ -2016,11 +2692,11 @@ function updateEnemy(en,dt){
     const dx=goal.x-en.x, dy=goal.y-en.y, d=Math.hypot(dx,dy);
     if(d>1){
       en.angle=Math.atan2(dy,dx);
-      let mvSpd = en.speed * (en.state==='search'?1.35:(en.state==='caution'?1.2:1));
-      if(alarmRaised) mvSpd *= 1.3;      // 비상 상황에선 전체적으로 빠르게 움직인다
+      let mvSpd = en.speed * (en.state==='search'?1.18:(en.state==='caution'?1.12:1));
+      if(alarmRaised) mvSpd *= 1.15;     // 비상 상황에선 조금 빨라진다
       const ux=dx/d, uy=dy/d;
       const free=(tx,ty)=>{
-        for(const w of solidRects){ if(circleRectCollide(tx,ty,en.r,w)) return false; }
+        for(const w of solidsNear(tx,ty,en.r)){ if(circleRectCollide(tx,ty,en.r,w)) return false; }
         return true;
       };
       // 정면이 막히면 벽을 타고 미끄러진다 (경로탐색이 없으므로 최소한의 회피)
@@ -2045,6 +2721,10 @@ function updateEnemy(en,dt){
   } else { en.stuckTimer = 0; }
   en._lx=en.x; en._ly=en.y;
 
+  if(en.barkCd>0) en.barkCd-=dt;
+  if(en.kind==='dog' && en.state==='search') dogBark(en);
+  en.walkPhase += moved*(en.kind==='dog'?0.55:0.34);
+  en.breathPhase += dt*1.8;
   if(moved>0){
     en.stepAccum += moved;
     if(en.stepAccum >= 22){
@@ -2099,6 +2779,7 @@ function updateEnemy(en,dt){
     const dist=Math.hypot(dx,dy);
     const ang=Math.atan2(dy,dx);
     let visRange=en.visionRange*diff().vision;
+    if(blackout>0) visRange*=0.42;     // 정전 — 손전등만으로는 멀리 못 본다
     if(alarmRaised) visRange*=1.15;    // 경계 태세라 더 멀리 본다
     if(player.crouch) visRange*=0.55;
     if(player.under)  visRange*=0.32;  // 가구 아래에 들어가 있으면 거의 안 보인다
@@ -2106,7 +2787,14 @@ function updateEnemy(en,dt){
     if(en.state==='caution') visRange*=1.2;
 
     const inCone = dist<visRange && angleDiff(ang,en.angle) < (en.visionAngle*Math.PI/180);
-    const seen = inCone && hasLineOfSight(en.x,en.y,player.x,player.y);
+    let seen;
+    if(!inCone){
+      seen = false; en.losCache = false;
+    } else if(en.losCache === undefined || ((navTick + (en._id|0)) % 3) === 0){
+      seen = en.losCache = hasLineOfSight(en.x,en.y,player.x,player.y);
+    } else {
+      seen = en.losCache;
+    }
 
     if(seen){
       en.detect = Math.min(100, en.detect + (dist<60?4:1.6)*diff().detect);
@@ -2130,7 +2818,8 @@ function updateEnemy(en,dt){
       en.lastKnown={x:player.x,y:player.y};
       en.searchTimer=6;
       vibrate(80);
-      raiseAlarm(player.x, player.y, '침입자 목격');
+      if(en.kind==='dog'){ dogBark(en); raiseAlarm(player.x, player.y, '경비견 발견'); }
+      else raiseAlarm(player.x, player.y, '침입자 목격');
     }
     if(en.state==='search'){
       if(seen){en.target={x:player.x,y:player.y};en.searchTimer=6;}
@@ -2149,11 +2838,13 @@ function updateEnemy(en,dt){
       /* 교전 판정은 평상시 시야와 분리한다.
          추격 중이면 이미 위치를 알고 있으므로, 총구를 향할 수 있고(넓은 각도)
          엄폐물에 가리지 않았으면 쏜다. */
-      const engAng = Math.atan2(player.y-en.y, player.x-en.x);
-      const canEngage = dist<range && dist>26
-        && angleDiff(engAng, en.angle) < 75*Math.PI/180
-        && hasLineOfSight(en.x,en.y,player.x,player.y);
-      if(en.fireCd<=0 && canEngage){
+      let canEngage = false;
+      if(en.fireCd<=0 && dist<range && dist>26){
+        const engAng = Math.atan2(player.y-en.y, player.x-en.x);
+        canEngage = angleDiff(engAng, en.angle) < 75*Math.PI/180
+                 && hasLineOfSight(en.x,en.y,player.x,player.y);
+      }
+      if(canEngage){
         en.fireCd = en.weapon==='rifle' ? (1.5+Math.random()*1.4)
                                         : (2.2+Math.random()*1.6);
         enemyAttack(en, dist);
@@ -2204,7 +2895,7 @@ function updateBullets(dt){
 function resolveEnemyStuck(en){
   for(let iter=0; iter<3; iter++){
     let hit=null;
-    for(const w of solidRects){
+    for(const w of solidsNear(en.x, en.y, en.r)){
       if(circleRectCollide(en.x, en.y, en.r, w)){ hit=w; break; }
     }
     if(!hit) return;
@@ -2300,6 +2991,59 @@ function updateAbilities(dt){
   thBtn.style.background  = thermalActive ? 'rgba(255,140,90,0.34)' : 'rgba(255,255,255,0.13)';
 }
 
+/* ===== CCTV =====
+   고정 설치. 좌우로 훑다가 플레이어를 발견하면 즉시 경보를 울린다.
+   처치할 수 없고 총으로 부숴야 한다 — 그런데 총을 쏘면 그것대로 경보다. */
+function updateCamera(en,dt){
+  if(en.state==='dying'){
+    en.dieTimer-=dt;
+    return;
+  }
+  en.camT += dt*0.55;
+  en.angle = en.camBase + Math.sin(en.camT)*en.camSweep;
+  en.walkPhase = 0;
+
+  if(player.hiddenIn || caught) { en.detect=Math.max(0,en.detect-1.2); return; }
+  const dx=player.x-en.x, dy=player.y-en.y;
+  const dist=Math.hypot(dx,dy);
+  let visRange=en.visionRange*diff().vision;
+  if(blackout>0) return;                 // 정전 중엔 카메라가 아예 죽는다
+  if(player.crouch) visRange*=0.72;      // 카메라는 위에서 보므로 웅크림 효과가 덜하다
+  if(player.under)  visRange*=0.25;
+  const ang=Math.atan2(dy,dx);
+  const inCone = dist<visRange && angleDiff(ang,en.angle) < (en.visionAngle*Math.PI/180);
+  const seen = inCone && hasLineOfSight(en.x,en.y,player.x,player.y);
+  if(seen){
+    en.detect = Math.min(100, en.detect + 2.4*diff().detect);
+    if(en.detect>=100 && !en.camAlerted){
+      en.camAlerted = true;
+      stats.detections++;
+      spawnText(en.x,en.y-22,'● REC','#ff5050');
+      raiseAlarm(player.x, player.y, 'CCTV 감지');
+    }
+  } else {
+    en.detect = Math.max(0, en.detect-1.0);
+    if(en.detect<40) en.camAlerted=false;
+  }
+}
+
+/* ===== 경비견 =====
+   짖어서 주변에 알린다. 물리적 위협보다 '들키게 만드는' 역할. */
+function dogBark(en){
+  if(en.barkCd>0) return;
+  en.barkCd = 3.0;
+  spawnText(en.x,en.y-20,'컹! 컹!','#ffd08a');
+  if(audioCtx){
+    const pan=panOf(en.x);
+    for(let i=0;i<2;i++) setTimeout(()=>{
+      if(document.hidden||paused) return;
+      playNoise(0.07, 0.34, 900, 'bandpass', pan);
+      playTone(320, 0.09, 0.22, 'sawtooth', pan);
+    }, i*190);
+  }
+  checkNoiseHearing(en.x, en.y, 620);   // 짖는 소리가 멀리 퍼진다
+}
+
 /* 적의 공격 — 소총은 피해, 테이저는 기절이 주 효과 */
 function enemyAttack(en, dist){
   const pan = panOf(en.x);
@@ -2348,6 +3092,7 @@ function triggerCaught(byDamage){
   if(caught)return;
   caught=true; execTimer=1.6;
   stats.caughtCount++;
+  logDeath(byDamage ? 'shot' : (player.stunTimer>0 ? 'taser_capture' : 'capture'));
   if(byDamage){
     spawnBlood(player.x, player.y, Math.random()*Math.PI*2, 24, true);
     document.querySelector('#execOverlay h2') &&
@@ -2400,6 +3145,22 @@ function closeDeathMenu(){
 function restartLevel(){
   for(const m of missions){ m.done=false; }
   missionsComplete=false;
+  // 처치된 적까지 전부 복구한다 (증원은 clearReinforcements가 정리)
+  if(enemyRoster){
+    enemies.length = 0;
+    for(const src of enemyRoster){
+      const e = Object.assign({}, src);
+      e.state = e.homeState;
+      e.x = e.homeX; e.y = e.homeY; e.angle = e.homeAngle;
+      e.hp = e.maxHp;
+      e.detect = 0; e.target = null; e.navPath = null; e.navGoal = null;
+      e.stunned = false; e.stunTimer = 0; e.dieTimer = 0; e.dieType = null;
+      e.searchTimer = 0; e.investigateTimer = 0; e.cautionTimer = 0;
+      e.hitFlash = 0; e.camAlerted = false; e.barkCd = 0;
+      e.wp = 0; e.lastKnown = null; e.mmGhost = null;
+      enemies.push(e);
+    }
+  }
   corpses.length=0; clouds.length=0; bullets.length=0; decoys.length=0;
   particles.length=0; textParticles.length=0;
   for(const d of decor){ if(d.hidingSpot) d.occupied=false; }
@@ -2407,6 +3168,11 @@ function restartLevel(){
     en.buddyAlertDone=false; en.buddyMissTimer=0; en.returnTimer=0; en.stuckTimer=0;
   }
   ammo.smoke = GRENADE_MAX; ammo.stun = GRENADE_MAX;   // 레벨 재시작에서만 보충
+  blackout = 0;
+  for(const b of breakers){ b.cooldown = 0; }
+  for(const a of alarmPanels){ a.alive = true; }
+  for(const d of doors){ d.locked=false; d.broken=false; d.breaking=0; }
+  rebuildDoorSolids();
   guardsArmed = false;                                  // 무장 지시도 해제
   escapePhase = false; escapeShown = false;
   stats.startTime = performance.now();
@@ -2426,6 +3192,7 @@ document.getElementById('pauseResume').addEventListener('click',()=>{
 /* ===== 백그라운드 전환 처리 ===== */
 document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){
+    markSeen();                     // 이탈 시점 기록
     suspendAudio();                 // 사이렌·BGM 포함 모든 소리 정지
     if(gameStarted && !caught && !puzzleActive){
       paused=true;
@@ -2469,6 +3236,7 @@ function spawnText(x,y,text,color){
 }
 
 function showResultScreen(){
+  logRunEnd(true);
   const elapsed = Math.floor((performance.now()-stats.startTime)/1000);
   const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
   const ss = String(elapsed%60).padStart(2,'0');
@@ -2512,7 +3280,25 @@ function showResultScreen(){
     '<b style="color:#ffcf6e">챌린지</b><br>'+ chLines +
     '<hr style="border-color:#3a3a30;margin:10px 0">'+
     '평가: '+'★'.repeat(stars)+'☆'.repeat(3-stars)+
-    bestLine;
+    bestLine +
+    '<hr style="border-color:#3a3a30;margin:10px 0">' +
+    '<div id="copyStats" style="padding:9px;border-radius:6px;background:#2a3038;' +
+    'border:1px solid #59636d;color:#cfd6dd;font-size:12px;cursor:pointer;">' +
+    '플레이 기록 복사 (테스트용)</div>';
+  setTimeout(()=>{
+    const cs=document.getElementById('copyStats');
+    if(!cs) return;
+    cs.addEventListener('click',()=>{
+      const txt=analyticsSummary();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(()=>{ cs.textContent='복사됨 — 붙여넣기로 전달하세요'; })
+          .catch(()=>{ cs.textContent='복사 실패 — 콘솔에 출력했습니다'; console.log(txt); });
+      } else {
+        console.log(txt);
+        cs.textContent='콘솔에 출력했습니다';
+      }
+    });
+  }, 60);
   document.getElementById('resultModal').style.display='flex';
 }
 
@@ -2525,6 +3311,7 @@ function handleDecoy(){
   decoys.push({x:hx,y:hy,life:40});
   for(let i=0;i<8;i++)particles.push({x:hx,y:hy,vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,life:24,color:'#e8d060'});
   playCoin(panOf(hx));
+  tutFlags.decoy = true;
   const lured = decoyLure(hx,hy);
   showMsg(lured>1 ? ('동전 짤랑 — '+lured+'명이 몰려온다!') : '유인용 소음 발생 (동전 짤랑)');
 }
@@ -2596,6 +3383,7 @@ function handleFire(){
   magAmmo--;
   if(magAmmo===0) startReload();          // 마지막 탄 발사 후 자동 재장전
   guardsArmed = true;                     // 총성을 들은 순간 경비도 무장한다
+  tutFlags.shot = true;
 
   fireCooldown = Math.max(fireCooldown, FIRE_INTERVAL);
   const m=muzzle();
@@ -2631,6 +3419,11 @@ function handleFire(){
     spawnBlood(best.x, best.y, player.angle, best.hp<=0 ? 18 : 10, best.hp<=0);
 
     if(best.hp<=0){
+      if(best.commander){
+        showMsg('지휘관 제거 — 지원 병력이 줄어듭니다');
+        spawnText(best.x,best.y-40,'지휘관 제거','#ffcf6e');
+      }
+      if(best.kind==='cam') showMsg('CCTV 파괴');
       best.state='dying';
       best.dieType='shot';
       best.dieTimer=0.3; best.dieTotal=0.3;
@@ -2734,6 +3527,7 @@ function takedownTarget(){
   let best=null, bestD=48;
   for(const en of enemies){
     if(en.state==='dying' || en.stunned) continue;
+    if(en.kind==='cam') continue;          // 카메라는 맨손으로 어쩔 수 없다
     const d=Math.hypot(player.x-en.x, player.y-en.y);
     if(d<bestD){ bestD=d; best=en; }
   }
@@ -2755,6 +3549,22 @@ function handleAction(){
       openPuzzle(m);
       return;
     }
+  }
+
+  // --- 환경 장치 ---
+  for(const b of breakers){
+    if(Math.hypot(player.x-b.x, player.y-b.y) < 46){ pullBreaker(b); return; }
+  }
+  for(const a of alarmPanels){
+    if(a.alive && Math.hypot(player.x-a.x, player.y-a.y) < 42){ smashPanel(a); return; }
+  }
+  {
+    let best=null, bd=64;
+    for(const d of doors){
+      const dd=Math.hypot(player.x-(d.x+d.w/2), player.y-(d.y+d.h/2));
+      if(dd<bd){ bd=dd; best=d; }
+    }
+    if(best){ toggleDoor(best); return; }
   }
 
   if(tryHideCorpse())return;
@@ -2783,6 +3593,7 @@ function doTakedown(){
         showMsg('은밀 조르기 처치');
         stats.chokeKills++;
       }
+      tutFlags.takedown = true;
       slowmo = 0.55;              // 킬캠: 잠깐 시간이 느려짐
       shakeAmt = Math.max(shakeAmt, 5);
       vibrate(30);
@@ -2982,6 +3793,7 @@ function completePuzzle(){
   for(let i=0;i<14;i++){
     particles.push({x:m.x,y:m.y,vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,life:35,color:m.color});
   }
+  logMission(m.id);
   spawnText(m.x,m.y-20, m.label+' 완료','#ffe27a');
   showMsg(m.label+' 완료!');
   if(missions.every(mm=>mm.done) && !escapePhase && !missionsComplete){
@@ -3118,6 +3930,32 @@ function rimLight(radius,alpha){
   ctx.restore();
 }
 
+/* 위에서 본 인체를 표현하는 공통 부품들.
+   탑다운이라 몸통은 원에 가깝지만, 어깨선·팔·발이 보이면
+   방향과 동작이 훨씬 잘 읽힌다. */
+function drawLegs(phase, r, col, dark, spread){
+  // 발은 몸통 뒤쪽에서 좌우로 번갈아 나온다
+  const sw = Math.sin(phase)*r*0.42;
+  const sp = spread===undefined ? r*0.46 : spread;
+  for(const side of [-1,1]){
+    const off = side>0 ? sw : -sw;
+    ctx.save();
+    ctx.translate(-r*0.16 + off*0.55, side*sp);
+    ctx.fillStyle = dark;
+    ctx.beginPath(); ctx.ellipse(0,0, r*0.40, r*0.24, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = col;
+    ctx.beginPath(); ctx.ellipse(r*0.08,0, r*0.30, r*0.19, 0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+}
+function drawShoulders(r, c1, c2){
+  // 진행 방향과 수직인 타원 = 어깨선
+  ctx.fillStyle = c2;
+  ctx.beginPath(); ctx.ellipse(-r*0.06, 0, r*0.62, r*0.94, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = c1;
+  ctx.beginPath(); ctx.ellipse(-r*0.02, 0, r*0.52, r*0.82, 0, 0, 7); ctx.fill();
+}
+
 function drawPlayerSprite(crouch){
   const bob = crouch ? -2 : 0;
   ctx.save();
@@ -3162,6 +4000,15 @@ function drawPlayerSprite(crouch){
     ctx.beginPath();ctx.ellipse(-6,10,6,5,0,0,7);ctx.fill();
   }
 
+  // --- 다리 (몸통보다 아래 레이어) ---
+  const wp = player.walkPhase;
+  drawLegs(wp, player.r, crouch?'#2e4438':'#41564a', '#161f1a', crouch?player.r*0.34:player.r*0.46);
+
+  // --- 어깨 ---
+  drawShoulders(player.r,
+    crouch?'#40614f':'#54705f',
+    crouch?'#26382d':'#33463a');
+
   ctx.fillStyle = crouch
     ? radialShade(player.r,'#4e6f5c','#2b4438','#0e1712')   // 웅크림: 더 어둡고 푸른 톤
     : radialShade(player.r,'#6a8478','#3f5148','#161c18');
@@ -3183,6 +4030,28 @@ function drawPlayerSprite(crouch){
   ctx.beginPath();ctx.ellipse(8.3,-4,1.6,1.3,0,0,7);ctx.fill();
   ctx.beginPath();ctx.ellipse(8.3,4,1.6,1.3,0,0,7);ctx.fill();
 
+  // --- 반대쪽 팔 (총을 안 든 손) : 걸을 때 앞뒤로 흔들린다 ---
+  {
+    const sw = Math.sin(wp+Math.PI)*3.2;
+    ctx.fillStyle='#2a3a30';
+    ctx.save();
+    ctx.translate(2+sw*0.5, -player.r*0.72);
+    ctx.rotate(-0.25 + sw*0.05);
+    ctx.fillRect(0,-1.7, 9, 3.4);
+    ctx.fillStyle='#1a241e';
+    ctx.beginPath(); ctx.arc(9.5,0, 2.0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  // --- 등에 멘 장비 (배낭) ---
+  ctx.fillStyle='#2b3830';
+  ctx.beginPath(); ctx.ellipse(-player.r*0.58, 0, player.r*0.30, player.r*0.52, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=1; ctx.stroke();
+  // 벨트 파우치 2개
+  ctx.fillStyle='#3d4c42';
+  ctx.beginPath(); ctx.ellipse(-1, -player.r*0.82, 2.4, 1.7, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-1,  player.r*0.82, 2.4, 1.7, 0, 0, 7); ctx.fill();
+
   if(crouch){
     // 발밑 점선 링 — 웅크린 상태임을 항상 알려주는 표식
     ctx.save();
@@ -3198,27 +4067,186 @@ function drawPlayerSprite(crouch){
   ctx.restore();
 }
 
-function drawEnemySprite(en, alpha){
+/* ===== 경비견 =====
+   위에서 보면 몸통은 길쭉한 타원, 네 다리가 교차로 움직이고 꼬리가 흔들린다. */
+function drawDogSprite(en, alpha){
+  const r=en.r, wp=en.walkPhase, alert=en.state==='search';
   ctx.save();
   ctx.globalAlpha = alpha!==undefined?alpha:1;
 
-  ctx.fillStyle='#222';
-  ctx.fillRect(8,-2,16,4);
+  // 꼬리 — 경계 중엔 빠르게 흔든다
+  const tw = Math.sin(en.breathPhase*(alert?7:2.6))*0.55;
+  ctx.strokeStyle = en.hair; ctx.lineWidth=2.4; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(-r*1.05, 0);
+  ctx.quadraticCurveTo(-r*1.7, tw*r*0.7, -r*2.1, tw*r*1.5);
+  ctx.stroke();
 
-  const c1 = en.state==='search' ? '#d68a8a' : '#a89878';
-  const c2 = en.state==='search' ? '#a04848' : '#7d6a50';
-  const c3 = en.state==='search' ? '#4a1c1c' : '#332a1c';
-  ctx.fillStyle = radialShade(en.r, c1,c2,c3);
-  ctx.beginPath();ctx.arc(0,0,en.r,0,7);ctx.fill();
+  // 네 다리 (앞뒤 교차)
+  for(const [fx,ph] of [[r*0.55,0],[-r*0.55,Math.PI]]){
+    for(const side of [-1,1]){
+      const sw=Math.sin(wp+ph+(side>0?0:Math.PI))*r*0.42;
+      ctx.fillStyle='#2a2118';
+      ctx.beginPath();
+      ctx.ellipse(fx+sw, side*r*0.62, r*0.26, r*0.17, 0, 0, 7);
+      ctx.fill();
+    }
+  }
+
+  // 몸통 — 진행 방향으로 길쭉하게
+  ctx.fillStyle = radialShade(r, alert?'#a06a5a':en.hair, '#4a3a2a', '#241c14');
+  ctx.beginPath(); ctx.ellipse(0,0, r*1.28, r*0.78, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.45)'; ctx.lineWidth=1.1; ctx.stroke();
+
+  // 목덜미
+  ctx.fillStyle='rgba(0,0,0,0.18)';
+  ctx.beginPath(); ctx.ellipse(r*0.55,0, r*0.34, r*0.6, 0, 0, 7); ctx.fill();
+
+  // 머리 + 주둥이
+  ctx.fillStyle = radialShade(r*0.62, alert?'#b07a66':en.hair, '#553f2c', '#2a2018');
+  ctx.beginPath(); ctx.arc(r*0.95, 0, r*0.58, 0, 7); ctx.fill();
+  ctx.fillStyle='#3a2c1e';
+  ctx.beginPath(); ctx.ellipse(r*1.42, 0, r*0.34, r*0.22, 0, 0, 7); ctx.fill();
+  // 귀
+  ctx.fillStyle='#2e2318';
+  for(const side of [-1,1]){
+    ctx.beginPath();
+    ctx.ellipse(r*0.78, side*r*0.48, r*0.20, r*0.28, side*0.5, 0, 7);
+    ctx.fill();
+  }
+  // 눈
+  ctx.fillStyle = alert ? '#ff6a4a' : '#d8c060';
+  ctx.beginPath(); ctx.arc(r*1.16, -r*0.22, 1.5, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(r*1.16,  r*0.22, 1.5, 0, 7); ctx.fill();
+
+  // 목줄
+  ctx.strokeStyle='#8a3030'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(r*0.52, 0, r*0.52, -1.1, 1.1); ctx.stroke();
+
+  if(en.stunned){ ctx.font='bold 11px sans-serif'; ctx.textAlign='center'; ctx.fillText('💫',0,-16); }
+  ctx.restore();
+}
+
+/* ===== CCTV =====
+   천장 설치라 위에서 보면 브래킷 + 본체 + 렌즈. 움직이는 건 본체뿐. */
+function drawCameraSprite(en, alpha){
+  const r=en.r;
+  ctx.save();
+  ctx.globalAlpha = alpha!==undefined?alpha:1;
+
+  // 벽 브래킷 (회전하지 않는 부분이므로 각도를 상쇄)
+  ctx.save();
+  ctx.rotate(-en.angle + en.camBase);
+  ctx.fillStyle='#4a5158';
+  ctx.beginPath(); ctx.arc(0,0, r*0.55, 0, 7); ctx.fill();
+  ctx.strokeStyle='#2a3038'; ctx.lineWidth=1.2; ctx.stroke();
+  ctx.restore();
+
+  // 본체
+  ctx.fillStyle='#3a4149';
+  ctx.beginPath();
+  ctx.moveTo(-r*0.3,-r*0.5); ctx.lineTo(r*1.1,-r*0.36);
+  ctx.lineTo(r*1.1, r*0.36); ctx.lineTo(-r*0.3, r*0.5);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#20262c'; ctx.lineWidth=1.1; ctx.stroke();
+
+  // 렌즈
+  const hot = en.detect>50;
+  ctx.fillStyle='#12161a';
+  ctx.beginPath(); ctx.arc(r*1.12, 0, r*0.34, 0, 7); ctx.fill();
+  ctx.fillStyle = hot ? 'rgba(255,90,90,0.9)' : 'rgba(120,200,255,0.75)';
+  ctx.beginPath(); ctx.arc(r*1.12, 0, r*0.17, 0, 7); ctx.fill();
+
+  // 동작 표시등 — 감지 중엔 빨갛게 점멸
+  const blink = hot ? (Math.sin(performance.now()/90)>0) : true;
+  if(blink){
+    ctx.fillStyle = hot ? '#ff3030' : '#5ee87a';
+    ctx.beginPath(); ctx.arc(-r*0.05, -r*0.42, 1.5, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawEnemySprite(en, alpha){
+  if(en.kind==='dog'){ drawDogSprite(en, alpha); return; }
+  if(en.kind==='cam'){ drawCameraSprite(en, alpha); return; }
+  ctx.save();
+  ctx.globalAlpha = alpha!==undefined?alpha:1;
+
+  const alert = en.state==='search';
+  const r = en.r;
+  const wp = en.walkPhase;
+
+  // --- 다리 ---
+  drawLegs(wp, r, alert?'#6a4a4a':'#5a4c38', '#241d14');
+
+  // --- 어깨 ---
+  drawShoulders(r,
+    alert?'#8f5a5a':'#8a7a5c',
+    alert?'#5f3434':'#5c4f3a');
+
+  // --- 양팔 : 걸을 때 반대 위상으로 흔들린다 ---
+  for(const side of [-1,1]){
+    const sw = Math.sin(wp + (side>0?0:Math.PI))*2.8;
+    ctx.save();
+    ctx.translate(1+sw*0.45, side*r*0.74);
+    ctx.rotate(side*0.18 + sw*0.04);
+    ctx.fillStyle = alert?'#6b3f3f':'#5f5340';
+    ctx.fillRect(0,-1.7, 8.5, 3.4);
+    ctx.fillStyle = alert?'#4a2626':'#3e3527';
+    ctx.beginPath(); ctx.arc(9,0, 2.0, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  // --- 들고 있는 무기 (무장 상태에서만 보인다) ---
+  if(guardsArmed && !en.stunned && en.state!=='dying'){
+    if(en.weapon==='rifle'){
+      ctx.fillStyle='#22252a';
+      ctx.fillRect(6,-1.6, 19, 3.2);            // 총열
+      ctx.fillRect(3, 1.0, 7, 2.6);             // 개머리판
+      ctx.fillStyle='#3a3f46';
+      ctx.fillRect(13,-2.6, 4, 1.4);            // 조준경
+    } else {
+      ctx.fillStyle='#2a2f38';
+      ctx.fillRect(7,-1.4, 9, 2.8);             // 테이저 본체
+      ctx.fillStyle='#5ecbe8';
+      ctx.fillRect(16,-0.8, 3, 1.6);            // 전극
+    }
+  } else {
+    ctx.fillStyle='#222';
+    ctx.fillRect(8,-2,14,4);                    // 비무장 시엔 손전등
+    ctx.fillStyle='rgba(255,225,150,0.5)';
+    ctx.beginPath(); ctx.arc(22.5,0,2.2,0,7); ctx.fill();
+  }
+
+  // --- 몸통 ---
+  const c1 = alert ? '#d68a8a' : '#a89878';
+  const c2 = alert ? '#a04848' : '#7d6a50';
+  const c3 = alert ? '#4a1c1c' : '#332a1c';
+  ctx.fillStyle = radialShade(r, c1,c2,c3);
+  ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();
   ctx.strokeStyle='#221c12';ctx.lineWidth=1.3;ctx.stroke();
-  rimLight(en.r,0.35);
+  rimLight(r,0.35);
 
-  ctx.fillStyle=radialShade(en.r*0.68,'#b0a284','#8f8065','#4a4030');
-  ctx.beginPath();ctx.arc(0,0,en.r*0.68,0,7);ctx.fill();
+  // --- 방탄 조끼 ---
+  if(en.armored){
+    ctx.fillStyle='rgba(40,48,58,0.92)';
+    ctx.beginPath(); ctx.ellipse(-r*0.05, 0, r*0.66, r*0.86, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle='rgba(120,140,160,0.55)'; ctx.lineWidth=1.1; ctx.stroke();
+    // 가슴 판 이음선
+    ctx.strokeStyle='rgba(90,105,120,0.7)';
+    ctx.beginPath(); ctx.moveTo(-r*0.45,0); ctx.lineTo(r*0.5,0); ctx.stroke();
+  }
+
+  // --- 머리 ---
+  ctx.fillStyle=radialShade(r*0.68,'#b0a284','#8f8065','#4a4030');
+  ctx.beginPath();ctx.arc(0,0,r*0.68,0,7);ctx.fill();
 
   if(en.bandana){
     ctx.fillStyle='#4a4a4a';
-    ctx.beginPath();ctx.arc(0,0,en.r*0.7,Math.PI*0.15,Math.PI*1.85);ctx.fill();
+    ctx.beginPath();ctx.arc(0,0,r*0.7,Math.PI*0.15,Math.PI*1.85);ctx.fill();
+    // 뒤로 넘긴 매듭
+    ctx.fillStyle='#3a3a3a';
+    ctx.beginPath(); ctx.ellipse(-r*0.66, 0, r*0.16, r*0.30, 0, 0, 7); ctx.fill();
   } else {
     ctx.fillStyle=en.hair;
     for(let i=-3;i<=3;i++){
@@ -3227,6 +4255,24 @@ function drawEnemySprite(en, alpha){
       ctx.arc(Math.cos(a)*3, Math.sin(a)*3, 3.2, 0, 7);
       ctx.fill();
     }
+  }
+  // 코 — 바라보는 방향을 한눈에
+  ctx.fillStyle='rgba(60,48,34,0.9)';
+  ctx.beginPath(); ctx.ellipse(r*0.58, 0, 1.9, 1.5, 0, 0, 7); ctx.fill();
+
+  // --- 베테랑 견장 ---
+  if(en.rank==='veteran'){
+    ctx.fillStyle='#d8b45a';
+    ctx.fillRect(-2.5,-r*0.92, 5, 1.6);
+    ctx.fillRect(-2.5, r*0.92-1.6, 5, 1.6);
+  }
+  // --- 지휘관 표식 ---
+  if(en.commander){
+    ctx.fillStyle='#ff6a4a';
+    ctx.beginPath();
+    ctx.moveTo(0,-r*1.5); ctx.lineTo(3.4,-r*1.05); ctx.lineTo(-3.4,-r*1.05);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=1; ctx.stroke();
   }
 
   if(en.stunned){
@@ -3283,6 +4329,127 @@ function drawIdleActivity(en,camX,camY,t){
 }
 
 function bulletColor(b){ return b.hostile ? (b.taser ? '#8fd0ff' : '#ff8a5a') : '#fff2a0'; }
+
+/* ===== 환경 장치 렌더 ===== */
+function drawEnvironment(camX,camY){
+  const t = performance.now()/1000;
+
+  // --- 환풍구 : 격자 무늬 ---
+  for(const v of vents){
+    ctx.save();
+    ctx.fillStyle='#2a3138';
+    ctx.fillRect(v.x-camX, v.y-camY, v.w, v.h);
+    ctx.strokeStyle='rgba(150,170,190,0.55)'; ctx.lineWidth=1.4;
+    const horiz = v.w > v.h;
+    const n = horiz ? Math.floor(v.w/12) : Math.floor(v.h/12);
+    for(let i=1;i<n;i++){
+      ctx.beginPath();
+      if(horiz){
+        ctx.moveTo(v.x-camX+i*12, v.y-camY+3);
+        ctx.lineTo(v.x-camX+i*12, v.y-camY+v.h-3);
+      } else {
+        ctx.moveTo(v.x-camX+3, v.y-camY+i*12);
+        ctx.lineTo(v.x-camX+v.w-3, v.y-camY+i*12);
+      }
+      ctx.stroke();
+    }
+    ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=1;
+    ctx.strokeRect(v.x-camX, v.y-camY, v.w, v.h);
+    ctx.restore();
+  }
+
+  // --- 문 ---
+  for(const d of doors){
+    const x=d.x-camX, y=d.y-camY;
+    ctx.save();
+    if(d.broken){
+      ctx.fillStyle='rgba(90,70,55,0.35)';
+      ctx.fillRect(x, y, d.w, d.h);
+      ctx.strokeStyle='rgba(120,90,70,0.5)'; ctx.setLineDash([4,4]);
+      ctx.strokeRect(x, y, d.w, d.h); ctx.setLineDash([]);
+    } else if(d.locked){
+      ctx.fillStyle='#6b4a2e';
+      ctx.fillRect(x, y, d.w, d.h);
+      ctx.strokeStyle='#3a2617'; ctx.lineWidth=1.4;
+      ctx.strokeRect(x, y, d.w, d.h);
+      // 자물쇠
+      ctx.fillStyle='#ffcf6e';
+      ctx.beginPath(); ctx.arc(x+d.w/2, y+d.h/2, 3.6, 0, 7); ctx.fill();
+      // 부서지는 중 진행바
+      if(d.breaking>0){
+        const p=Math.min(1, d.breaking/DOOR_BREAK_TIME);
+        ctx.fillStyle='rgba(0,0,0,0.55)';
+        ctx.fillRect(x-2, y-9, d.w+4, 5);
+        ctx.fillStyle= p>0.7 ? '#ff5a5a' : '#ffa05a';
+        ctx.fillRect(x-1, y-8, (d.w+2)*p, 3);
+      }
+    } else {
+      // 열린 문 : 문틀만 표시
+      ctx.strokeStyle='rgba(150,120,90,0.45)'; ctx.lineWidth=2;
+      if(d.vertical){
+        ctx.beginPath(); ctx.moveTo(x+d.w/2, y); ctx.lineTo(x+d.w/2, y+8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+d.w/2, y+d.h-8); ctx.lineTo(x+d.w/2, y+d.h); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.moveTo(x, y+d.h/2); ctx.lineTo(x+8, y+d.h/2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+d.w-8, y+d.h/2); ctx.lineTo(x+d.w, y+d.h/2); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  // --- 두꺼비집 ---
+  for(const b of breakers){
+    const x=b.x-camX, y=b.y-camY;
+    ctx.save();
+    ctx.fillStyle='#3a4149';
+    ctx.fillRect(x-11, y-14, 22, 28);
+    ctx.strokeStyle='#20262c'; ctx.lineWidth=1.3;
+    ctx.strokeRect(x-11, y-14, 22, 28);
+    // 스위치 3개
+    for(let i=0;i<3;i++){
+      const on = b.cooldown<=0;
+      ctx.fillStyle = on ? '#6ee88a' : '#8a4040';
+      ctx.fillRect(x-6, y-10+i*8, 12, 5);
+    }
+    // 번개 표식
+    ctx.fillStyle = b.cooldown>0 ? '#6a7078' : '#ffd86e';
+    ctx.beginPath();
+    ctx.moveTo(x+1,y-20); ctx.lineTo(x-4,y-15); ctx.lineTo(x-1,y-15);
+    ctx.lineTo(x-3,y-10); ctx.lineTo(x+4,y-16); ctx.lineTo(x+1,y-16);
+    ctx.closePath(); ctx.fill();
+    if(b.cooldown<=0 && Math.sin(t*3)>0.4){
+      ctx.strokeStyle='rgba(255,216,110,0.35)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(x, y, 20, 0, 7); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // --- 경보기 ---
+  for(const a of alarmPanels){
+    const x=a.x-camX, y=a.y-camY;
+    ctx.save();
+    if(a.alive){
+      ctx.fillStyle='#8a2f2f';
+      ctx.fillRect(x-8, y-10, 16, 20);
+      ctx.strokeStyle='#4a1818'; ctx.lineWidth=1.2;
+      ctx.strokeRect(x-8, y-10, 16, 20);
+      ctx.fillStyle = (alarmRaised && Math.sin(t*12)>0) ? '#ff4040' : '#d8a0a0';
+      ctx.beginPath(); ctx.arc(x, y-3, 3.4, 0, 7); ctx.fill();
+      ctx.fillStyle='#c0c8d0';
+      ctx.fillRect(x-5, y+3, 10, 3);
+    } else {
+      ctx.globalAlpha=0.55;
+      ctx.fillStyle='#4a4038';
+      ctx.fillRect(x-8, y-10, 16, 20);
+      ctx.strokeStyle='#2a2420'; ctx.lineWidth=1.2;
+      ctx.strokeRect(x-8, y-10, 16, 20);
+      ctx.strokeStyle='#8a8a8a'; ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.moveTo(x-5,y-5); ctx.lineTo(x+5,y+5); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x+5,y-5); ctx.lineTo(x-5,y+5); ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
 
 function drawBloodDecals(camX,camY){
   ctx.save();
@@ -3478,6 +4645,7 @@ function drawDecorItem(d,camX,camY){
 function drawDecor(camX,camY){
   for(const d of decor) if(d.type==='rug') drawDecorItem(d,camX,camY);
   drawBloodDecals(camX,camY);
+  drawEnvironment(camX,camY);
   for(const d of decor) if(d.type!=='rug' && d.type!=='note') drawDecorItem(d,camX,camY);
   for(const d of decor) if(d.type==='note') drawDecorItem(d,camX,camY);
 }
@@ -3895,7 +5063,7 @@ function render(){
     // 램프 위치는 항상 은은하게 보이도록 fog 캔버스에서 추가로 구멍
     fogCtx.save();
     fogCtx.globalCompositeOperation='destination-out';
-    for(const lp of lamps){
+    for(const lp of (blackout>0 ? [] : lamps)){
       fogCtx.beginPath();fogCtx.arc(lp.x-camX,lp.y-camY,55,0,7);fogCtx.fill();
     }
     fogCtx.restore();
@@ -3906,7 +5074,7 @@ function render(){
     // 램프 주변 따뜻한 하이라이트(가산 합성이라 메인 캔버스에 바로 그려도 안전)
     ctx.save();
     ctx.globalCompositeOperation='lighter';
-    for(const lp of lamps){
+    for(const lp of (blackout>0 ? [] : lamps)){
       ctx.save();
       ctx.beginPath();ctx.arc(lp.x-camX,lp.y-camY,55,0,7);ctx.clip();
       const g2=ctx.createRadialGradient(lp.x-camX,lp.y-camY,2,lp.x-camX,lp.y-camY,55);
@@ -4042,6 +5210,8 @@ function loop(now){
       updateAutoFire(dt);
       updateFirePose(dt);
       updateEscape(dt);
+      updateEnvironment(dt);
+      updateTutorial();
       spawnReinforcements(dt);
       withdrawReinforcements(dt);
       updateAlarm(dt);
@@ -4106,6 +5276,9 @@ function loop(now){
     hpEl.className = hpPct<=30 ? 'low' : '';
     document.getElementById('hurtVig').style.display = player.hurtTimer>0 ? 'block' : 'none';
     document.getElementById('armedTag').style.display = guardsArmed ? 'block' : 'none';
+    const bo=document.getElementById('blackoutTag');
+    bo.style.display = blackout>0 ? 'block' : 'none';
+    if(blackout>0) bo.textContent = '⚡ 정전 '+Math.ceil(blackout)+'s';
 
     const at=document.getElementById('ammoTag');
     if(reloadTimer>0){
