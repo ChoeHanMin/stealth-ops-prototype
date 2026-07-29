@@ -201,6 +201,14 @@
 </div>
 <div id="spotFlash"></div>
 <div id="hurtVig"></div>
+<div class="modal" id="shopModal">
+  <div class="modalBox">
+    <h2>장비 해금</h2>
+    <p style="text-align:center;" id="shopPts">보유 0점</p>
+    <div id="shopList"></div>
+    <div class="closeBtn" id="shopClose">닫기</div>
+  </div>
+</div>
 <div id="tutBox">
   <div id="tutStep">단계 1 / 8</div>
   <div id="tutTitle">이동</div>
@@ -271,7 +279,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 3.1.0.0</div>
+  <div id="verText">Ver 3.5.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -490,7 +498,36 @@ function todaySeed(){
 
 const ROOM_THEMES = ['bedroom','study','lounge','dining','storage','patio'];
 
-function generateMap(seed){
+/* 층수에 따라 규모와 밀도가 커진다. 값이 튀지 않도록 전부 상한을 둔다. */
+const FLOOR_VARIANTS = {
+  vault:  {name:'창고',   mul:0.65, score:0.7, desc:'경비가 적다. 대신 점수도 적다'},
+  manor:  {name:'저택',   mul:1.00, score:1.0, desc:'표준'},
+  bank:   {name:'금고층', mul:1.5,  score:2.0, desc:'경비가 많다. 점수 2배 + 장비 확정 획득'}
+};
+function floorParams(floor, variant){
+  const f = Math.max(1, floor|0);
+  const V = FLOOR_VARIANTS[variant] || FLOOR_VARIANTS.manor;
+  const m = V.mul;
+  return {
+    floor: f,
+    vCount:  Math.min(4, 1 + Math.ceil(f/3)),        // 세로 분할
+    hCount:  Math.min(3, 1 + Math.floor(f/4)),       // 가로 분할
+    variant: variant || 'manor',
+    scoreMul: V.score,
+    patrol:  Math.max(4, Math.round(Math.min(22, 8 + f*2)*m)),
+    idle:    Math.max(3, Math.round(Math.min(20, 8 + Math.floor(f*1.5))*m)),
+    dogs:    Math.max(0, Math.round(Math.min(6,  1 + Math.floor(f/2))*m)),
+    cams:    Math.max(0, Math.round(Math.min(8,  1 + Math.floor(f/2))*m)),
+    // 배율을 곱한 뒤에 다시 상한을 건다. 렌더 부담이 여기서 결정된다
+    reinfMax:Math.max(20, Math.min(100, Math.round((45 + f*14)*m))),
+    panels:  Math.max(2, 9 - Math.floor(f/2)),       // 경보기(적을수록 파괴가 쉬움→아니라 어려움)
+    armored: Math.min(0.45, 0.06 + f*0.05),          // 방탄 비율
+    breakers:Math.max(1, 3 - Math.floor(f/4))
+  };
+}
+
+function generateMap(seed, params){
+  const P = params || floorParams(1);
   const rnd = mulberry32(seed);
   const ri  = (a,b)=> a + Math.floor(rnd()*(b-a+1));
   const pick= (arr)=> arr[Math.floor(rnd()*arr.length)];
@@ -500,7 +537,8 @@ function generateMap(seed){
 
   // --- 1. 방 격자 ---
   // 세로 분할 2~3개, 가로 분할 1~2개 → 방 6~12개
-  const vCount = ri(2,3), hCount = ri(1,2);
+  const vCount = Math.max(1, P.vCount + (rnd()<0.4?1:0));
+  const hCount = Math.max(1, P.hCount);
   const vs = [], hs = [];
   for(let i=1;i<=vCount;i++){
     const base = WORLD_W*i/(vCount+1);
@@ -776,10 +814,11 @@ function generateMap(seed){
 
   // 순찰 15명 — 방마다 직사각형 순찰로 (여러 크기를 시도해 막히지 않는 걸 고른다)
   let patrolMade=0;
+  const PATROL_N = P.patrol, IDLE_N = P.idle;
   const patrolRooms = rooms.slice().sort(()=> rnd()-0.5);
-  for(let round=0; round<8 && patrolMade<15; round++){
+  for(let round=0; round<10 && patrolMade<PATROL_N; round++){
     for(const rm of patrolRooms){
-      if(patrolMade>=15) break;
+      if(patrolMade>=PATROL_N) break;
       let path=null;
       for(const inset of [58, 76, 96, 120, 46]){
         path = makeLoop(rm, inset + rnd()*10);
@@ -789,12 +828,13 @@ function generateMap(seed){
       const vet = rnd()<0.35;
       enemyDefs.push({x:path[0].x, y:path[0].y, state:'patrol',
         rank: vet?'veteran':'rookie', bandana: vet && rnd()<0.7,
+        armored: rnd()<P.armored,
         hair: pick(hairs), path});
       patrolMade++;
     }
   }
-  // 그래도 모자라면 시작 방 주변 통로를 도는 예비 순찰로
-  while(patrolMade < 15){
+  // 그래도 모자라면 제자리 근무로 대체
+  while(patrolMade < PATROL_N){
     const rm = rooms[patrolMade % rooms.length];
     const c = freeSpot(rm, 26);
     enemyDefs.push({x:c.x, y:c.y, state:'patrol', rank:'rookie',
@@ -805,9 +845,9 @@ function generateMap(seed){
   const ACT = { bedroom:'sleep', study:'read', lounge:'tv', dining:'eat', storage:'chat', patio:'chat' };
   let idleMade=0;
   const idleRooms = rooms.slice().sort(()=> rnd()-0.5);
-  while(idleMade < 15){
+  while(idleMade < IDLE_N){
     for(const rm of idleRooms){
-      if(idleMade>=15) break;
+      if(idleMade>=IDLE_N) break;
       const spot = freeSpot(rm, 30);
       const act = ACT[rm.theme] || 'chat';
       enemyDefs.push({x:spot.x, y:spot.y, angle: rnd()*Math.PI*2, state:'idle',
@@ -820,8 +860,8 @@ function generateMap(seed){
   }
   // 경비견 3마리
   let dogsMade=0;
-  for(let round=0; round<6 && dogsMade<3; round++){
-    for(let i=0;i<rooms.length && dogsMade<3;i++){
+  for(let round=0; round<6 && dogsMade<P.dogs; round++){
+    for(let i=0;i<rooms.length && dogsMade<P.dogs;i++){
       const rm = rooms[(i*2+1+round) % rooms.length];
       let path=null;
       for(const inset of [70, 92, 112]){ path = makeLoop(rm, inset); if(path) break; }
@@ -832,7 +872,7 @@ function generateMap(seed){
     }
   }
   // CCTV 4대 — 방 모서리 벽면
-  for(let i=0;i<4;i++){
+  for(let i=0;i<P.cams;i++){
     const rm = rooms[(i*3) % rooms.length];
     const corner = i%4;
     const cx = corner<2 ? rm.x+26 : rm.x+rm.w-26;
@@ -846,20 +886,60 @@ function generateMap(seed){
   // --- 7. 환경 장치 ---
   // 두꺼비집 1~2개 : 내리면 저택 전체가 정전된다
   const breakers=[];
-  const brRooms = rooms.slice().sort(()=>rnd()-0.5).slice(0, ri(1,2));
+  const brRooms = rooms.slice().sort(()=>rnd()-0.5).slice(0, P.breakers);
   for(const rm of brRooms){
     const sp = freeSpot(rm, 28);
     breakers.push({x:sp.x, y:sp.y, r:15, on:true});
   }
   // 경보기 : 방마다 1개. 부수면 그 주변에서는 비상벨이 울리지 않는다
   const alarmPanels=[];
-  for(const rm of rooms){
+  const panelRooms = rooms.slice().sort(()=>rnd()-0.5).slice(0, Math.min(P.panels, rooms.length));
+  for(const rm of panelRooms){
     const sp = freeSpot(rm, 26);
     alarmPanels.push({x:sp.x, y:sp.y, r:13, alive:true, room:rm.theme});
   }
 
-  return { seed, walls, decor, checkpoint, missions, enemyDefs, rooms,
-           doors, vents, breakers, alarmPanels };
+  // 드론 : 3층부터. 벽을 무시하고 날아다니므로 순찰로가 필요 없다
+  const nDrone = Math.max(0, Math.min(4, Math.floor((P.floor-1)/2)));
+  for(let i=0;i<nDrone;i++){
+    const rm = rooms[(i*4+2) % rooms.length];
+    const a2 = freeSpot(rm, 20);
+    const b2 = freeSpot(rooms[(i*4+5) % rooms.length], 20);
+    enemyDefs.push({x:a2.x, y:a2.y, kind:'drone', state:'patrol', hair:'#5a6a7a',
+      path:[{x:a2.x,y:a2.y},{x:b2.x,y:b2.y}]});
+  }
+  // 저격수 : 4층부터. 고정 배치, 조준선 경고 후 발사
+  const nSniper = Math.max(0, Math.min(3, Math.floor((P.floor-2)/2)));
+  for(let i=0;i<nSniper;i++){
+    const rm = rooms[(i*5+1) % rooms.length];
+    const sp = freeSpot(rm, 26);
+    enemyDefs.push({x:sp.x, y:sp.y, kind:'sniper', state:'idle',
+      angle: rnd()*Math.PI*2, rank:'veteran', bandana:true, hair:'#333'});
+  }
+
+  /* 보급품 — 맵을 뒤질 이유를 만든다.
+     해금 장비와 달리 일회성이라, 위험을 무릅쓰고 방을 도는 보상이 된다. */
+  const pickups=[];
+  const PICK_KINDS=[
+    {k:'ammo',   w:3},
+    {k:'medkit', w:2},
+    {k:'smoke',  w:2},
+    {k:'stun',   w:2}
+  ];
+  const nPick = Math.min(9, 3 + Math.floor(P.floor/2));
+  const pickRooms = rooms.slice().sort(()=>rnd()-0.5);
+  for(let i=0;i<nPick;i++){
+    const rm = pickRooms[i % pickRooms.length];
+    const sp = freeSpot(rm, 24);
+    // 가중 추첨
+    let total=0; for(const q of PICK_KINDS) total+=q.w;
+    let roll=rnd()*total, kind=PICK_KINDS[0].k;
+    for(const q of PICK_KINDS){ roll-=q.w; if(roll<=0){ kind=q.k; break; } }
+    pickups.push({x:sp.x, y:sp.y, kind, taken:false, bob:rnd()*6.28});
+  }
+
+  return { seed, params:P, walls, decor, checkpoint, missions, enemyDefs, rooms,
+           doors, vents, breakers, alarmPanels, pickups };
 }
 
 /* 연결성 검증 — 시작 지점에서 모든 미션에 도달할 수 있어야 한다.
@@ -901,20 +981,24 @@ function validateMap(map){
   return reach/walkable > 0.80;   // 고립 구역이 20% 넘으면 실패
 }
 
-function buildMap(){
-  let seed;
-  try{
-    const daily = localStorage.getItem('stealthOps_dailyMode')==='1';
-    seed = daily ? todaySeed() : (Math.floor(Math.random()*1e9));
-  }catch(e){ seed = Math.floor(Math.random()*1e9); }
+function buildMap(floor, forcedSeed, variant){
+  const P = floorParams(floor || 1, variant);
+  let seed = forcedSeed;
+  if(seed === undefined){
+    try{
+      const daily = localStorage.getItem('stealthOps_dailyMode')==='1';
+      seed = daily ? (todaySeed() + (floor||1)*104729) : (Math.floor(Math.random()*1e9));
+    }catch(e){ seed = Math.floor(Math.random()*1e9); }
+  }
   for(let attempt=0; attempt<24; attempt++){
-    const m = generateMap(seed + attempt*7919);
+    const m = generateMap(seed + attempt*7919, P);
     if(validateMap(m)) return m;
   }
-  return generateMap(seed);   // 끝내 실패하면 마지막 것을 그대로 사용
+  return generateMap(seed, P);
 }
 
-const MAPGEN = buildMap();
+let runFloor = 1;
+let MAPGEN = buildMap(1);
 
 const walls = MAPGEN.walls.concat(
   MAPGEN.vents.map(v=>Object.assign({ventForCrouch:true}, v))
@@ -947,21 +1031,24 @@ let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,crouch:false,
 function makeGuard(opts){
   const rank = opts.rank || 'rookie';
   const state = opts.state || 'patrol';
-  const kind = opts.kind || 'guard';   // guard | dog | cam
+  const kind = opts.kind || 'guard';   // guard | dog | cam | drone | sniper
   return {
     x:opts.x, y:opts.y,
-    r: kind==='dog' ? 8 : (kind==='cam' ? 9 : 12),
+    r: kind==='dog' ? 8 : (kind==='cam' ? 9 : (kind==='drone' ? 9 : 12)),
     angle: opts.angle!==undefined?opts.angle:0,
-    speed: kind==='cam' ? 0
+    speed: (kind==='cam'||kind==='sniper') ? 0
+         : kind==='drone' ? 1.55
          : kind==='dog' ? 1.25
          : (state==='patrol' ? (rank==='veteran'?0.85:0.92) : 0.80),
     state, prevState:state,
     path: opts.path || [], wp:0,
     detect:0,
     visionRange: opts.visionRange!==undefined ? opts.visionRange
-      : (kind==='dog' ? 130 : kind==='cam' ? 300 : (rank==='veteran'?250:200)),
+      : (kind==='dog' ? 130 : kind==='cam' ? 300
+         : kind==='drone' ? 260 : kind==='sniper' ? 900 : (rank==='veteran'?250:200)),
     visionAngle: opts.visionAngle!==undefined ? opts.visionAngle
-      : (kind==='dog' ? 70 : kind==='cam' ? 34 : (rank==='veteran'?60:45)),
+      : (kind==='dog' ? 70 : kind==='cam' ? 34
+         : kind==='drone' ? 100 : kind==='sniper' ? 40 : (rank==='veteran'?60:45)),
     target:null, searchTimer:0, investigateTimer:0,
     hair: opts.hair || '#3a2a1e', bandana: !!opts.bandana,
     dieTimer:0, dieType:null, stepAccum:0,
@@ -976,13 +1063,16 @@ function makeGuard(opts){
     camT: Math.random()*6.28,
     barkCd: 0,
     rank,
-    hearMul: kind==='dog' ? 2.6 : (rank==='veteran'?1.25:0.75),
+    hearMul: kind==='dog' ? 2.6 : (kind==='drone' ? 0 : (rank==='veteran'?1.25:0.75)),
     /* 계급별 내구도 — 한 발 즉사를 없애 사격에 판단이 들어가게 한다 */
-    hp:    kind==='dog' ? 1 : kind==='cam' ? 1 : (opts.armored ? 3 : (rank==='veteran' ? 2 : 1)),
-    maxHp: kind==='dog' ? 1 : kind==='cam' ? 1 : (opts.armored ? 3 : (rank==='veteran' ? 2 : 1)),
+    hp:    (kind==='dog'||kind==='cam'||kind==='drone') ? 1 : kind==='sniper' ? 2
+         : (opts.armored ? 3 : (rank==='veteran' ? 2 : 1)),
+    maxHp: (kind==='dog'||kind==='cam'||kind==='drone') ? 1 : kind==='sniper' ? 2
+         : (opts.armored ? 3 : (rank==='veteran' ? 2 : 1)),
     armored: !!opts.armored,
     hitFlash: 0,
-    weapon: (kind==='dog'||kind==='cam') ? 'none'
+    aimTimer: 0,
+    weapon: kind==='sniper' ? 'sniper' : (kind==='dog'||kind==='cam'||kind==='drone') ? 'none'
           : (opts.armored ? 'rifle' : (rank==='veteran' ? 'rifle' : 'taser')),
     fireCd: 1 + Math.random()*1.5,
     stunned:false, stunTimer:0,
@@ -1001,32 +1091,25 @@ function makeGuard(opts){
 }
 
 const enemies = MAPGEN.enemyDefs.map(makeGuard);
-// 지휘관 지정 — 순찰 베테랑 중 2명
-(function assignCommanders(){
+// 지휘관 지정 — 순찰 베테랑 중 일부
+function assignCommanders(){
   const vets = enemies.filter(e=>e.kind==='guard' && e.rank==='veteran' && e.homeState!=='idle');
-  for(let i=0;i<Math.min(2,vets.length);i++){
-    const v = vets[Math.floor(i*vets.length/2)];
+  const nCmd = Math.min(vets.length, 1 + Math.floor(runFloor/3));
+  for(let i=0;i<nCmd;i++){
+    const v = vets[Math.floor(i*vets.length/Math.max(1,nCmd))];
+    if(!v) continue;
     v.commander = true;
     v.hp = v.maxHp = 3;
     v.visionRange *= 1.15;
   }
-})();
+}
+assignCommanders();
 
 /* === 초기 랜덤화 & 버디 편성 === */
 let initialEnemyCount = 0;
 let enemyRoster = null;      // 레벨 재시작 시 복구할 초기 명단
-(function initRandomize(){
-  const d3 = [0,0,0].map(()=>Math.floor(Math.random()*10));
-  const c4 = Array.from({length:4},()=>Math.floor(Math.random()*10)).join('');
-  const mCard = missions.find(m=>m.id==='card');
-  const mCctv = missions.find(m=>m.id==='cctv');
-  if(mCard) mCard.target = d3;
-  if(mCctv) mCctv.target = c4;
-  const n1 = decor.find(d=>d.type==='note' && d.text==='472');
-  const n2 = decor.find(d=>d.type==='note' && d.text==='1376');
-  if(n1) n1.text = d3.join('');
-  if(n2) n2.text = c4;
-
+function randomizeStarts(){
+  // (코드와 쪽지는 생성기가 이미 시드 기반으로 만든다)
   // 순찰 시작 지점 셔플
   for(const en of enemies){
     if(en.state==='patrol' && en.path.length){
@@ -1045,7 +1128,8 @@ let enemyRoster = null;      // 레벨 재시작 시 복구할 초기 명단
   initialEnemyCount = enemies.length;
   // 초기 명단을 얕은 복사로 보관 (path는 공유해도 변형하지 않는다)
   enemyRoster = enemies.map(e=>Object.assign({}, e));
-})();
+}
+randomizeStarts();
 
 let corpses = [];
 let clouds = [];
@@ -1089,7 +1173,8 @@ function spawnReinforcements(dt){
   const cmdAlive = enemies.some(e=>e.commander && e.state!=='dying');
   reinfTimer = cmdAlive ? REINF_INTERVAL : REINF_INTERVAL*2.2;
   const have = reinforcementCount();
-  const cap = cmdAlive ? REINF_MAX : Math.round(REINF_MAX*0.45);
+  const maxR = (MAPGEN.params && MAPGEN.params.reinfMax) || REINF_MAX;
+  const cap = cmdAlive ? maxR : Math.round(maxR*0.45);
   if(have >= cap) return;
   const target = alarmPoint || {x:player.x, y:player.y};
   for(let i=0; i<REINF_PER_WAVE && reinforcementCount()<cap; i++){
@@ -1253,7 +1338,7 @@ function enemyById(id){return enemies.find(e=>e._id===id);}
 enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, showCones:false,
-                controlMode:'dpad', difficulty:'normal'};
+                controlMode:'dpad', difficulty:'normal', cbMode:false};
 const DIFF = {
   easy:   {vision:0.82, detect:0.7,  cones:true,  label:'쉬움'},
   normal: {vision:1.0,  detect:1.0,  cones:false, label:'보통'},
@@ -1289,6 +1374,229 @@ let guardsArmed = false;
    시작 지점까지 살아서 돌아가야 한다. */
 let escapePhase = false;
 let escapeShown = false;
+
+/* ===================== 메타 성장 =====================
+   한 판이 끝나면 정보 점수를 얻고, 다음 판 출발 장비를 영구 해금한다.
+   처음엔 동전만 들고 시작하므로 장비 하나하나가 의미를 갖는다. */
+const META_KEY='stealthOps_meta';
+const UNLOCKS=[
+  {id:'smoke',    name:'연막탄',   cost:20, desc:'시야 차단 10개'},
+  {id:'stun',     name:'기절탄',   cost:25, desc:'제압용 10개'},
+  {id:'nvg',      name:'야간투시', cost:35, desc:'어둠 제거'},
+  {id:'thermal',  name:'열화상',   cost:45, desc:'벽 너머 적 표시'},
+  {id:'armor',    name:'방탄복',   cost:60, desc:'최대 체력 100 → 140'},
+  {id:'silencer', name:'소음기',   cost:80, desc:'총성 반경 720 → 260'}
+];
+let META=null;
+function loadMeta(){
+  try{ META=JSON.parse(localStorage.getItem(META_KEY)||'null'); }catch(e){ META=null; }
+  if(!META || typeof META!=='object') META={points:0, unlocks:{}, bestFloor:1, runs:0};
+  if(!META.unlocks) META.unlocks={};
+  return META;
+}
+function saveMeta(){ try{ localStorage.setItem(META_KEY, JSON.stringify(META)); }catch(e){} }
+function hasUnlock(id){ return !!(META && META.unlocks && META.unlocks[id]); }
+
+/* 해금 상태를 실제 게임 값에 반영한다 */
+function applyLoadout(){
+  if(!META) loadMeta();
+  ammo.smoke = hasUnlock('smoke') ? GRENADE_MAX : 0;
+  ammo.stun  = hasUnlock('stun')  ? GRENADE_MAX : 0;
+  player.maxHp = hasUnlock('armor') ? 140 : 100;
+  player.hp = player.maxHp;
+  NOISE.gunshot = hasUnlock('silencer') ? 260 : 720;
+}
+
+/* 해금 상점 */
+function openShop(){
+  if(!META) loadMeta();
+  const list=document.getElementById('shopList');
+  document.getElementById('shopPts').textContent='보유 '+META.points+'점';
+  list.innerHTML='';
+  for(const u of UNLOCKS){
+    const owned=hasUnlock(u.id);
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;'+
+      'padding:9px 10px;margin-bottom:7px;border-radius:7px;'+
+      'background:'+(owned?'#22402f':'#252b32')+';border:1px solid '+(owned?'#5aa87a':'#454f58')+';';
+    row.innerHTML='<div style="text-align:left;">'+
+      '<div style="font-size:13.5px;font-weight:bold;color:'+(owned?'#8fe8b4':'#dbe4ec')+';">'+u.name+'</div>'+
+      '<div style="font-size:11px;color:#8d97a1;">'+u.desc+'</div></div>';
+    const btn=document.createElement('div');
+    btn.style.cssText='padding:7px 12px;border-radius:6px;font-size:12px;font-weight:bold;'+
+      'white-space:nowrap;margin-left:10px;';
+    if(owned){ btn.textContent='보유'; btn.style.color='#6ee8b4'; }
+    else if(META.points>=u.cost){
+      btn.textContent=u.cost+'점'; btn.style.background='#2f6b4a';
+      btn.style.border='1px solid #6fd39a'; btn.style.color='#e8fff2'; btn.style.cursor='pointer';
+      btn.addEventListener('click',()=>{
+        if(META.points < u.cost) return;
+        META.points -= u.cost; META.unlocks[u.id]=true; saveMeta();
+        applyLoadout();
+        playTone(880,0.10,0.14,'triangle');
+        setTimeout(()=>playTone(1320,0.14,0.12,'triangle'),90);
+        showMsg(u.name+' 해금!');
+        openShop();
+      });
+    } else { btn.textContent=u.cost+'점'; btn.style.color='#6a737c'; }
+    row.appendChild(btn);
+    list.appendChild(row);
+  }
+  document.getElementById('shopModal').style.display='flex';
+}
+
+/* ===================== 런 이어하기 =====================
+   맵 자체는 저장하지 않는다. 시드만 있으면 똑같이 재현되기 때문에
+   저장할 것은 '진행 상태'뿐이다. */
+const RUN_KEY='stealthOps_run';
+let runVariant = 'manor';     // 현재 층 종류 (창고/저택/금고층)
+
+function saveRun(){
+  if(!gameStarted || caught || missionsComplete) return;
+  try{
+    localStorage.setItem(RUN_KEY, JSON.stringify({
+      v: 1,
+      floor: runFloor,
+      seed: MAPGEN.seed,
+      variant: runVariant,
+      objective: objective ? objective.id : 'infiltrate',
+      missionsDone: missions.map(m=>m.done?1:0),
+      panelsAlive: alarmPanels.map(a=>a.alive?1:0),
+      lootTaken: loot ? (loot.taken?1:0) : 0,
+      picks: pickups.map(q=>q.taken?1:0),
+      bound: stats.bound||0,
+      carrying: carryingLoot?1:0,
+      escape: escapePhase?1:0,
+      armed: guardsArmed?1:0,
+      px: Math.round(player.x), py: Math.round(player.y),
+      hp: Math.round(player.hp),
+      mag: magAmmo,
+      smoke: ammo.smoke, stun: ammo.stun,
+      elapsed: Math.round((performance.now()-stats.startTime)/1000),
+      det: stats.detections, cau: stats.caughtCount,
+      kk: stats.knifeKills, ck: stats.chokeKills, sk: stats.shotKills,
+      savedAt: Date.now()
+    }));
+  }catch(e){}
+}
+function loadSavedRun(){
+  try{ const r=JSON.parse(localStorage.getItem(RUN_KEY)||'null');
+       return (r && r.v===1) ? r : null; }catch(e){ return null; }
+}
+function clearRun(){ try{ localStorage.removeItem(RUN_KEY); }catch(e){} }
+
+function resumeRun(r){
+  runVariant = r.variant || 'manor';
+  loadFloor(r.floor, r.seed, runVariant);
+  // 저장된 진행 상태 덮어쓰기
+  if(r.missionsDone) r.missionsDone.forEach((d,i)=>{ if(missions[i]) missions[i].done = !!d; });
+  if(r.panelsAlive)  r.panelsAlive.forEach((a,i)=>{ if(alarmPanels[i]) alarmPanels[i].alive = !!a; });
+  if(loot){ loot.taken = !!r.lootTaken; }
+  if(r.picks) r.picks.forEach((v,i)=>{ if(pickups[i]) pickups[i].taken = !!v; });
+  stats.bound = r.bound||0;
+  carryingLoot = !!r.carrying;
+  escapePhase  = !!r.escape;
+  guardsArmed  = !!r.armed;
+  player.x=r.px; player.y=r.py;
+  player.hp=Math.min(player.maxHp, r.hp||player.maxHp);
+  magAmmo = r.mag!==undefined ? r.mag : MAG_SIZE;
+  ammo.smoke = r.smoke!==undefined ? r.smoke : ammo.smoke;
+  ammo.stun  = r.stun !==undefined ? r.stun  : ammo.stun;
+  stats.startTime = performance.now() - (r.elapsed||0)*1000;
+  stats.detections=r.det||0; stats.caughtCount=r.cau||0;
+  stats.knifeKills=r.kk||0; stats.chokeKills=r.ck||0; stats.shotKills=r.sk||0;
+  resolveStuck();
+  showMsg(runFloor+'층 이어하기 — '+objective.name);
+}
+
+let saveTimer = 0;
+function updateSave(dt){
+  saveTimer -= dt;
+  if(saveTimer>0) return;
+  saveTimer = 8;      // 8초마다 자동 저장
+  saveRun();
+}
+
+/* 판 종료 시 점수 지급 */
+function awardPoints(cleared){
+  if(!META) loadMeta();
+  let pts = 0;
+  if(cleared){
+    const sm = (MAPGEN.params && MAPGEN.params.scoreMul) || 1;
+    pts += Math.round((10 + runFloor*8) * sm);
+    if(stats.detections===0) pts += 15;                                  // 무발각
+    if(stats.knifeKills+stats.chokeKills+stats.shotKills===0) pts += 12; // 불살
+    if(!guardsArmed) pts += 10;                                          // 무발포
+  } else {
+    pts += Math.floor(runFloor*2);
+  }
+  // 금고층은 미해금 장비를 하나 확정 지급한다
+  if(cleared && runVariant==='bank'){
+    const locked = UNLOCKS.filter(u=>!hasUnlock(u.id));
+    if(locked.length){
+      const got = locked[0];
+      META.unlocks[got.id]=true;
+      setTimeout(()=>showMsg('금고층 보상 — '+got.name+' 해금!'), 600);
+    }
+  }
+  META.points += pts;
+  META.bestFloor = Math.max(META.bestFloor||1, runFloor);
+  META.runs = (META.runs||0)+1;
+  saveMeta();
+  return pts;
+}
+
+/* ===================== 목표 타입 =====================
+   같은 저택도 목표가 다르면 완전히 다르게 플레이된다. */
+let objective = null;
+const OBJECTIVES = [
+  { id:'infiltrate', name:'잠입',
+    desc:'단말기 5곳을 모두 처리한 뒤 시작 지점으로 탈출' },
+  { id:'assassinate', name:'암살',
+    desc:'지휘관을 전원 제거한 뒤 시작 지점으로 탈출' },
+  { id:'heist', name:'탈취',
+    desc:'금고의 물건을 확보한 뒤 탈출 — 운반 중에는 느려지고 달릴 수 없다' }
+];
+let loot = null;          // 탈취 목표의 물건
+let carryingLoot = false;
+
+function pickObjective(floor){
+  // 1층은 항상 잠입(튜토리얼과 맞물림), 이후 순환
+  const idx = floor<=1 ? 0 : (floor-1) % OBJECTIVES.length;
+  objective = OBJECTIVES[idx];
+  carryingLoot = false;
+  loot = null;
+
+  if(objective.id==='assassinate'){
+    // 미션 단말기는 필요 없으므로 전부 완료 처리
+    for(const m of missions) m.done = true;
+  } else if(objective.id==='heist'){
+    for(const m of missions) m.done = true;
+    // 가장 먼 미션 자리를 금고로 재활용
+    const far = missions.reduce((a,b)=>
+      Math.hypot(a.x-checkpoint.x,a.y-checkpoint.y) > Math.hypot(b.x-checkpoint.x,b.y-checkpoint.y) ? a : b);
+    loot = {x:far.x, y:far.y, taken:false};
+  }
+}
+
+/* 목표 달성 여부 (탈출 조건) */
+function objectiveDone(){
+  if(!objective) return false;
+  if(objective.id==='infiltrate')  return missions.every(m=>m.done);
+  if(objective.id==='assassinate') return !enemies.some(e=>e.commander && e.state!=='dying');
+  if(objective.id==='heist')       return carryingLoot;
+  return false;
+}
+function objectiveText(){
+  if(!objective) return '';
+  if(objective.id==='infiltrate') return '단말기 '+missions.filter(m=>m.done).length+'/'+missions.length;
+  if(objective.id==='assassinate'){
+    const left = enemies.filter(e=>e.commander && e.state!=='dying').length;
+    return '지휘관 '+left+'명 남음';
+  }
+  if(objective.id==='heist') return carryingLoot ? '물건 확보 — 탈출!' : '금고 미확보';
+  return '';
+}
 const PLAYER_REGEN_DELAY = 6;    // 피격 후 회복 시작까지 (초)
 const PLAYER_REGEN_RATE  = 7;    // 초당 회복량
 const DMG_RIFLE  = 16;           // 적 사격 피해
@@ -1302,7 +1610,112 @@ let bloodDecals = [];            // 바닥 혈흔
 const doors       = MAPGEN.doors.map(d=>Object.assign({}, d, {locked:false, hp:0, breaking:0}));
 const breakers    = MAPGEN.breakers.map(b=>Object.assign({}, b));
 const alarmPanels = MAPGEN.alarmPanels.map(a=>Object.assign({}, a));
-const vents       = MAPGEN.vents;
+const vents       = MAPGEN.vents.slice();
+const pickups     = MAPGEN.pickups.map(q=>Object.assign({}, q));
+
+const PICKUP_INFO = {
+  ammo:   {name:'예비 탄창', color:'#e8d060'},
+  medkit: {name:'의료킷',   color:'#e85e5e'},
+  smoke:  {name:'연막탄',   color:'#c8d0d8'},
+  stun:   {name:'기절탄',   color:'#e8c860'}
+};
+/* 밟으면 자동으로 줍는다 — 상호작용 버튼을 또 겹치게 하지 않는다 */
+function updateCarriedCorpse(){
+  if(!carriedCorpse) return;
+  if(carriedCorpse.discovered || carriedCorpse.hidden){ carriedCorpse=null; return; }
+  // 등에 업힌 위치
+  carriedCorpse.x = player.x - Math.cos(player.angle)*10;
+  carriedCorpse.y = player.y - Math.sin(player.angle)*10;
+}
+
+function updatePickups(dt){
+  for(const q of pickups){
+    if(q.taken) continue;
+    q.bob += dt*3;
+    if(Math.hypot(player.x-q.x, player.y-q.y) > 26) continue;
+    q.taken = true;
+    const info = PICKUP_INFO[q.kind];
+    if(q.kind==='ammo'){
+      magAmmo = Math.min(MAG_SIZE, magAmmo + 15);
+      if(reloadTimer>0){ reloadTimer=0; }
+      spawnText(q.x, q.y-22, '+15발', info.color);
+    } else if(q.kind==='medkit'){
+      player.hp = Math.min(player.maxHp, player.hp + 40);
+      player.regenDelay = 0;
+      spawnText(q.x, q.y-22, '+40 HP', info.color);
+    } else if(q.kind==='smoke'){
+      ammo.smoke += 3;
+      spawnText(q.x, q.y-22, '연막탄 +3', info.color);
+    } else if(q.kind==='stun'){
+      ammo.stun += 3;
+      spawnText(q.x, q.y-22, '기절탄 +3', info.color);
+    }
+    showMsg(info.name + ' 획득');
+    if(audioCtx){
+      playTone(880, 0.07, 0.11, 'triangle', panOf(q.x));
+      setTimeout(()=>playTone(1320, 0.09, 0.09, 'triangle', panOf(q.x)), 70);
+    }
+    for(let i=0;i<8;i++) particles.push({
+      x:q.x, y:q.y, vx:(Math.random()-0.5)*2.4, vy:-1-Math.random()*1.6,
+      life:22, color:info.color
+    });
+  }
+}
+
+/* ===================== 층 진행 =====================
+   클리어하면 다음 층으로. 층이 오를수록 저택이 커지고 경비가 늘어난다.
+   배열들은 const이므로 참조를 바꾸지 않고 '내용'만 갈아끼운다. */
+function refill(arr, items){ arr.length=0; for(const it of items) arr.push(it); }
+
+function loadFloor(floor, forcedSeed, variant){
+  runFloor = floor;
+  runVariant = variant || runVariant || 'manor';
+  MAPGEN = buildMap(floor, forcedSeed, runVariant);
+
+  refill(walls, MAPGEN.walls.concat(MAPGEN.vents.map(v=>Object.assign({ventForCrouch:true}, v))));
+  refill(decor, MAPGEN.decor);
+  refill(furnitureSolids, decor.filter(d=>d.solid).map(d=>({
+    x:d.x, y:d.y, w:d.w, h:d.h,
+    crouchPassable: CROUCH_PASSABLE.has(d.type),
+    src: d
+  })));
+  refill(solidRects, walls.concat(furnitureSolids));
+  refill(lamps, decor.filter(d=>d.type==='lamp'));
+  refill(hidingSpots, decor.filter(d=>d.isHidingSpot));
+  refill(missions, MAPGEN.missions);
+  refill(vents, MAPGEN.vents);
+  refill(doors, MAPGEN.doors.map(d=>Object.assign({}, d, {locked:false, hp:0, breaking:0})));
+  refill(breakers, MAPGEN.breakers.map(b=>Object.assign({}, b)));
+  refill(pickups, MAPGEN.pickups.map(q=>Object.assign({}, q)));
+  refill(alarmPanels, MAPGEN.alarmPanels.map(a=>Object.assign({}, a)));
+  checkpoint.x = MAPGEN.checkpoint.x;
+  checkpoint.y = MAPGEN.checkpoint.y;
+
+  refill(enemies, MAPGEN.enemyDefs.map(makeGuard));
+  enemies.forEach((e,i)=>e._id=i);
+  assignCommanders();
+  randomizeStarts();
+  initialEnemyCount = enemies.length;
+  enemyRoster = enemies.map(e=>Object.assign({}, e));
+
+  doorSolids = [];
+  buildCollisionGrid();
+  buildNavGrid();
+
+  pickObjective(floor);
+  applyLoadout();
+
+  clearReinforcements();
+  corpses.length=0; clouds.length=0; bullets.length=0; decoys.length=0;
+  particles.length=0; textParticles.length=0; bloodDecals.length=0;
+  alarmRaised=false; alarmTimer=0; alarmPoint=null; blackout=0;
+  guardsArmed=false; escapePhase=false; missionsComplete=false;
+  stats.startTime = performance.now();
+  stats.detections=0; stats.caughtCount=0;
+  stats.knifeKills=0; stats.chokeKills=0; stats.shotKills=0; stats.bound=0;
+  rollCallTimer=60;
+  respawn();
+}
 
 const BLACKOUT_TIME  = 26;   // 정전 지속(초)
 const BREAKER_RESET  = 45;   // 두꺼비집 재사용 대기
@@ -1421,7 +1834,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'3.1.0.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'3.5.0.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -2015,6 +2428,33 @@ function updateBGM(){
 /* ===================== 시작 화면 / 모달 ===================== */
 let gameStarted=false;
 const startOverlay=document.getElementById('startOverlay');
+(function showResumeButton(){
+  const r = loadSavedRun();
+  if(!r) return;
+  const el=document.getElementById('btnStart');
+  if(!el || !el.parentNode) return;
+  const btn=document.createElement('div');
+  btn.className='closeBtn';
+  btn.style.cssText='background:#2f6b4a;border:1px solid #6fd39a;color:#e8fff2;'+
+    'font-weight:bold;margin-top:10px;';
+  const mins = Math.max(1, Math.round((Date.now()-(r.savedAt||Date.now()))/60000));
+  btn.textContent = '이어하기 — '+r.floor+'층 ('+mins+'분 전)';
+  btn.addEventListener('click',()=>{
+    initAudio(); resumeAudio();
+    gameStarted=true;
+    document.getElementById('startModal').style.display='none';
+    document.getElementById('hud').style.display='block';
+    document.getElementById('btns').style.display='block';
+    layoutButtons();
+    document.getElementById('btnNVG').style.display='flex';
+    document.getElementById('btnThermal').style.display='flex';
+    layoutDpad();
+    loadMeta(); applyLoadout(); loadAnalytics();
+    resumeRun(r);
+  });
+  el.parentNode.insertBefore(btn, el);
+})();
+
 (function showMapInfo(){
   const el=document.getElementById('btnStart');
   if(!el || !el.parentNode) return;
@@ -2029,6 +2469,10 @@ const startOverlay=document.getElementById('startOverlay');
 
 document.getElementById('btnStart').addEventListener('click',()=>{
   layoutButtons();
+  loadMeta();
+  applyLoadout();
+  pickObjective(runFloor);
+  setTimeout(()=>showMsg(runFloor+'층 — '+objective.name+': '+objective.desc), 900);
   loadAnalytics();
   analytics.sessions=(analytics.sessions||0)+1;
   sessionStart=performance.now();
@@ -2082,6 +2526,10 @@ document.getElementById('closeSettings').addEventListener('click',()=>{document.
   // 매일 챌린지 — 날짜를 시드로 쓰면 전 세계가 같은 저택을 플레이한다
   let daily=false;
   try{ daily = localStorage.getItem('stealthOps_dailyMode')==='1'; }catch(e){}
+  mkRow('색약 모드', settings.cbMode?'ON':'OFF', ()=>{
+    settings.cbMode = !settings.cbMode;
+    return settings.cbMode?'ON':'OFF';
+  });
   mkRow('매일 챌린지', daily?'ON':'OFF', ()=>{
     daily=!daily;
     try{ localStorage.setItem('stealthOps_dailyMode', daily?'1':'0'); }catch(e){}
@@ -2258,6 +2706,7 @@ function gearCooldownFor(remain){
   return Math.max(4, GEAR_COOLDOWN * used);   // 최소 4초는 보장
 }
 document.getElementById('btnNVG').addEventListener('click',()=>{
+  if(!hasUnlock('nvg')){ showMsg('야간투시경 미해금 — 결과창의 장비 해금에서 구입'); return; }
   if(nvgActive){
     nvgCooldown = gearCooldownFor(nvgTimer);
     nvgActive=false; nvgTimer=0;
@@ -2268,6 +2717,7 @@ document.getElementById('btnNVG').addEventListener('click',()=>{
   if(nvgCooldown<=0){ nvgActive=true; nvgTimer=GEAR_DURATION; playNVGSound(); }
 });
 document.getElementById('btnThermal').addEventListener('click',()=>{
+  if(!hasUnlock('thermal')){ showMsg('열화상 미해금 — 결과창의 장비 해금에서 구입'); return; }
   if(thermalActive){
     thermalCooldown = gearCooldownFor(thermalTimer);
     thermalActive=false; thermalTimer=0;
@@ -2300,6 +2750,9 @@ function bindHold(id,type){
   window.addEventListener('mousemove',e=>{ if(aimLock===type) move(e.clientX); });
   el.addEventListener('mouseup',end);
 }
+document.getElementById('shopClose').addEventListener('click',()=>{
+  document.getElementById('shopModal').style.display='none';
+});
 document.getElementById('lockCancel').addEventListener('click', closePuzzle);
 document.getElementById('seqCancel').addEventListener('click', closePuzzle);
 bindHold('btnSmoke','smoke');
@@ -2463,13 +2916,15 @@ function updatePlayer(dt){
   // 히스테리시스: 지쳐서 멈춰도 토글은 유지되고, 25까지 회복되면 자동으로 다시 달린다.
   if(sprinting && stamina <= 0)      sprintReady = false;
   if(!sprintReady && stamina >= 25)  sprintReady = true;
-  sprinting = sprintHeld && sprintReady && !crouchHeld && mag > 0.15;
+  sprinting = sprintHeld && sprintReady && !crouchHeld && !carryingLoot && !carriedCorpse && mag > 0.15;
   if(sprinting){
     stamina = Math.max(0, stamina - 30*dt);
   } else {
     stamina = Math.min(100, stamina + 20*dt);
   }
-  const spd = player.speed * (crouchHeld?0.55:(sprinting?1.7:1));
+  let spd = player.speed * (crouchHeld?0.55:(sprinting?1.7:1));
+  if(carryingLoot) spd *= 0.72;          // 물건을 들면 느려진다
+  if(carriedCorpse) spd *= 0.60;         // 시체를 메면 더 느려진다
   let moved=0;
   if(mag>0.15){
     player.angle=Math.atan2(my,mx);
@@ -2634,13 +3089,21 @@ function updateEnemy(en,dt){
     updateCamera(en,dt);
     return;
   }
+  if(en.kind==='sniper') updateSniper(en,dt);
   // 끼임 해제는 비용이 있으므로 적마다 8프레임에 한 번씩 분산해서 검사
-  if(en.state!=='dying' && ((navTick + (en._id|0)) % 8) === 0) resolveEnemyStuck(en);
+  if(en.kind!=='drone' && en.state!=='dying' && ((navTick + (en._id|0)) % 8) === 0) resolveEnemyStuck(en);
   if(en.state==='dying')return;
 
   if(en.stunned){
     en.stunTimer -= dt;
-    if(en.stunTimer<=0){ en.stunned=false; en.state='patrol'; }
+    // 결박하지 않은 기절은 풀린다. 깨어나면 곧장 주변을 살핀다.
+    if(en.stunTimer<=0 && !en.bound){
+      en.stunned=false;
+      en.state='investigate';
+      en.target={x:player.x, y:player.y};
+      en.investigateTimer=5;
+      spawnText(en.x, en.y-26, '으윽... 누구야?', '#ffd08a');
+    }
     return;
   }
 
@@ -2685,7 +3148,8 @@ function updateEnemy(en,dt){
   let moved=0;
   // 순찰은 원래 경로가 열려 있으므로 그대로 두고,
   // 추격·조사·복귀처럼 임의 지점으로 갈 때만 경로탐색을 쓴다
-  if(goal && (en.state==='search' || en.state==='investigate' || en.state==='return')){
+  if(goal && en.kind!=='drone' &&
+     (en.state==='search' || en.state==='investigate' || en.state==='return')){
     goal = navNextStep(en, goal) || goal;
   }
   if(goal){
@@ -2699,9 +3163,17 @@ function updateEnemy(en,dt){
         for(const w of solidsNear(tx,ty,en.r)){ if(circleRectCollide(tx,ty,en.r,w)) return false; }
         return true;
       };
+      const mx0=()=>en.x+ux*mvSpd, my0=()=>en.y+uy*mvSpd;
+      // 드론은 날아다니므로 벽·가구를 무시하고 직선으로 간다
+      if(en.kind==='drone'){
+        en.x += ux*mvSpd; en.y += uy*mvSpd;
+        en.x = Math.max(en.r, Math.min(WORLD_W-en.r, en.x));
+        en.y = Math.max(en.r, Math.min(WORLD_H-en.r, en.y));
+        moved = en.speed;
+      }
+      else
       // 정면이 막히면 벽을 타고 미끄러진다 (경로탐색이 없으므로 최소한의 회피)
-      let mx=en.x+ux*mvSpd, my=en.y+uy*mvSpd;
-      if(free(mx,my)){ en.x=mx; en.y=my; moved=en.speed; }
+      if(free(mx0(),my0())){ en.x=mx0(); en.y=my0(); moved=en.speed; }
       else if(free(en.x+ux*mvSpd, en.y)){ en.x+=ux*mvSpd; moved=en.speed*0.7; }
       else if(free(en.x, en.y+uy*mvSpd)){ en.y+=uy*mvSpd; moved=en.speed*0.7; }
     }
@@ -2834,7 +3306,7 @@ function updateEnemy(en,dt){
        총성이 울린 뒤(guardsArmed)부터 무기를 사용한다. */
     if(guardsArmed && en.state==='search' && !en.stunned && !caught && !player.hiddenIn){
       en.fireCd -= dt;
-      const range = en.weapon==='rifle' ? 480 : 190;
+      const range = en.weapon==='sniper' ? 900 : en.weapon==='rifle' ? 480 : 190;
       /* 교전 판정은 평상시 시야와 분리한다.
          추격 중이면 이미 위치를 알고 있으므로, 총구를 향할 수 있고(넓은 각도)
          엄폐물에 가리지 않았으면 쏜다. */
@@ -2845,9 +3317,24 @@ function updateEnemy(en,dt){
                  && hasLineOfSight(en.x,en.y,player.x,player.y);
       }
       if(canEngage){
-        en.fireCd = en.weapon==='rifle' ? (1.5+Math.random()*1.4)
-                                        : (2.2+Math.random()*1.6);
-        enemyAttack(en, dist);
+        if(en.weapon==='sniper'){
+          // 저격수는 붉은 조준선을 먼저 비춘다 — 엄폐할 시간을 준다
+          en.aimTimer = 1.5;
+          en.fireCd = 3.4 + Math.random()*1.6;
+        } else {
+          en.fireCd = en.weapon==='rifle' ? (1.5+Math.random()*1.4)
+                                          : (2.2+Math.random()*1.6);
+          enemyAttack(en, dist);
+        }
+      }
+      // 조준 완료 시 발사 (그 사이 엄폐하면 빗나간다)
+      if(en.aimTimer>0){
+        en.aimTimer -= dt;
+        if(en.aimTimer<=0){
+          const stillClear = hasLineOfSight(en.x,en.y,player.x,player.y);
+          if(stillClear) enemyAttack(en, dist);
+          else spawnText(en.x,en.y-30,'놓쳤다','#9aa3ab');
+        }
       }
     }
   }
@@ -2994,6 +3481,18 @@ function updateAbilities(dt){
 /* ===== CCTV =====
    고정 설치. 좌우로 훑다가 플레이어를 발견하면 즉시 경보를 울린다.
    처치할 수 없고 총으로 부숴야 한다 — 그런데 총을 쏘면 그것대로 경보다. */
+/* 저격수 : 제자리에서 천천히 훑다가 플레이어를 포착하면 조준한다 */
+function updateSniper(en,dt){
+  if(en.state==='dying'){ en.dieTimer-=dt; return; }
+  if(en.state!=='search'){
+    en.camT = (en.camT||0) + dt*0.35;
+    en.angle = (en.camBase||0) + Math.sin(en.camT)*0.9;
+  } else if(!player.hiddenIn){
+    en.angle = Math.atan2(player.y-en.y, player.x-en.x);
+  }
+  en.walkPhase = 0;
+}
+
 function updateCamera(en,dt){
   if(en.state==='dying'){
     en.dieTimer-=dt;
@@ -3053,7 +3552,14 @@ function enemyAttack(en, dist){
     ? (en.rank==='veteran' ? 0.62 : 0.48) * (1 - Math.min(0.55, dist/900))
     : 0.70 * (1 - Math.min(0.5, dist/320));
 
-  if(en.weapon==='rifle'){
+  if(en.weapon==='sniper'){
+    playEnemyShot(pan, 0.85);
+    bullets.push({x:en.x, y:en.y, tx:player.x, ty:player.y, t:0, dur:0.06, hostile:true});
+    if(Math.random() < 0.72){
+      damagePlayer(26, hitAngle, '저격 피격!');
+      shakeAmt = Math.max(shakeAmt, 12);
+    } else spawnText(player.x, player.y-34, '빗나감', '#9aa3ab');
+  } else if(en.weapon==='rifle'){
     playEnemyShot(pan, 0.55);
     bullets.push({x:en.x, y:en.y, tx:player.x, ty:player.y, t:0, dur:0.09, hostile:true});
     if(Math.random() < accuracy){
@@ -3108,6 +3614,7 @@ function respawn(){
   alarmRaised=false; alarmTimer=0; alarmPoint=null;
   clearReinforcements();
   aimTargetCache=null;
+  carriedCorpse=null;
   player.hp=player.maxHp; player.hurtTimer=0; player.regenDelay=0; player.stunTimer=0;
   magAmmo=MAG_SIZE; reloadTimer=0;
   bloodDecals.length=0;
@@ -3133,7 +3640,9 @@ function afterRespawnHideExec(){document.getElementById('execOverlay').style.dis
 function openDeathMenu(){
   deathMenuOpen = true;
   document.getElementById('dmSub').textContent =
-    '체포 ' + stats.caughtCount + '회 · 발각 ' + stats.detections + '회';
+    runFloor + '층 · 체포 ' + stats.caughtCount + '회 · 발각 ' + stats.detections + '회';
+  const lv=document.getElementById('dmLevel');
+  if(lv) lv.textContent='1층부터 새 잠입 (점수 정산)';
   document.getElementById('deathMenu').style.display='flex';
 }
 function closeDeathMenu(){
@@ -3177,12 +3686,19 @@ function restartLevel(){
   escapePhase = false; escapeShown = false;
   stats.startTime = performance.now();
   stats.detections=0; stats.caughtCount=0;
-  stats.knifeKills=0; stats.chokeKills=0; stats.shotKills=0;
+  stats.knifeKills=0; stats.chokeKills=0; stats.shotKills=0; stats.bound=0;
   rollCallTimer=60;
   respawn();
 }
 document.getElementById('dmCheckpoint').addEventListener('click',()=>{ respawn(); closeDeathMenu(); });
-document.getElementById('dmLevel').addEventListener('click',()=>{ restartLevel(); closeDeathMenu(); });
+document.getElementById('dmLevel').addEventListener('click',()=>{
+  awardPoints(false);
+  clearRun();
+  runVariant='manor';
+  loadFloor(1);
+  closeDeathMenu();
+  showMsg('1층부터 다시 — 정보 점수는 유지됩니다');
+});
 document.getElementById('pauseResume').addEventListener('click',()=>{
   paused=false;
   document.getElementById('pauseOverlay').style.display='none';
@@ -3193,6 +3709,7 @@ document.getElementById('pauseResume').addEventListener('click',()=>{
 document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){
     markSeen();                     // 이탈 시점 기록
+    saveRun();                      // 앱을 닫아도 진행이 남도록
     suspendAudio();                 // 사이렌·BGM 포함 모든 소리 정지
     if(gameStarted && !caught && !puzzleActive){
       paused=true;
@@ -3237,6 +3754,8 @@ function spawnText(x,y,text,color){
 
 function showResultScreen(){
   logRunEnd(true);
+  const gained = awardPoints(true);
+  clearRun();
   const elapsed = Math.floor((performance.now()-stats.startTime)/1000);
   const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
   const ss = String(elapsed%60).padStart(2,'0');
@@ -3246,6 +3765,7 @@ function showResultScreen(){
   const ch = [
     {key:'ghost', name:'유령 (무발각)',        ok: stats.detections===0 && stats.caughtCount===0},
     {key:'pacif', name:'불살 (무살상)',        ok: totalKills===0},
+    {key:'bind',  name:'포박술 (결박 3명 이상)', ok: (stats.bound||0)>=3},
     {key:'silent',name:'무발포 (총 미사용)',   ok: !guardsArmed},
     {key:'speed', name:'전격전 (7분 이내)',    ok: elapsed<=420}
   ];
@@ -3271,8 +3791,9 @@ function showResultScreen(){
     bestLine = '<br>최고 기록: '+Math.floor(best/60)+'분 '+(best%60)+'초';
   }
   document.getElementById('resultBody').innerHTML =
+    '<b style="color:#ffcf6e">'+runFloor+'층 · '+(objective?objective.name:'')+'</b> 클리어<br>'+
     '클리어 시간: '+mm+':'+ss+'<br>'+
-    '미션: '+missions.filter(m=>m.done).length+'/'+missions.length+'<br>'+
+    '<b style="color:#6ee8b4">+'+gained+' 정보 점수</b> (보유 '+META.points+')<br>'+
     '발각 횟수: '+stats.detections+'회<br>'+
     '체포당한 횟수: '+stats.caughtCount+'회<br>'+
     '처치 — 칼 '+stats.knifeKills+' / 조르기 '+stats.chokeKills+' / 저격 '+stats.shotKills+'<br>'+
@@ -3282,10 +3803,33 @@ function showResultScreen(){
     '평가: '+'★'.repeat(stars)+'☆'.repeat(3-stars)+
     bestLine +
     '<hr style="border-color:#3a3a30;margin:10px 0">' +
+    '<hr style="border-color:#3a3a30;margin:10px 0">' +
+    '<b style="color:#ffcf6e">'+(runFloor+1)+'층 경로 선택</b><br>' +
+    ['vault','manor','bank'].map(k=>{
+      const V=FLOOR_VARIANTS[k];
+      return '<div class="floorPick" data-v="'+k+'" style="padding:10px;border-radius:7px;'+
+        'background:#2a3038;border:1px solid #59636d;margin-top:7px;cursor:pointer;text-align:left;">'+
+        '<div style="font-size:13.5px;font-weight:bold;color:#dbe4ec;">'+V.name+
+        ' <span style="color:#8d97a1;font-weight:normal;">경비 x'+V.mul+' · 점수 x'+V.score+'</span></div>'+
+        '<div style="font-size:11px;color:#8d97a1;">'+V.desc+'</div></div>';
+    }).join('') +
+    '<div id="openShop" style="padding:10px;border-radius:7px;background:#3a4a5a;' +
+    'border:1px solid #6a8aa8;color:#dbe8f2;font-size:13px;cursor:pointer;margin-bottom:8px;">' +
+    '장비 해금 (보유 '+META.points+'점)</div>' +
     '<div id="copyStats" style="padding:9px;border-radius:6px;background:#2a3038;' +
     'border:1px solid #59636d;color:#cfd6dd;font-size:12px;cursor:pointer;">' +
     '플레이 기록 복사 (테스트용)</div>';
   setTimeout(()=>{
+    document.querySelectorAll('.floorPick').forEach(el=>{
+      el.addEventListener('click',()=>{
+        const v = el.getAttribute('data-v');
+        document.getElementById('resultModal').style.display='none';
+        loadFloor(runFloor+1, undefined, v);
+        showMsg(runFloor+'층 '+FLOOR_VARIANTS[v].name+' — '+objective.name+': '+objective.desc);
+      });
+    });
+    const os=document.getElementById('openShop');
+    if(os) os.addEventListener('click', openShop);
     const cs=document.getElementById('copyStats');
     if(!cs) return;
     cs.addEventListener('click',()=>{
@@ -3378,6 +3922,7 @@ function handleFire(){
   // 적에게 붙어 있으면 총을 쏘지 않고 조용히 처치한다
   if(doTakedown()) return;
 
+  if(carriedCorpse){ showMsg('시체를 메고는 사격할 수 없습니다'); return; }
   if(reloadTimer>0){ return; }
   if(magAmmo<=0){ startReload(); return; }
   magAmmo--;
@@ -3422,6 +3967,7 @@ function handleFire(){
       if(best.commander){
         showMsg('지휘관 제거 — 지원 병력이 줄어듭니다');
         spawnText(best.x,best.y-40,'지휘관 제거','#ffcf6e');
+        setTimeout(()=>{ if(objectiveDone() && !escapePhase && !missionsComplete) startEscapePhase(); }, 400);
       }
       if(best.kind==='cam') showMsg('CCTV 파괴');
       best.state='dying';
@@ -3467,15 +4013,39 @@ function handleFire(){
   showMsg(noticed ? '빗나감 - 근처 적이 눈치챔!' : '빗나감');
 }
 
+/* 시체는 순간이동으로 사라지지 않는다.
+   들쳐메고 은신처까지 옮겨야 하며, 그동안 느려지고 총을 쓸 수 없다. */
+let carriedCorpse = null;
 function tryHideCorpse(){
-  for(const c of corpses){
-    if(c.discovered||c.hidden)continue;
-    const d=Math.hypot(player.x-c.x,player.y-c.y);
-    if(d<42){
-      c.hidden=true;
-      spawnText(c.x,c.y-18,'시체 은닉 완료','#8fd0ff');
+  // 이미 메고 있으면 은신처에 내려놓기
+  if(carriedCorpse){
+    let spot=null, bd=70;
+    for(const f of hidingSpots){
+      const cx=f.x+(f.w||0)/2, cy=f.y+(f.h||0)/2;
+      const d=Math.hypot(player.x-cx, player.y-cy);
+      if(d<bd){ bd=d; spot={x:cx,y:cy}; }
+    }
+    if(!spot){
+      showMsg('은신처(옷장 등) 근처에서 내려놓을 수 있습니다');
       return true;
     }
+    carriedCorpse.x=spot.x; carriedCorpse.y=spot.y;
+    carriedCorpse.hidden=true;
+    carriedCorpse.carried=false;
+    carriedCorpse=null;
+    spawnText(spot.x, spot.y-18, '시체 은닉 완료', '#8fd0ff');
+    showMsg('시체를 숨겼습니다');
+    return true;
+  }
+  // 근처 시체 들쳐메기
+  for(const c of corpses){
+    if(c.discovered||c.hidden||c.carried)continue;
+    if(Math.hypot(player.x-c.x,player.y-c.y) >= 42) continue;
+    c.carried=true;
+    carriedCorpse=c;
+    spawnText(c.x,c.y-18,'시체를 들쳐멤','#ffcf6e');
+    showMsg('운반 중 — 느려지고 사격 불가. 은신처에서 내려놓으세요');
+    return true;
   }
   return false;
 }
@@ -3549,6 +4119,33 @@ function handleAction(){
       openPuzzle(m);
       return;
     }
+  }
+
+  // --- 기절한 적 결박 (비살상 제압) ---
+  for(const en of enemies){
+    if(!en.stunned || en.bound || en.state==='dying') continue;
+    if(Math.hypot(player.x-en.x, player.y-en.y) > 44) continue;
+    en.bound = true;
+    en.stunTimer = 1e9;             // 영구 무력화
+    en.detect = 0;
+    stats.bound = (stats.bound||0) + 1;
+    spawnText(en.x, en.y-28, '결박 완료', '#8fe8b4');
+    showMsg('결박 — 깨어나지 않습니다 (비살상)');
+    if(audioCtx){
+      playNoise(0.12, 0.20, 1400, 'bandpass', panOf(en.x));
+      setTimeout(()=>playNoise(0.09, 0.14, 900, 'bandpass', panOf(en.x)), 130);
+    }
+    vibrate(25);
+    return;
+  }
+
+  // --- 탈취 목표의 금고 ---
+  if(loot && !loot.taken && Math.hypot(player.x-loot.x, player.y-loot.y) < 44){
+    loot.taken = true; carryingLoot = true;
+    showMsg('물건 확보 — 이동이 느려집니다. 탈출하십시오!');
+    spawnText(loot.x, loot.y-26, '확보!', '#ffcf6e');
+    startEscapePhase();
+    return;
   }
 
   // --- 환경 장치 ---
@@ -3794,9 +4391,10 @@ function completePuzzle(){
     particles.push({x:m.x,y:m.y,vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,life:35,color:m.color});
   }
   logMission(m.id);
+  saveRun();
   spawnText(m.x,m.y-20, m.label+' 완료','#ffe27a');
   showMsg(m.label+' 완료!');
-  if(missions.every(mm=>mm.done) && !escapePhase && !missionsComplete){
+  if(objectiveDone() && !escapePhase && !missionsComplete){
     startEscapePhase();
     return;
   }
@@ -4166,9 +4764,96 @@ function drawCameraSprite(en, alpha){
   ctx.restore();
 }
 
+/* 드론 : 회전 로터 4개 + 중앙 동체. 지상 유닛과 확실히 구분되게 그린다 */
+function drawDroneSprite(en, alpha){
+  const r=en.r, t=performance.now()/1000, alert=en.state==='search';
+  ctx.save();
+  ctx.globalAlpha = alpha!==undefined?alpha:1;
+  // 지면 그림자 — 떠 있다는 걸 알리는 단서
+  ctx.save();
+  ctx.globalAlpha = (alpha!==undefined?alpha:1)*0.35;
+  ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.ellipse(0, r*1.5, r*0.7, r*0.35, 0, 0, 7); ctx.fill();
+  ctx.restore();
+  // 암 4개 + 로터
+  ctx.strokeStyle='#3a4149'; ctx.lineWidth=2.2;
+  for(let i=0;i<4;i++){
+    const a=i*Math.PI/2 + Math.PI/4;
+    const ax=Math.cos(a)*r*1.15, ay=Math.sin(a)*r*1.15;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(ax,ay); ctx.stroke();
+    ctx.save();
+    ctx.globalAlpha=(alpha!==undefined?alpha:1)*0.45;
+    ctx.strokeStyle='#8fa0b0'; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.arc(ax, ay, r*0.52, 0, 7); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle='#2a3038';
+    ctx.beginPath(); ctx.arc(ax, ay, 2.2, 0, 7); ctx.fill();
+  }
+  // 동체
+  ctx.fillStyle = radialShade(r*0.7, alert?'#a05a5a':'#5a6470', '#38414a', '#1c2228');
+  ctx.beginPath(); ctx.arc(0,0, r*0.68, 0, 7); ctx.fill();
+  ctx.strokeStyle='#1c2228'; ctx.lineWidth=1.2; ctx.stroke();
+  // 카메라 짐벌
+  ctx.fillStyle='#12161a';
+  ctx.beginPath(); ctx.arc(r*0.45, 0, r*0.30, 0, 7); ctx.fill();
+  ctx.fillStyle = alert ? '#ff5a5a' : '#7ad0ff';
+  ctx.beginPath(); ctx.arc(r*0.45, 0, r*0.15, 0, 7); ctx.fill();
+  // 점멸등
+  if(Math.sin(t*9)>0){
+    ctx.fillStyle= alert ? '#ff3030' : '#5ee87a';
+    ctx.beginPath(); ctx.arc(-r*0.5, 0, 1.8, 0, 7); ctx.fill();
+  }
+  ctx.restore();
+}
+
+/* 저격수 조준선 — 발사 전 1.5초간 붉은 선이 보인다 */
+function drawSniperAim(en, camX, camY){
+  if(!(en.aimTimer>0)) return;
+  const p2 = 1 - en.aimTimer/1.5;
+  ctx.save();
+  ctx.globalAlpha = 0.35 + p2*0.5;
+  ctx.strokeStyle = '#ff3030';
+  ctx.lineWidth = 1 + p2*1.6;
+  ctx.setLineDash([6,5]);
+  ctx.beginPath();
+  ctx.moveTo(en.x-camX, en.y-camY);
+  ctx.lineTo(player.x-camX, player.y-camY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle='#ff5050'; ctx.lineWidth=2;
+  const rr = 16 - p2*9;
+  ctx.beginPath(); ctx.arc(player.x-camX, player.y-camY, rr, 0, 7); ctx.stroke();
+  ctx.restore();
+}
+
+/* 간이 스프라이트 — 그라디언트·팔·다리·무기를 생략한다.
+   화면에 100명 넘게 몰리는 경보 상황에서 부하를 크게 줄여준다. */
+function drawEnemySimple(en, alpha){
+  const r=en.r, alert=en.state==='search';
+  ctx.save();
+  ctx.globalAlpha = alpha!==undefined?alpha:1;
+  ctx.fillStyle = alert ? '#a04848' : '#7d6a50';
+  ctx.beginPath(); ctx.arc(0,0,r,0,7); ctx.fill();
+  ctx.fillStyle = alert ? '#d68a8a' : '#a89878';
+  ctx.beginPath(); ctx.arc(0,0,r*0.66,0,7); ctx.fill();
+  // 바라보는 방향만 점으로
+  ctx.fillStyle='rgba(50,40,28,0.9)';
+  ctx.beginPath(); ctx.arc(r*0.55, 0, 1.8, 0, 7); ctx.fill();
+  ctx.restore();
+}
+
+/* 간이로 그릴지 판단 — 플레이어에서 멀수록 디테일이 안 보인다 */
+let lodRadius = 340;
+function useSimpleSprite(en){
+  if(en.kind==='cam' || en.kind==='drone') return false;   // 형태가 특이해 구분이 필요
+  return Math.hypot(en.x-player.x, en.y-player.y) > lodRadius;
+}
+
 function drawEnemySprite(en, alpha){
   if(en.kind==='dog'){ drawDogSprite(en, alpha); return; }
   if(en.kind==='cam'){ drawCameraSprite(en, alpha); return; }
+  if(en.kind==='drone'){ drawDroneSprite(en, alpha); return; }
+  if(useSimpleSprite(en)){ drawEnemySimple(en, alpha); return; }
   ctx.save();
   ctx.globalAlpha = alpha!==undefined?alpha:1;
 
@@ -4277,7 +4962,19 @@ function drawEnemySprite(en, alpha){
 
   if(en.stunned){
     ctx.font='bold 12px sans-serif';ctx.textAlign='center';
-    ctx.fillText('💫', 0, -18);
+    if(en.bound){
+      // 결박 — 밧줄 표시
+      ctx.strokeStyle='#c8b070'; ctx.lineWidth=2;
+      for(let i=-1;i<=1;i++){
+        ctx.beginPath();
+        ctx.moveTo(-r*0.7, i*r*0.4); ctx.lineTo(r*0.7, i*r*0.4);
+        ctx.stroke();
+      }
+      ctx.fillStyle='#8fe8b4';
+      ctx.fillText('묶임', 0, -20);
+    } else {
+      ctx.fillText('💫', 0, -18);
+    }
   }
 
   ctx.restore();
@@ -4336,6 +5033,7 @@ function drawEnvironment(camX,camY){
 
   // --- 환풍구 : 격자 무늬 ---
   for(const v of vents){
+    if(!rectOnScreen(v.x, v.y, v.w, v.h)) continue;
     ctx.save();
     ctx.fillStyle='#2a3138';
     ctx.fillRect(v.x-camX, v.y-camY, v.w, v.h);
@@ -4360,6 +5058,7 @@ function drawEnvironment(camX,camY){
 
   // --- 문 ---
   for(const d of doors){
+    if(!rectOnScreen(d.x, d.y, d.w, d.h)) continue;
     const x=d.x-camX, y=d.y-camY;
     ctx.save();
     if(d.broken){
@@ -4397,8 +5096,57 @@ function drawEnvironment(camX,camY){
     ctx.restore();
   }
 
+  // --- 보급품 ---
+  for(const q of pickups){
+    if(q.taken) continue;
+    if(!onScreen(q.x, q.y, 22)) continue;
+    const x=q.x-camX, y=q.y-camY + Math.sin(q.bob)*2.2;
+    const info=PICKUP_INFO[q.kind];
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,0.35)';
+    ctx.beginPath(); ctx.ellipse(q.x-camX, q.y-camY+9, 8, 4, 0, 0, 7); ctx.fill();
+    ctx.fillStyle=info.color;
+    if(q.kind==='ammo'){
+      ctx.fillRect(x-6, y-7, 12, 14);
+      ctx.fillStyle='rgba(0,0,0,0.45)';
+      ctx.fillRect(x-4, y-4, 8, 2); ctx.fillRect(x-4, y+1, 8, 2);
+    } else if(q.kind==='medkit'){
+      ctx.fillRect(x-8, y-6, 16, 12);
+      ctx.fillStyle='#fff';
+      ctx.fillRect(x-1.6, y-4, 3.2, 8); ctx.fillRect(x-5, y-1.6, 10, 3.2);
+    } else {
+      ctx.beginPath(); ctx.arc(x, y, 6.5, 0, 7); ctx.fill();
+      ctx.fillStyle='rgba(0,0,0,0.4)';
+      ctx.fillRect(x-1.4, y-8, 2.8, 3);
+    }
+    ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=1;
+    ctx.stroke();
+    // 눈에 띄도록 옅은 후광
+    ctx.globalAlpha=0.20+Math.sin(q.bob*0.7)*0.08;
+    ctx.fillStyle=info.color;
+    ctx.beginPath(); ctx.arc(x, y, 15, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
+  // --- 탈취 목표의 금고 ---
+  if(loot && !loot.taken){
+    const x=loot.x-camX, y=loot.y-camY;
+    ctx.save();
+    ctx.fillStyle='#3f4650';
+    ctx.fillRect(x-16, y-18, 32, 36);
+    ctx.strokeStyle='#20262c'; ctx.lineWidth=1.5;
+    ctx.strokeRect(x-16, y-18, 32, 36);
+    ctx.strokeStyle='#ffcf6e'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(x+4, y, 7, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+4,y); ctx.lineTo(x+11,y); ctx.stroke();
+    ctx.fillStyle='rgba(255,207,110,'+(0.4+Math.sin(t*4)*0.25)+')';
+    ctx.beginPath(); ctx.arc(x, y-26, 3.2, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+
   // --- 두꺼비집 ---
   for(const b of breakers){
+    if(!onScreen(b.x, b.y, 26)) continue;
     const x=b.x-camX, y=b.y-camY;
     ctx.save();
     ctx.fillStyle='#3a4149';
@@ -4426,6 +5174,7 @@ function drawEnvironment(camX,camY){
 
   // --- 경보기 ---
   for(const a of alarmPanels){
+    if(!onScreen(a.x, a.y, 22)) continue;
     const x=a.x-camX, y=a.y-camY;
     ctx.save();
     if(a.alive){
@@ -4454,6 +5203,7 @@ function drawEnvironment(camX,camY){
 function drawBloodDecals(camX,camY){
   ctx.save();
   for(const b of bloodDecals){
+    if(!onScreen(b.x, b.y, b.r+4)) continue;
     ctx.globalAlpha = b.a * b.life;
     ctx.fillStyle = '#6e0f0f';
     ctx.beginPath();
@@ -4643,11 +5393,13 @@ function drawDecorItem(d,camX,camY){
   }
 }
 function drawDecor(camX,camY){
-  for(const d of decor) if(d.type==='rug') drawDecorItem(d,camX,camY);
+  const decorVis = d => onScreen(d.x + (d.w||0)/2, d.y + (d.h||0)/2,
+                                 Math.max(d.w||0, d.h||0, (d.r||0)*2) + 20);
+  for(const d of decor) if(d.type==='rug' && decorVis(d)) drawDecorItem(d,camX,camY);
   drawBloodDecals(camX,camY);
   drawEnvironment(camX,camY);
-  for(const d of decor) if(d.type!=='rug' && d.type!=='note') drawDecorItem(d,camX,camY);
-  for(const d of decor) if(d.type==='note') drawDecorItem(d,camX,camY);
+  for(const d of decor) if(d.type!=='rug' && d.type!=='note' && decorVis(d)) drawDecorItem(d,camX,camY);
+  for(const d of decor) if(d.type==='note' && decorVis(d)) drawDecorItem(d,camX,camY);
 }
 
 function drawClouds(camX,camY){
@@ -4717,6 +5469,7 @@ function drawWorld(camX,camY){
 
   for(const c of corpses){
     if(c.hidden)continue;
+    if(!onScreen(c.x, c.y, 30)) continue;
     drawCorpse(c,camX,camY);
   }
 
@@ -4729,6 +5482,8 @@ function drawWorld(camX,camY){
   drawBullets(camX,camY);
 
   for(const en of enemies){
+    // 화면 밖 적은 스프라이트·링·레티클을 전부 건너뛴다
+    if(!onScreen(en.x, en.y, 48)) continue;
     let alpha=1, extraRot=0;
     if(en.state==='dying'){
       const t = 1-(en.dieTimer/en.dieTotal);
@@ -4747,6 +5502,7 @@ function drawWorld(camX,camY){
     ctx.rotate(en.angle+extraRot);
     if(en.spawnFade>0){ en.spawnFade-=0.016; alpha=Math.min(alpha, 1-Math.max(0,en.spawnFade)/0.45); }
     drawEnemySprite(en, alpha);
+    if(en.kind==='sniper') drawSniperAim(en, camX, camY);
     if(en.hitFlash>0){
       en.hitFlash -= 0.016;
       ctx.save();
@@ -4807,6 +5563,20 @@ function drawWorld(camX,camY){
       ctx.arc(en.x-camX, en.y-camY, vr, en.angle-va, en.angle+va);
       ctx.closePath();
       ctx.fill();
+      ctx.restore();
+    }
+
+    // --- 적 상태 표식 (색 없이도 구분되도록 모양을 다르게) ---
+    if(settings.cbMode && en.state!=='dying'){
+      ctx.save();
+      ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=1.6;
+      ctx.translate(en.x-camX, en.y-camY-34);
+      if(en.state==='search'){            // 삼각형 = 추격
+        ctx.beginPath(); ctx.moveTo(0,-5); ctx.lineTo(4.5,3); ctx.lineTo(-4.5,3);
+        ctx.closePath(); ctx.stroke();
+      } else if(en.state==='caution' || en.state==='investigate'){  // 사각형 = 경계
+        ctx.strokeRect(-4,-4,8,8);
+      }
       ctx.restore();
     }
 
@@ -4926,6 +5696,7 @@ function drawWorld(camX,camY){
   }
 
   for(const p of particles){
+    if(!onScreen(p.x, p.y, 6)) continue;
     ctx.fillStyle=p.color;
     ctx.globalAlpha=Math.max(0,p.life/35);
     ctx.beginPath();ctx.arc(p.x-camX,p.y-camY,3,0,7);ctx.fill();
@@ -4942,6 +5713,31 @@ function drawWorld(camX,camY){
   }
 }
 
+/* ===================== 화면 밖 컬링 =====================
+   월드 2000x1500 중 화면에 보이는 건 세로폰 기준 약 13%다.
+   적 190명이면 그중 약 24명만 화면 안이고 나머지 166명은
+   그려봐야 보이지 않는다. 그리기 전에 걸러내는 것만으로 렌더 부하가
+   크게 줄어든다. (로직은 그대로 돌아가므로 게임 동작은 변하지 않는다) */
+let cullX0=0, cullY0=0, cullX1=0, cullY1=0;
+let culled=0, drawn=0;
+function setCullBounds(camX, camY, margin){
+  const m = margin===undefined ? 60 : margin;
+  cullX0 = camX - m;
+  cullY0 = camY - m;
+  cullX1 = camX + canvas.width + m;
+  cullY1 = camY + canvas.height + m;
+  culled=0; drawn=0;
+}
+function onScreen(x, y, pad){
+  const p2 = pad || 0;
+  const ok = (x+p2 > cullX0 && x-p2 < cullX1 && y+p2 > cullY0 && y-p2 < cullY1);
+  if(ok) drawn++; else culled++;
+  return ok;
+}
+function rectOnScreen(x, y, w, h){
+  return (x+w > cullX0 && x < cullX1 && y+h > cullY0 && y < cullY1);
+}
+
 let lastCamX=0, lastCamY=0;
 let aimTargetCache=null;
 
@@ -4952,6 +5748,15 @@ function drawObjectiveArrow(camX, camY){
   if(escapePhase){
     tgt = {x:checkpoint.x, y:checkpoint.y};
     col = '#ffcf6e'; label = '탈출';
+  } else if(loot && !loot.taken){
+    tgt = loot; col='#ffcf6e'; label='금고';
+  } else if(objective && objective.id==='assassinate'){
+    let bestD=Infinity;
+    for(const e of enemies){
+      if(!e.commander || e.state==='dying') continue;
+      const d=Math.hypot(e.x-player.x, e.y-player.y);
+      if(d<bestD){ bestD=d; tgt=e; col='#ff8a6a'; label='지휘관'; }
+    }
   } else {
     let bestD=Infinity;
     for(const m of missions){
@@ -5003,6 +5808,16 @@ function render(){
   let camX = Math.max(0,Math.min(player.x-canvas.width/2, WORLD_W-canvas.width));
   let camY = Math.max(0,Math.min(player.y-canvas.height/2, WORLD_H-canvas.height));
   lastCamX=camX; lastCamY=camY;
+  setCullBounds(camX, camY);
+  // 화면에 몰린 적이 많을수록 간이 스프라이트 범위를 넓힌다 (자동 품질 조절)
+  {
+    let near=0;
+    for(const en of enemies){
+      if(en.state==='dying') continue;
+      if(Math.abs(en.x-player.x)<canvas.width && Math.abs(en.y-player.y)<canvas.height) near++;
+    }
+    lodRadius = near>90 ? 190 : near>55 ? 260 : near>30 ? 320 : 420;
+  }
 
   // 진행 방향으로 카메라를 살짝 앞서 보내면 앞이 더 보여서 조작감이 좋아진다
   const leadTargetX = Math.cos(player.angle)*46, leadTargetY = Math.sin(player.angle)*46;
@@ -5211,6 +6026,9 @@ function loop(now){
       updateFirePose(dt);
       updateEscape(dt);
       updateEnvironment(dt);
+      updatePickups(dt);
+      updateCarriedCorpse();
+      updateSave(dt);
       updateTutorial();
       spawnReinforcements(dt);
       withdrawReinforcements(dt);
@@ -5351,7 +6169,8 @@ function loop(now){
     if(!missionsComplete){
       const elapsed=Math.floor((performance.now()-stats.startTime)/1000);
       const mm=String(Math.floor(elapsed/60)).padStart(2,'0'), ss=String(elapsed%60).padStart(2,'0');
-      document.getElementById('timerText').textContent = mm+':'+ss+' | 미션 '+missions.filter(m=>m.done).length+'/'+missions.length;
+      document.getElementById('timerText').textContent =
+        mm+':'+ss+' | '+runFloor+'층 · '+objectiveText();
     }
     if(msgTimer>0){msgTimer--;if(msgTimer<=0)document.getElementById('msg').style.display='none';}
   }
