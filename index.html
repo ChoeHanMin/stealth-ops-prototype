@@ -126,6 +126,30 @@
     60%{transform:scale(1.12);opacity:1;}
     100%{transform:scale(1);opacity:1;}
   }
+  /* ===== 섬광탄 백색 섬광 ===== */
+  #flashWhite{position:fixed;inset:0;pointer-events:none;display:none;z-index:57;
+       background:#fffdf0;opacity:0;transition:opacity 0.55s ease-out;}
+
+  /* ===== 아이템 선택기 ===== */
+  #itemWheel{position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);
+       width:min(300px,86vw);height:min(300px,86vw);z-index:56;display:none;
+       pointer-events:none;}
+  .iwSlot{position:absolute;width:88px;padding:9px 6px;border-radius:11px;
+       background:rgba(16,20,26,0.86);border:2px solid #3d4a58;text-align:center;
+       box-shadow:0 3px 12px rgba(0,0,0,0.6);transition:transform 0.08s,border-color 0.08s;}
+  .iwSlot .iwName{font-size:12.5px;font-weight:bold;color:#dbe4ec;}
+  .iwSlot .iwCnt{font-size:16px;font-weight:bold;color:#ffd86e;margin-top:1px;}
+  .iwSlot.cur{border-color:#7a8a9a;}
+  .iwSlot.hover{border-color:#ffd86e;background:rgba(60,50,20,0.92);
+       transform:scale(1.14) translate(-50%,0);}
+  .iwSlot#iw_flash.hover,.iwSlot#iw_smoke.hover{transform:scale(1.14) translate(0,-50%);}
+  .iwSlot.empty{opacity:0.35;}
+  .iwSlot.empty .iwCnt{color:#8a8a8a;}
+  .iwCenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+       font-size:13px;color:rgba(255,255,255,0.30);letter-spacing:2px;}
+  .iwHint{position:absolute;left:50%;top:-26px;transform:translateX(-50%);
+       font-size:11px;color:#9aa6b2;white-space:nowrap;}
+
   #alarmFlash{position:fixed;inset:0;pointer-events:none;display:none;z-index:18;
        background:radial-gradient(ellipse at center,
          rgba(255,200,60,0.06) 0%, rgba(255,180,40,0.20) 70%, rgba(255,160,20,0.34) 100%);
@@ -174,14 +198,33 @@
        background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:6px;display:none;z-index:10;}
   #joyZone{position:fixed;left:0;bottom:0;width:45%;height:45%;display:none;}
   /* --- 원형 이동 패드 (360도) --- */
+  /* ===== 투척 조이스틱 ===== */
+  #throwPad{position:fixed;display:none;width:104px;height:104px;z-index:40;
+       border-radius:50%;background:rgba(255,210,110,0.08);
+       border:2px solid rgba(255,215,130,0.32);
+       box-shadow:0 2px 10px rgba(0,0,0,0.5);touch-action:none;}
+  #tRing{position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px 0 0 -33px;
+       border-radius:50%;border:1px dashed rgba(255,215,130,0.22);pointer-events:none;}
+  #tKnob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;
+       border-radius:50%;background:rgba(255,255,255,0.22);
+       border:2px solid rgba(255,255,255,0.50);pointer-events:none;
+       box-shadow:0 2px 7px rgba(0,0,0,0.5);
+       display:flex;align-items:center;justify-content:center;}
+  #tLabel{font-size:9.5px;font-weight:bold;color:#fff;letter-spacing:0.5px;
+       text-shadow:0 1px 3px rgba(0,0,0,0.85);pointer-events:none;white-space:pre-line;
+       text-align:center;line-height:1.15;}
+  #throwPad.on{border-color:#ffd86e;background:rgba(255,200,90,0.16);}
+  #throwPad.on #tKnob{background:rgba(255,205,100,0.52);border-color:#ffe08a;}
+  #throwPad.empty{opacity:0.4;}
+
   /* ===== 사격 조이스틱 (트윈스틱) ===== */
-  #firePad{position:fixed;display:none;width:172px;height:172px;z-index:40;
+  #firePad{position:fixed;display:none;width:160px;height:160px;z-index:40;
        border-radius:50%;background:rgba(255,120,90,0.07);
        border:2px solid rgba(255,150,120,0.30);
        box-shadow:0 3px 14px rgba(0,0,0,0.55);touch-action:none;}
-  #fRing{position:absolute;left:50%;top:50%;width:112px;height:112px;margin:-56px 0 0 -56px;
+  #fRing{position:absolute;left:50%;top:50%;width:104px;height:104px;margin:-52px 0 0 -52px;
        border-radius:50%;border:1px dashed rgba(255,160,130,0.20);pointer-events:none;}
-  #fKnob{position:absolute;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;
+  #fKnob{position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px 0 0 -33px;
        border-radius:50%;background:rgba(255,255,255,0.24);
        border:2px solid rgba(255,255,255,0.52);pointer-events:none;
        box-shadow:0 2px 9px rgba(0,0,0,0.55);transition:none;
@@ -191,6 +234,8 @@
        text-align:center;line-height:1.2;}
   #firePad.on #fKnob{background:rgba(255,110,90,0.48);border-color:#ff8a6a;}
   #firePad.takedown{border-color:rgba(140,235,180,0.6);background:rgba(110,232,180,0.10);}
+  #firePad.melee{border-color:rgba(255,190,90,0.75);background:rgba(255,180,80,0.13);}
+  #firePad.melee #fKnob{background:rgba(255,180,80,0.44);border-color:#ffc46a;}
   #firePad.takedown #fKnob{background:rgba(110,232,180,0.42);border-color:#8fe8b4;}
   #firePad.locked{border-color:rgba(255,90,90,0.75);}
   #fTicks{position:absolute;inset:0;pointer-events:none;opacity:0.26;}
@@ -221,7 +266,7 @@
   .btn:active{background:rgba(255,255,255,0.38);}
   .btn.active{background:rgba(120,220,160,0.42);border-color:#8fe8b4;box-shadow:0 0 12px rgba(120,220,160,0.55);}
   .btn.armed{background:rgba(120,220,160,0.20);border-color:rgba(143,232,180,0.7);}
-  #btnSmoke,#btnStun{white-space:pre-line;line-height:1.25;}
+  #btnItem,#btnStun{white-space:pre-line;line-height:1.25;}
 
   /* --- 락픽 --- */
   #lockTrack{position:relative;height:44px;margin:16px 0 10px;border-radius:8px;
@@ -249,7 +294,7 @@
        color:#fff;font-size:10.5px;display:none;align-items:center;justify-content:center;
        user-select:none;z-index:41;}
   .btnPill:active{background:rgba(255,255,255,0.34);}
-  #btnSmoke{background:rgba(230,230,230,0.2);}
+  #btnItem{background:rgba(230,200,120,0.22);}
   #btnStun{background:rgba(230,220,120,0.2);}
   #btnNVG{background:rgba(120,220,140,0.2);}
   #btnThermal{background:rgba(230,140,80,0.2);}
@@ -326,6 +371,20 @@
 <div id="spotFlash"></div>
 <div id="hurtVig"></div>
 <div id="alarmFlash"></div>
+<div id="flashWhite"></div>
+
+<div id="itemWheel">
+  <div class="iwHint">손가락을 밀어 선택</div>
+  <div class="iwSlot" id="iw_frag"     style="left:50%;top:0;transform:translate(-50%,0)">
+    <div class="iwName">수류탄</div><div class="iwCnt">0</div></div>
+  <div class="iwSlot" id="iw_claymore" style="left:50%;bottom:0;transform:translate(-50%,0)">
+    <div class="iwName">크레모아</div><div class="iwCnt">0</div></div>
+  <div class="iwSlot" id="iw_flash"    style="left:0;top:50%;transform:translate(0,-50%)">
+    <div class="iwName">섬광탄</div><div class="iwCnt">0</div></div>
+  <div class="iwSlot" id="iw_smoke"    style="right:0;top:50%;transform:translate(0,-50%)">
+    <div class="iwName">연막탄</div><div class="iwCnt">0</div></div>
+  <div class="iwCenter">▲▼◀▶</div>
+</div>
 
 <div class="modal" id="quitModal">
   <div class="modalBox">
@@ -394,11 +453,16 @@
 <div id="gearBtn">⚙</div>
 <div id="aimCancelBtn">✕ 취소 (←스와이프)</div>
 
+<div id="throwPad">
+  <div id="tRing"></div>
+  <div id="tKnob"><span id="tLabel">투척</span></div>
+</div>
+
 <div id="firePad">
-  <svg id="fTicks" viewBox="0 0 172 172">
+  <svg id="fTicks" viewBox="0 0 160 160">
     <g stroke="#fff" stroke-width="2" stroke-linecap="round">
-      <path d="M86 12 v11 M86 149 v11 M12 86 h11 M149 86 h11"/>
-      <path d="M34 34 l8 8 M138 34 l-8 8 M34 138 l8 -8 M138 138 l-8 -8"/>
+      <path d="M80 11 v10 M80 139 v10 M11 80 h10 M139 80 h10"/>
+      <path d="M31 31 l8 8 M129 31 l-8 8 M31 129 l8 -8 M129 129 l-8 -8"/>
     </g>
   </svg>
   <div id="fRing"></div>
@@ -430,7 +494,7 @@
 <div id="btns">
   <div class="btn" id="btnDecoy">유인</div>
   <div class="btn" id="btnFire" style="display:none">사격</div>
-  <div class="btn" id="btnSmoke">연막탄</div>
+  <div class="btn" id="btnItem">아이템</div>
   <div class="btn" id="btnStun">기절탄</div>
   <div class="btn" id="btnSprint">달리기</div>
   <div class="btn" id="btnCrouch">웅크리기</div>
@@ -445,7 +509,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.8.0.0</div>
+  <div id="verText">Ver 5.0.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -729,6 +793,16 @@ const EN = {
   '권총':'Pistol', '미니건':'Minigun', '샷건':'Shotgun', '유탄발사기':'Grenade Launcher',
   '홈 화면으로 나가기':'Quit to title', '나가기':'Quit', '계속하기':'Continue',
   '발견!':'Spotted!', '재장전':'RELOAD', '예열':'SPIN-UP', '조준됨':'LOCKED',
+  '격투':'MELEE', '제압':'Subdued', '구타':'Beaten', '격투 발생':'Melee started',
+  '문을 부순다!':'Breaking the door!',
+  '수류탄':'Frag', '크레모아':'Claymore', '섬광탄':'Flashbang', '투척':'Throw',
+  '앞이 안 보여!':'I can\'t see!', '다시 보인다':'I can see again',
+  '크레모아 설치':'Claymore placed', '크레모아 오작동':'Own claymore',
+  '{t} 투척 (남은 {n}개)':'{t} thrown ({n} left)',
+  '{t}을 모두 사용했습니다':'Out of {t}',
+  '섬광 — {n}명이 눈을 잃었습니다':'Flash — {n} guard(s) blinded',
+  '수류탄 — {n}명 처치':'Frag — {n} down',
+  '크레모아 폭발 — {n}명 처치':'Claymore — {n} down',
   '진행 중인 작업이 손실될 수 있습니다.':'Your current progress may be lost.',
   '그래도 나가겠습니까?':'Quit anyway?',
   '자동 저장된 층까지는 "이어하기"로 복구할 수 있습니다.':'You can recover up to the last autosaved floor with Resume.',
@@ -819,42 +893,40 @@ var btnLayoutReady = false;   // var: 호이스팅되어 resize()보다 먼저 �
    극좌표 배치는 두 조이스틱과 겹치기 쉬워서 폐기했다.
    패드 사각형을 기준으로 '빈 영역'에 명시적으로 놓는다. */
 const PAD_SPEC = {
-  fire: { size:172, edge:14,  bottom:150 },   // 오른쪽 (왼손 모드면 왼쪽)
-  move: { size:150, edge:18,  bottom:112 }    // 왼쪽   (왼손 모드면 오른쪽)
+  fire:  { size:160, edge:14, bottom:140 },   // 사격 (오른쪽)
+  throw: { size:104, edge:24, bottom:316 },   // 투척 (사격 위, 작게)
+  move:  { size:150, edge:18, bottom:112 }    // 이동 (왼쪽)
 };
 
 /* 배치 슬롯
-   두 패드 사이 간격은 좁은 폰(412px)에서 58px밖에 안 되므로 그곳에는 놓지 않는다.
-   대신 '각 패드의 위쪽'이라는 넓은 빈 영역을 쓴다.
-     zone 'fireTop' = 사격 패드 위 (오른손이면 오른쪽), 패드 중심 x에 정렬
-     zone 'moveL'   = 이동 패드 위 왼쪽 열
-     zone 'moveR'   = 이동 패드 위 오른쪽 열
+   조이스틱이 3개(이동·사격·투척)가 되면서 오른쪽 위 공간을 투척 패드가 차지한다.
+   따라서 보조 버튼 6개는 모두 '이동 패드 위' 2열 3행에 배치한다.
+     zone: 'moveL'/'moveR' = 이동 패드 위 좌/우 열
    bottom: 화면 아래에서의 거리(px) */
-/* 사격 패드 위 2x2 = 상호작용·유인·연막탄·기절탄
-   이동 패드 위 1x2 = 웅크리기·달리기
-     zone: 'fireL'/'fireR' = 사격 패드 위 좌/우 열
-           'moveL'/'moveR' = 이동 패드 위 좌/우 열 */
 const BTN_SLOTS = [
   // id,          크기, zone,     bottom, 글자크기
-  ['btnAction',    62, 'fireL',    336,  10  ],   // 가장 자주 쓰므로 패드 바로 위
-  ['btnDecoy',     56, 'fireR',    336,   9  ],
-  ['btnSmoke',     56, 'fireL',    408,   9  ],
-  ['btnStun',      56, 'fireR',    408,   9  ],
-  ['btnCrouch',    60, 'moveL',    278,  10  ],
-  ['btnSprint',    58, 'moveR',    278,   9.5]
+  ['btnAction',    62, 'moveL',    278,  10  ],   // 가장 자주 쓰므로 가장 낮게
+  ['btnItem',      56, 'moveR',    278,   9  ],
+  ['btnCrouch',    58, 'moveL',    346,  10  ],
+  ['btnSprint',    56, 'moveR',    346,   9.5],
+  ['btnDecoy',     52, 'moveL',    412,   9  ],
+  ['btnStun',      52, 'moveR',    412,   9  ]
 ];
 /* ===== 버튼 배치 계산 (DOM과 분리) =====
    DOM에 쓰기 전에 좌표를 계산해 두면 겹침을 실제로 검증할 수 있다.
    이전에는 style을 읽어서 검증하려 했는데, 값이 남지 않아 검증이 무의미했다. */
 function padRects(W, H, lh){
-  const FP = PAD_SPEC.fire, MP = PAD_SPEC.move;
+  const FP = PAD_SPEC.fire, TP = PAD_SPEC.throw, MP = PAD_SPEC.move;
   return {
-    fire: { id:'firePad', w:FP.size, h:FP.size,
-            x: lh ? FP.edge : (W - FP.edge - FP.size),
-            y: H - FP.bottom - FP.size },
-    move: { id:'movePad', w:MP.size, h:MP.size,
-            x: lh ? (W - MP.edge - MP.size) : MP.edge,
-            y: H - MP.bottom - MP.size }
+    fire:  { id:'firePad', w:FP.size, h:FP.size,
+             x: lh ? FP.edge : (W - FP.edge - FP.size),
+             y: H - FP.bottom - FP.size },
+    throwP:{ id:'throwPad', w:TP.size, h:TP.size,
+             x: lh ? TP.edge : (W - TP.edge - TP.size),
+             y: H - TP.bottom - TP.size },
+    move:  { id:'movePad', w:MP.size, h:MP.size,
+             x: lh ? (W - MP.edge - MP.size) : MP.edge,
+             y: H - MP.bottom - MP.size }
   };
 }
 /* 반환값의 cx/cy는 '중심' 좌표다.
@@ -863,27 +935,26 @@ function padRects(W, H, lh){
    (좌상단 좌표를 넣어 버튼이 절반씩 밀리고 화면 밖으로 잘리는 버그가 있었다) */
 function computeButtonLayout(W, H, lh){
   const pads = padRects(W, H, lh);
-  // 사격 패드 위 2열
-  const fL = pads.fire.x + pads.fire.w*0.26;
-  const fR = pads.fire.x + pads.fire.w*0.76;
-  // 이동 패드 위 2열 — 왼쪽이 잘리지 않도록 안쪽으로 당긴다
-  const mL = pads.move.x + pads.move.w*0.34;
-  const mR = pads.move.x + pads.move.w*0.86;
-  const MIN_TOP = 180;
+  // 이동 패드 위 2열 — 잘리지 않도록 안쪽으로 당긴다
+  const mL = pads.move.x + pads.move.w*0.30;
+  const mR = pads.move.x + pads.move.w*0.90;
+  const MIN_TOP = 176;
 
   const buttons=[];
   for(const [id,size,zone,bottom,fs] of BTN_SLOTS){
-    const raw = zone==='fireL' ? fL : (zone==='fireR' ? fR : (zone==='moveL' ? mL : mR));
+    const raw = (zone==='moveL') ? mL : mR;
     // 중심 좌표를 화면 안에 유지 (반지름만큼 여유)
     const cx = Math.round(Math.max(size/2 + 4, Math.min(W - size/2 - 4, raw)));
     const cy = Math.round(Math.max(MIN_TOP + size/2, H - bottom - size/2));
     buttons.push({id, cx, cy, w:size, h:size, fs});
   }
-  /* 취소 버튼 — 이동 패드 열 위쪽 (사격 패드 쪽은 좁은 화면에서 알약과 겹친다) */
-  const cw=104, ch=38;
+  /* 취소 버튼 — 이동 패드 '아래' 빈 공간.
+     위쪽은 버튼 6개와 알약이 차지해서 360x640 같은 짧은 화면에서 자리가 없다.
+     패드 아래는 어느 해상도에서도 비어 있다. */
+  const cw=100, ch=36;
   const cancel = {
-    cx: Math.round(Math.max(cw/2 + 4, Math.min(W - cw/2 - 4, mL + 18))),
-    cy: Math.round(Math.max(MIN_TOP + ch/2, H - 400 - ch/2)), w:cw, h:ch
+    cx: Math.round(Math.max(cw/2 + 4, Math.min(W - cw/2 - 4, pads.move.x + pads.move.w/2))),
+    cy: Math.round(H - 38 - ch/2), w:cw, h:ch
   };
   return {buttons, cancel, pads};
 }
@@ -976,6 +1047,35 @@ const WEAPONS = {
     tagline:'문을 열면 앞이 비어 있다',
     mag:8, interval:0.85, reload:2.8, range:340,
     pellets:6, spread:0.24, spinUp:0, noise:820, kind:'bullet'
+  },
+  smg: {
+    id:'smg', name:'기관단총', price:2900, paid:true,
+    desc:'가볍고 빠르다. 근중거리 제압에 좋지만 정확도가 낮다',
+    stats:'사거리 420 · 초당 11발 · 탄창 40 · 재장전 2.2s',
+    gauge:{ dmg:4, rate:9, range:4, ammo:6, ctrl:7 },
+    tagline:'많이 쏘고 빨리 빠진다',
+    mag:40, interval:0.055, reload:2.2, range:420,
+    pellets:1, spread:0.075, spinUp:0, noise:640, kind:'bullet'
+  },
+  sniper: {
+    id:'sniper', name:'저격총', price:7900, paid:true,
+    desc:'사거리 1200. 방탄도 한 발에 뚫는다. 대신 총성이 저택 전체에 퍼진다',
+    stats:'사거리 1200 · 초당 0.7발 · 탄창 5 · 관통 · 재장전 3.6s',
+    gauge:{ dmg:10, rate:1, range:10, ammo:2, ctrl:5 },
+    tagline:'한 발, 하나',
+    mag:5, interval:1.4, reload:3.6, range:1200,
+    pellets:1, spread:0.004, spinUp:0, noise:1300, kind:'bullet',
+    pierceAll:true
+  },
+  crossbow: {
+    id:'crossbow', name:'석궁', price:8900, paid:true,
+    desc:'거의 소리가 없다. 원거리에서 조용히 처치할 수 있는 유일한 무기',
+    stats:'사거리 560 · 무음(반경 120) · 탄창 1 · 재장전 1.5s',
+    gauge:{ dmg:8, rate:2, range:6, ammo:1, ctrl:8 },
+    tagline:'경비는 무엇에 맞았는지 모른다',
+    mag:1, interval:1.5, reload:1.5, range:560,
+    pellets:1, spread:0.01, spinUp:0, noise:120, kind:'bullet',
+    silent:true
   },
   launcher: {
     id:'launcher', name:'유탄발사기', price:6900, paid:true,
@@ -1097,6 +1197,46 @@ function weaponIconSVG(id){
     '<path d="M110 32 L118 40"/></g>'+
     '</svg>';
 
+  if(id==='smg') return ''+
+    '<svg viewBox="0 0 120 60" width="118" height="59"><defs>'+steel+dark+'</defs>'+
+    '<rect x="26" y="20" width="54" height="11" rx="2" fill="url(#dk)"/>'+
+    '<rect x="80" y="22" width="24" height="6" rx="2" fill="url(#st)"/>'+
+    '<rect x="100" y="20" width="6" height="10" rx="1" fill="url(#dk)"/>'+
+    '<rect x="36" y="31" width="12" height="22" rx="2" fill="url(#dk)"/>'+
+    '<path d="M8 24 L26 22 L26 30 L10 33 Z" fill="url(#dk)"/>'+
+    '<circle cx="54" cy="36" r="4.5" fill="none" stroke="url(#dk)" stroke-width="2.4"/>'+
+    '<rect x="52" y="33" width="2" height="6" fill="#c8d2dc"/>'+
+    '<rect x="44" y="15" width="20" height="5" rx="2" fill="url(#st)"/>'+
+    '</svg>';
+
+  if(id==='sniper') return ''+
+    '<svg viewBox="0 0 120 60" width="118" height="59"><defs>'+steel+dark+wood+'</defs>'+
+    '<rect x="34" y="26" width="76" height="7" rx="2" fill="url(#st)"/>'+
+    '<rect x="104" y="24" width="10" height="11" rx="1.5" fill="url(#dk)"/>'+
+    '<path d="M4 28 L34 24 L34 40 L8 44 Z" fill="url(#wd)"/>'+
+    '<rect x="34" y="33" width="34" height="8" rx="2" fill="url(#wd)"/>'+
+    '<rect x="46" y="13" width="42" height="9" rx="4" fill="url(#dk)"/>'+   // 조준경
+    '<circle cx="46" cy="17.5" r="5" fill="#12161a" stroke="url(#st)" stroke-width="1.4"/>'+
+    '<circle cx="88" cy="17.5" r="4" fill="#2a4a6a" stroke="url(#st)" stroke-width="1.2"/>'+
+    '<rect x="52" y="22" width="4" height="5" fill="url(#dk)"/>'+
+    '<rect x="78" y="22" width="4" height="5" fill="url(#dk)"/>'+
+    '<circle cx="42" cy="40" r="4.5" fill="none" stroke="url(#dk)" stroke-width="2.4"/>'+
+    '<rect x="40" y="37" width="2" height="6" fill="#c8d2dc"/>'+
+    '</svg>';
+
+  if(id==='crossbow') return ''+
+    '<svg viewBox="0 0 120 60" width="118" height="59"><defs>'+steel+dark+wood+'</defs>'+
+    '<rect x="24" y="27" width="64" height="7" rx="2" fill="url(#wd)"/>'+      // 활대
+    '<path d="M86 8 Q104 30 86 52" fill="none" stroke="url(#dk)" stroke-width="5" stroke-linecap="round"/>'+
+    '<path d="M86 10 L60 30 L86 50" fill="none" stroke="#d8d0c0" stroke-width="1.4"/>'+  // 현
+    '<rect x="56" y="28" width="52" height="3" fill="url(#st)"/>'+             // 화살
+    '<path d="M108 29.5 L100 26 L100 33 Z" fill="url(#st)"/>'+
+    '<path d="M8 27 L24 25 L24 36 L10 39 Z" fill="url(#wd)"/>'+
+    '<circle cx="36" cy="38" r="4.5" fill="none" stroke="url(#dk)" stroke-width="2.4"/>'+
+    '<rect x="34" y="35" width="2" height="6" fill="#c8d2dc"/>'+
+    '<circle cx="100" cy="12" r="2.4" fill="#8fe8b4"/>'+                       // 무음 표시
+    '</svg>';
+
   return ''+
     '<svg viewBox="0 0 120 60" width="118" height="59"><defs>'+steel+dark+brass+'</defs>'+
     '<rect x="30" y="22" width="52" height="14" rx="3" fill="url(#dk)"/>'+       // 몸통
@@ -1166,7 +1306,7 @@ function openWeaponStore(){
       '<br><span style="color:#a8b4c0">정식 출시 시에는 유료로 전환됩니다. 무기는 언제든 바꿀 수 있습니다.</span>'
     : '특수 무기는 한 번 구매하면 계속 쓸 수 있습니다. 무기는 언제든 바꿀 수 있습니다.';
 
-  for(const id of ['pistol','minigun','shotgun','launcher']){
+  for(const id of ['pistol','smg','shotgun','minigun','crossbow','sniper','launcher']){
     const w = WEAPONS[id];
     const owned = !w.paid || ownsWeapon(id);
     const equipped = currentWeapon===id;
@@ -1271,7 +1411,7 @@ function explodeGrenade(g){
     if(en.state==='dying') continue;
     const d = Math.hypot(en.x-g.x, en.y-g.y);
     if(d > R) continue;
-    if(!hasLineOfSight(g.x, g.y, en.x, en.y)) continue;
+    if(!hasClearShot(g.x, g.y, en.x, en.y)) continue;
     const dmg = d < R*0.5 ? 99 : 2;      // 중심부는 즉사, 외곽은 2피해
     en.hp -= dmg;
     en.hitFlash = 0.3;
@@ -1298,7 +1438,7 @@ function updateGrenades(dt){
     const g=grenades[i];
     g.spin += dt*14;
     let hit=false;
-    const nx=g.x+g.vx, ny=g.y+g.vy;
+    const nx=g.x+g.vx*curTimeScale, ny=g.y+g.vy*curTimeScale;
     for(const w2 of solidsNear(nx,ny,5)){
       if(circleRectCollide(nx,ny,5,w2)){ hit=true; break; }
     }
@@ -2027,6 +2167,7 @@ function makeGuard(opts){
     homeAngle: (opts.angle!==undefined?opts.angle:0),
     cautionTimer: 0, lastKnown: null,
     returnTimer: 0, stuckTimer: 0, hideCheckCd: 0, posted: false,
+    breakTarget: null, doorShout: false, meleeCd: 0, blindT: 0,
     navPath: null, navGoal: null, navStall: 0, navLastD: undefined, navLosCache: undefined,
     navBlockT: 0, navGoalLastD: undefined, navForceT: 0,
     walkPhase: Math.random()*6.28, breathPhase: Math.random()*6.28,
@@ -2426,6 +2567,7 @@ function applyLoadout(){
   // 연막탄·기절탄은 표준 장비 — 해금 없이 항상 10개
   ammo.smoke = GRENADE_BASE;
   ammo.stun  = GRENADE_BASE;
+  ammo.frag = 4; ammo.flash = 4; ammo.claymore = 3;
   player.maxHp = Math.max(40, (hasUnlock('armor') ? 140 : 100) + (perkMods.hpBonus||0));
   player.hp = player.maxHp;
   magAmmo = MAG_SIZE + (perkMods.magBonus||0);
@@ -2688,6 +2830,7 @@ function objectiveTextKo(){
 }
 const PLAYER_REGEN_DELAY = 6;    // 피격 후 회복 시작까지 (초)
 const PLAYER_REGEN_RATE  = 7;    // 초당 회복량
+const MELEE_DMG  = 11;           // 적 근접 구타 피해 (0.85~1.25초 간격)
 const DMG_RIFLE  = 16;           // 적 사격 피해
 const DMG_TASER  = 6;            // 테이저 피해(주 효과는 기절)
 const TASER_STUN = 1.3;          // 테이저 기절 시간
@@ -2833,24 +2976,72 @@ function updateEnvironment(dt){
 
   for(const d of doors){
     if(!d.locked) { d.breaking=0; continue; }
-    // 잠긴 문 앞에 적이 붙어 있으면 부수기 시작
+    /* 예전에는 '문 근처에 적이 있으면' 부수기가 진행됐다.
+       그런데 적은 A*로 다른 문을 찾아 우회하므로 아무도 문 앞에 오지 않았고,
+       머리 위에 '?'만 뜨고 돌아갔다.
+       이제 플레이어를 본 적(search/caution)은 잠긴 문을 '공격 목표'로 삼는다. */
     let attacker=false;
     const cx=d.x+d.w/2, cy=d.y+d.h/2;
     for(const en of enemies){
-      if(en.state==='dying'||en.kind==='cam') continue;
-      if(Math.hypot(en.x-cx, en.y-cy) < 46){ attacker=true; break; }
+      if(en.state==='dying'||en.kind==='cam'||en.kind==='sniper'||en.stunned) continue;
+      const dd = Math.hypot(en.x-cx, en.y-cy);
+      if(dd < 46){ attacker=true; continue; }
+      // 플레이어를 본 상태이고, 이 문이 플레이어 쪽으로 가는 길목이면 문으로 향한다
+      if(dd > 420) continue;
+      if(en.state!=='search' && en.state!=='caution') continue;
+      const toPlayer = Math.hypot(en.x-player.x, en.y-player.y);
+      const doorToPlayer = Math.hypot(cx-player.x, cy-player.y);
+      if(doorToPlayer > toPlayer) continue;          // 문이 플레이어보다 멀면 길목이 아니다
+      // 이미 다른 문을 부수러 가는 중이면 유지
+      if(en.breakTarget && en.breakTarget!==d) continue;
+      en.breakTarget = d;
+      en.state = 'investigate';
+      en.target = {x:cx, y:cy};
+      en.investigateTimer = 20;                      // 도착까지 충분한 시간
+      if(!en.doorShout){
+        en.doorShout = true;
+        spawnText(en.x, en.y-30, '문을 부순다!', '#ff8a5a');
+      }
     }
     if(attacker){
       d.breaking += dt;
       if(perkMods.doorUnbreakable){ d.breaking = 0; continue; }
+      // 부수는 동안 소리와 흔들림으로 진행 상황을 알린다
+      if(!d.thudT || d.breaking - d.thudT > 0.9){
+        d.thudT = d.breaking;
+        if(audioCtx){
+          playNoise(0.09, 0.26, 300, 'lowpass', panOf(cx));
+          playTone(120, 0.07, 0.18, 'square', panOf(cx));
+        }
+        for(let k=0;k<4;k++) particles.push({
+          x:cx+(Math.random()-0.5)*d.w, y:cy+(Math.random()-0.5)*d.h,
+          vx:(Math.random()-0.5)*2, vy:(Math.random()-0.5)*2,
+          life:16, color:'#8a6a48'
+        });
+      }
       if(d.breaking > DOOR_BREAK_TIME){
-        d.locked=false; d.breaking=0; d.broken=true;
+        d.locked=false; d.breaking=0; d.broken=true; d.thudT=0;
         rebuildDoorSolids();
         spawnText(cx, cy-20, '문이 부서졌다!', '#ff8a6a');
-        if(audioCtx){ playNoise(0.16, 0.4, 260, 'lowpass', panOf(cx)); }
+        shakeAmt = Math.max(shakeAmt, 7);
+        // 부수던 적들을 원래 목표로 되돌린다
+        for(const en of enemies){
+          if(en.breakTarget===d){
+            en.breakTarget=null; en.doorShout=false;
+            en.state='search'; en.target={x:player.x,y:player.y}; en.searchTimer=8;
+          }
+        }
+        if(audioCtx){
+          playNoise(0.22, 0.5, 240, 'lowpass', panOf(cx));
+          playNoise(0.14, 0.3, 1800, 'bandpass', panOf(cx));
+        }
       }
     } else {
       d.breaking = Math.max(0, d.breaking - dt*0.5);
+    }
+    // 문이 열리거나 부서지면 목표를 해제
+    if(!d.locked){
+      for(const en of enemies) if(en.breakTarget===d){ en.breakTarget=null; en.doorShout=false; }
     }
   }
 }
@@ -2940,7 +3131,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'4.8.0.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'5.0.0.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -3384,8 +3575,97 @@ function playCoin(pan){
     rt += rgap; rgap *= 1.055;   // 점점 느려짐
   }
 }
-function playRoll(){ playNoise(0.42, 0.08, 350, 'lowpass'); }
-function playHiss(){ playNoise(0.55, 0.14, 3200, 'highpass'); }
+/* ===== 투척물 소리 =====
+   연막탄: 데구르르 굴러가는 소리 → 푸쉬이익 (흰 연기가 서서히 부푼다)
+   기절탄: 퉁 하고 떨어지는 소리 → 푸슈우위 (노란 연기가 터진다) */
+
+/* 캔이 바닥을 구르는 소리 — 간격이 점점 짧아지는 타격음 여러 개 */
+function playCanRoll(pan){
+  if(!audioCtx) return;
+  let delay = 0;
+  let gap = 105;
+  for(let i=0;i<11;i++){
+    const g = 0.13 * Math.pow(0.86, i);
+    const f = 240 + Math.random()*180;
+    setTimeout(()=>{
+      if(document.hidden||paused) return;
+      playNoise(0.035, g, f, 'lowpass', pan);
+      playNoise(0.020, g*0.55, 1900+Math.random()*900, 'bandpass', pan);
+    }, delay);
+    delay += gap;
+    gap *= 0.80;              // 간격 수렴 = 구르는 느낌
+  }
+}
+
+/* 무거운 물건이 툭 떨어지는 소리 */
+function playCanThud(pan){
+  if(!audioCtx) return;
+  playNoise(0.11, 0.32, 260, 'lowpass', pan);
+  playTone(96, 0.10, 0.26, 'sine', pan);
+  playNoise(0.05, 0.16, 1600, 'bandpass', pan);
+  setTimeout(()=>{
+    if(document.hidden||paused) return;
+    playNoise(0.06, 0.10, 300, 'lowpass', pan);   // 한 번 튄다
+  }, 130);
+}
+
+/* 압축 가스가 새어 나오는 소리. 대역을 위에서 아래로 훑으면 '쉬이익'이 된다 */
+function gasHiss(cfg, pan){
+  if(!audioCtx) return;
+  const V = settings.sfxVol * cfg.vol;
+  if(V<=0.001) return;
+  const now = audioCtx.currentTime;
+  const n = Math.floor(audioCtx.sampleRate*cfg.dur);
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<n;i++) d[i] = Math.random()*2-1;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+
+  const bp = audioCtx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.Q.value = cfg.q;
+  bp.frequency.setValueAtTime(cfg.from, now);
+  bp.frequency.exponentialRampToValueAtTime(cfg.to, now + cfg.dur*0.92);
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.linearRampToValueAtTime(V, now + cfg.atk);        // 확 터졌다가
+  g.gain.setValueAtTime(V, now + cfg.atk + cfg.hold);
+  g.gain.exponentialRampToValueAtTime(0.0006, now + cfg.dur);  // 서서히 새어 나감
+
+  src.connect(bp); bp.connect(g); g.connect(audioOut(pan));
+  src.start(now);
+
+  // 초기 파열음
+  playNoise(0.03, V*1.2, cfg.from*1.4, 'highpass', pan);
+  // 기절탄은 살짝 전기 느낌의 톤을 섞는다 ('위' 성분)
+  if(cfg.buzz){
+    const osc = audioCtx.createOscillator();
+    osc.type='sawtooth';
+    osc.frequency.setValueAtTime(cfg.buzz, now);
+    osc.frequency.exponentialRampToValueAtTime(cfg.buzz*0.45, now+cfg.dur*0.7);
+    const bg = audioCtx.createGain();
+    bg.gain.setValueAtTime(0.0001, now);
+    bg.gain.linearRampToValueAtTime(V*0.30, now+0.04);
+    bg.gain.exponentialRampToValueAtTime(0.0006, now+cfg.dur*0.75);
+    osc.connect(bg); bg.connect(audioOut(pan));
+    osc.start(now); osc.stop(now+cfg.dur*0.8);
+  }
+}
+/* 연막 — 길고 부드럽게 (푸쉬이익) */
+function playSmokeHiss(pan){
+  gasHiss({vol:0.26, dur:1.55, atk:0.10, hold:0.30, from:4200, to:900, q:0.85}, pan);
+  setTimeout(()=>{ if(!document.hidden&&!paused)
+    gasHiss({vol:0.13, dur:1.10, atk:0.14, hold:0.20, from:2600, to:700, q:0.7}, pan); }, 260);
+}
+/* 기절 — 짧고 날카롭게 (푸슈우위) */
+function playStunHiss(pan){
+  gasHiss({vol:0.30, dur:0.62, atk:0.03, hold:0.06, from:5200, to:1400, q:1.3, buzz:520}, pan);
+}
+
+/* 구 호출부 호환 */
+function playRoll(pan){ playCanRoll(pan); }
+function playHiss(pan){ playSmokeHiss(pan); }
 function playNVGSound(){
   if(!audioCtx)return;
   const osc=audioCtx.createOscillator(); osc.type='sawtooth';
@@ -3619,6 +3899,14 @@ const GUNSHOT = {
               sweepFrom:420, sweepTo:80,  sweepDur:0.068,
               sub:0.28, subFrom:130, subTo:50, subDur:0.09,
               tail:0.16, action:0, actionAt:0 },
+  smg:      { vol:0.55, blast:0.004, crack:3900, crackDur:0.020,
+              sweepFrom:460, sweepTo:100, sweepDur:0.040,
+              sub:0.24, subFrom:135, subTo:62, subDur:0.055,
+              tail:0.07, action:0.07, actionAt:34 },
+  crossbow: { vol:0.30, blast:0.003, crack:1800, crackDur:0.020,
+              sweepFrom:240, sweepTo:120, sweepDur:0.030,
+              sub:0.10, subFrom:110, subTo:80, subDur:0.035,
+              tail:0.03, action:0.10, actionAt:120 },
   sniper:   { vol:0.95, blast:0.008, crack:5200, crackDur:0.040,
               sweepFrom:620, sweepTo:60,  sweepDur:0.11,
               sub:0.60, subFrom:140, subTo:40, subDur:0.16,
@@ -3927,6 +4215,65 @@ function joyEnd(){joy.active=false;joy.dx=0;joy.dy=0;joyBase.style.display='none
 /* ===== 원형 이동 패드 =====
    제자리에 고정된 아날로그 스틱. 중심에서 끌어낸 방향/거리가 그대로 이동 벡터가 된다.
    십자키와 달리 대각선을 포함한 360도 전 방향이 자연스럽게 나온다. */
+(function initThrowPad(){
+  const el=document.getElementById('throwPad'), knob=document.getElementById('tKnob');
+  const MAXR=34, DEAD=0.22;
+  let padId=null, dragged=false;
+
+  function setVec(cx, cy, px, py){
+    let dx=px-cx, dy=py-cy;
+    const L=Math.hypot(dx,dy);
+    if(L>MAXR){ dx=dx/L*MAXR; dy=dy/L*MAXR; }
+    knob.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
+    const nx=dx/MAXR, ny=dy/MAXR;
+    const m=Math.hypot(nx,ny);
+    if(m<DEAD){
+      throwPad.x=0; throwPad.y=0; throwActive=false; throwPower=0;
+      el.classList.remove('on');
+      return;
+    }
+    dragged=true;
+    const scaled=(m-DEAD)/(1-DEAD);
+    throwPad.x=nx/m*scaled; throwPad.y=ny/m*scaled;
+    throwAngle = Math.atan2(ny, nx);
+    throwPower = Math.min(1, scaled);
+    throwActive = true;
+    el.classList.add('on');
+  }
+  function release(){
+    padId=null;
+    knob.style.transform='translate(0px,0px)';
+    el.classList.remove('on');
+    if(dragged && throwActive){
+      useSelectedItem(throwAngle, throwPower);
+    }
+    throwPad.x=0; throwPad.y=0; throwActive=false; throwPower=0; dragged=false;
+  }
+  function center(){
+    const r=el.getBoundingClientRect();
+    return {x:r.left+r.width/2, y:r.top+r.height/2};
+  }
+  el.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const t=e.changedTouches[0]; padId=t.identifier; dragged=false;
+    const c=center(); setVec(c.x,c.y,t.clientX,t.clientY);
+  }, {passive:false});
+  el.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    const c=center();
+    for(const t of e.changedTouches) if(t.identifier===padId) setVec(c.x,c.y,t.clientX,t.clientY);
+  }, {passive:false});
+  const endT=e=>{ for(const t of e.changedTouches) if(t.identifier===padId) release(); };
+  el.addEventListener('touchend', endT);
+  el.addEventListener('touchcancel', endT);
+  let mDown=false;
+  el.addEventListener('mousedown', e=>{ mDown=true; dragged=false;
+    const c=center(); setVec(c.x,c.y,e.clientX,e.clientY); });
+  window.addEventListener('mousemove', e=>{ if(!mDown) return;
+    const c=center(); setVec(c.x,c.y,e.clientX,e.clientY); });
+  window.addEventListener('mouseup', ()=>{ if(mDown){ mDown=false; release(); } });
+})();
+
 (function initFirePad(){
   const el=document.getElementById('firePad'), knob=document.getElementById('fKnob');
   const MAXR=58;
@@ -4056,13 +4403,22 @@ function joyEnd(){joy.active=false;joy.dx=0;joy.dy=0;joyBase.style.display='none
   window.addEventListener('mouseup', ()=>{ if(mouseOn){ mouseOn=false; release(); } });
 })();
 function layoutDpad(){
-  // --- 사격 조이스틱 : 이동 패드보다 크고 조금 더 위에 ---
+  // --- 사격·투척 조이스틱 ---
   const fp=document.getElementById('firePad');
   if(fp){
-    fp.style.bottom='150px';
-    if(settings.leftHanded){ fp.style.right='auto'; fp.style.left='14px'; }
-    else { fp.style.left='auto'; fp.style.right='14px'; }
+    fp.style.width=PAD_SPEC.fire.size+'px'; fp.style.height=PAD_SPEC.fire.size+'px';
+    fp.style.bottom=PAD_SPEC.fire.bottom+'px';
+    if(settings.leftHanded){ fp.style.right='auto'; fp.style.left=PAD_SPEC.fire.edge+'px'; }
+    else { fp.style.left='auto'; fp.style.right=PAD_SPEC.fire.edge+'px'; }
     fp.style.display = gameStarted ? 'block' : 'none';
+  }
+  const tp=document.getElementById('throwPad');
+  if(tp){
+    tp.style.width=PAD_SPEC.throw.size+'px'; tp.style.height=PAD_SPEC.throw.size+'px';
+    tp.style.bottom=PAD_SPEC.throw.bottom+'px';
+    if(settings.leftHanded){ tp.style.right='auto'; tp.style.left=PAD_SPEC.throw.edge+'px'; }
+    else { tp.style.left='auto'; tp.style.right=PAD_SPEC.throw.edge+'px'; }
+    tp.style.display = gameStarted ? 'block' : 'none';
   }
 
   const dp=document.getElementById('dpad');
@@ -4093,6 +4449,12 @@ let fireHeld=false, fireCooldown=0, fireHoldGrace=0;
 let aimPad = {x:0, y:0};
 let aimActive = false;      // 사격 스틱을 밀고 있는가
 let aimAngle = 0;           // 마지막 조준 방향 (스틱을 놓아도 유지)
+/* 투척 스틱 — 방향을 자유롭게 정해 던진다.
+   이동·조준과 완전히 독립이라 걸어가면서 뒤로 던지는 것도 된다. */
+let throwPad = {x:0, y:0};
+let throwActive = false;
+let throwAngle = 0;
+let throwPower = 0;         // 밀어낸 거리 = 던지는 거리
 const FIRE_INTERVAL = 0.16;   // 연사 간격 (초)
 (function(){
   /* 토글 방식. 이동용 패드를 다른 손가락으로 잡고 있어도 눌려야 하므로
@@ -4191,7 +4553,7 @@ function bindHold(id,type){
   const el=document.getElementById(id);
   let startX=0;
   function start(x){
-    if(ammo[type] <= 0){ showMsg((type==='smoke'?'연막탄':'기절탄')+'을 모두 사용했습니다'); return; }
+    if(ammo[type] <= 0){ showMsg((ITEM_DEFS[type]?ITEM_DEFS[type].name:'기절탄')+'을 모두 사용했습니다'); return; }
     if(!puzzleActive && !caught && !actionLock && !aimLock){ aimLock=type; startX=x; showCancelBtn(); }
   }
   function move(x){ if(aimLock===type && (x-startX) < -45){ cancelAim(); } }
@@ -4211,8 +4573,127 @@ document.getElementById('shopClose').addEventListener('click',()=>{
 });
 document.getElementById('lockCancel').addEventListener('click', closePuzzle);
 document.getElementById('seqCancel').addEventListener('click', closePuzzle);
-bindHold('btnSmoke','smoke');
+/* 아이템 버튼
+   짧게 누르면 현재 선택된 아이템을 조준(또는 설치)한다.
+   0.3초 이상 누르면 십자 선택기가 열리고, 손가락 방향으로 고른다. */
+(function bindItemButton(){
+  const el = document.getElementById('btnItem');
+  let holdTimer=null, sx=0, sy=0, opened=false, active=false;
+
+  function down(x,y){
+    // 선택을 이미 했든 안 했든 항상 다시 열 수 있어야 한다
+    if(puzzleActive||caught||actionLock) return;
+    active=true; opened=false; sx=x; sy=y;
+    holdTimer = setTimeout(()=>{ opened=true; openItemWheel(); }, 280);
+  }
+  function move(x,y){
+    if(!active) return;
+    if(opened){ updateItemWheel(x-sx, y-sy); return; }
+    // 선택기가 열리기 전에 크게 움직이면 조준 취소로 본다
+    if(Math.hypot(x-sx,y-sy) > 60){ clearTimeout(holdTimer); }
+  }
+  function up(){
+    if(!active) return;
+    active=false;
+    clearTimeout(holdTimer);
+    if(opened){ closeItemWheel(true); return; }
+    // 짧게 누름 → 플레이어가 보는 쪽으로 사용 (투척 스틱이 더 정확하다)
+    useSelectedItem();
+  }
+  el.addEventListener('touchstart', e=>{ e.preventDefault();
+    const t=e.touches[0]; down(t.clientX,t.clientY); }, {passive:false});
+  el.addEventListener('touchmove', e=>{
+    const t=e.touches[0]; move(t.clientX,t.clientY); }, {passive:true});
+  el.addEventListener('touchend', up);
+  el.addEventListener('touchcancel', ()=>{ active=false; clearTimeout(holdTimer); closeItemWheel(false); });
+  el.addEventListener('mousedown', e=>down(e.clientX,e.clientY));
+  window.addEventListener('mousemove', e=>move(e.clientX,e.clientY));
+  window.addEventListener('mouseup', up);
+})();
+
+/* 선택된 아이템 사용
+   투척 스틱에서 방향(rad)과 세기(0~1)를 받는다.
+   방향을 주지 않으면 플레이어가 보는 쪽으로 던진다. */
+function useSelectedItem(dirAngle, power){
+  if(puzzleActive||caught||actionLock) return;
+  const id = selectedItem;
+  if(itemCount(id) <= 0){
+    showMsg(ITEM_DEFS[id].name + '을 모두 사용했습니다');
+    return;
+  }
+  const ang = (dirAngle===undefined) ? player.angle : dirAngle;
+  const pw  = (power===undefined) ? 1 : Math.max(0.3, power);
+  if(id==='claymore'){ placeClaymore(ang); return; }
+  throwItem(id, ang, pw);
+}
+
+/* 아이템을 실제로 던진다 — 이동 중에도 가능하다 */
+function throwItem(type, ang, power){
+  if(ammo[type] <= 0){ showMsg(ITEM_DEFS[type].name+'을 모두 사용했습니다'); return; }
+  ammo[type]--;
+  const base = (type==='frag') ? 300 : 230;
+  const range = base * (0.45 + power*0.55);
+  const {x:hx, y:hy} = rayMarchLanding(player.x, player.y, ang, range);
+  const tpan = panOf(hx);
+
+  if(type==='smoke') playCanRoll(tpan);
+  else               playCanThud(tpan);
+
+  // 날아가는 궤적 표시
+  throwFx.push({x:player.x, y:player.y, tx:hx, ty:hy, t:0,
+    dur: (type==='smoke'||type==='stun') ? 0.43 : (type==='frag' ? 0.9 : 0.62),
+    color: ITEM_DEFS[type].color});
+
+  showMsg(ITEM_DEFS[type].name + ' 투척 (남은 '+ammo[type]+'개)');
+  if(type==='frag') habits.gun++;
+
+  if(type==='frag'){
+    setTimeout(()=>detonateFrag(hx, hy), 900);
+  } else if(type==='flash'){
+    setTimeout(()=>detonateFlash(hx, hy), 620);
+  } else {
+    setTimeout(()=>{
+      if(type==='smoke') playSmokeHiss(tpan);
+      else               playStunHiss(tpan);
+      const maxR = type==='smoke' ? 190 : 88;
+      const life = type==='smoke' ? 11 : 8.5;
+      const puffs = type==='smoke' ? Array.from({length:6},()=>({
+        ox:(Math.random()-0.5)*2, oy:(Math.random()-0.5)*2,
+        rScale:0.5+Math.random()*0.4
+      })) : null;
+      clouds.push({x:hx,y:hy,type,radius:8,maxRadius:maxR,age:0,life,puffs});
+    }, 430);
+  }
+}
+
+/* 투척 궤적 */
+let throwFx = [];
+function updateThrowFx(dt){
+  for(let i=throwFx.length-1;i>=0;i--){
+    throwFx[i].t += dt;
+    if(throwFx[i].t > throwFx[i].dur) throwFx.splice(i,1);
+  }
+}
+function drawThrowFx(camX, camY){
+  for(const f of throwFx){
+    const p = Math.min(1, f.t/f.dur);
+    const x = f.x + (f.tx-f.x)*p;
+    const y = f.y + (f.ty-f.y)*p;
+    // 던진 물체가 포물선처럼 보이도록 살짝 띄운다
+    const lift = Math.sin(p*Math.PI) * 16;
+    if(!onScreen(x, y, 16)) continue;
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,0.30)';
+    ctx.beginPath(); ctx.ellipse(x-camX, y-camY, 4, 2, 0, 0, 7); ctx.fill();
+    ctx.fillStyle=f.color;
+    ctx.beginPath(); ctx.arc(x-camX, y-camY-lift, 4, 0, 7); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.restore();
+  }
+}
+
 bindHold('btnStun','stun');
+
 
 /* ===================== 유틸 ===================== */
 function circleRectCollide(cx,cy,cr,rect){
@@ -4225,12 +4706,24 @@ function pointInSmoke(x,y){
   for(const c of clouds){ if(c.type==='smoke' && Math.hypot(x-c.x,y-c.y)<c.radius) return true; }
   return false;
 }
+/* 시야선 — 벽과 연기를 모두 막는다. '볼 수 있는가' 판정에만 쓴다. */
 function hasLineOfSight(x1,y1,x2,y2){
   const dist=Math.hypot(x2-x1,y2-y1); const steps=Math.ceil(dist/6);
   for(let i=1;i<steps;i++){
     const t=i/steps;const px=x1+(x2-x1)*t,py=y1+(y2-y1)*t;
     if(pointInWall(px,py))return false;
     if(pointInSmoke(px,py))return false;
+  }
+  return true;
+}
+/* 탄도선 — 벽만 막는다. 총알과 폭발은 연기를 통과한다.
+   예전에는 사격 판정에도 hasLineOfSight를 써서, 연막탄 안에 서 있으면
+   자기 위치에서 이미 판정이 막혀 아무것도 맞힐 수 없었다. */
+function hasClearShot(x1,y1,x2,y2){
+  const dist=Math.hypot(x2-x1,y2-y1); const steps=Math.ceil(dist/6);
+  for(let i=1;i<steps;i++){
+    const t=i/steps;const px=x1+(x2-x1)*t,py=y1+(y2-y1)*t;
+    if(pointInWall(px,py))return false;
   }
   return true;
 }
@@ -4341,11 +4834,341 @@ function broadcastAlert(src, x, y){
   }
 }
 
+/* 처치 방식 판정
+   적이 플레이어를 보고 있으면(정면) → 격투: 연타로 제압
+   적의 뒤를 잡았으면            → 기습: 한 번에 처치
+   기절 상태                     → 조르기: 한 번에 처치 */
 function getTakedownType(en){
   if(en.stunned) return 'choke';
   const toPlayerAngle=Math.atan2(player.y-en.y,player.x-en.x);
   const facingDiff = angleDiff(toPlayerAngle, en.angle);
-  return facingDiff < 65*Math.PI/180 ? 'knife' : 'choke';
+  return facingDiff < 75*Math.PI/180 ? 'melee' : 'knife';
+}
+
+/* ===== 격투(총검술) =====
+   정면의 적은 한 번에 처치되지 않는다. 필요한 타격 수는 적의 체력에 비례한다. */
+const MELEE_HITS = { rookie:3, veteran:4 };
+function meleeHitsNeeded(en){
+  let h = MELEE_HITS[en.rank] || 3;
+  if(en.armored) h += 2;
+  if(en.kind==='warden') h += 6;
+  if(en.kind==='dog') h = 2;
+  if(perkMods.takedownMul>1) h = Math.max(1, h-1);   // [침묵의 맹세]
+  return h;
+}
+function doMeleeStrike(en){
+  en.meleeHP = (en.meleeHP===undefined) ? meleeHitsNeeded(en) : en.meleeHP;
+  en.meleeHP--;
+  en.hitFlash = 0.18;
+  habits.melee++;
+
+  // 타격 연출
+  const ang = Math.atan2(en.y-player.y, en.x-player.x);
+  player.firePose = 1; player.recoil = 0.6;
+  spawnBlood(en.x, en.y, ang, 6, false);
+  shakeAmt = Math.max(shakeAmt, 4);
+  vibrate(18);
+  if(audioCtx){
+    const pan = panOf(en.x);
+    playNoise(0.05, 0.34, 900, 'bandpass', pan);
+    playNoise(0.08, 0.24, 260, 'lowpass', pan);
+    playTone(200, 0.05, 0.20, 'square', pan);
+  }
+  // 살짝 밀려난다
+  en.x += Math.cos(ang)*4; en.y += Math.sin(ang)*4;
+  resolveEnemyStuck(en);
+
+  if(en.meleeHP<=0){
+    en.state='dying'; en.dieType='knife';
+    en.dieTimer=0.3; en.dieTotal=0.3; en.screamed=false;
+    stats.knifeKills++;
+    spawnText(en.x, en.y-30, '제압', '#ff8a6a');
+    slowmo = 0.5;
+    shakeAmt = Math.max(shakeAmt, 8);
+    vibrate(45);
+    tutFlags.takedown = true;
+    if(hasPerk('butcher')) en.vanishOnDeath = true;
+  } else {
+    spawnText(en.x, en.y-32, en.meleeHP+'', '#ffcf6e');
+    // 맞으면 즉시 반격 태세
+    if(en.state!=='search'){
+      en.state='search'; en.target={x:player.x,y:player.y}; en.searchTimer=8;
+      raiseAlarm(player.x, player.y, '격투 발생');
+    }
+  }
+}
+
+
+/* ===================== 투척·설치 아이템 =====================
+   아이템 버튼을 길게 누르면 화면 중앙에 십자 선택기가 뜨고,
+   손가락을 상하좌우로 밀어 고른다. 짧게 누르면 현재 아이템을 조준한다. */
+const ITEM_DEFS = {
+  frag:     {name:'수류탄',  dir:'up',    color:'#e8a05e', desc:'폭발. 범위 내 전멸'},
+  claymore: {name:'크레모아', dir:'down',  color:'#c8e85e', desc:'설치. 접근하면 부채꼴로 폭발'},
+  flash:    {name:'섬광탄',  dir:'left',  color:'#f0f0d0', desc:'눈을 멀게 함. 8초간 못 봄'},
+  smoke:    {name:'연막탄',  dir:'right', color:'#c8d0d8', desc:'시야 차단'}
+};
+const ITEM_ORDER = ['frag','claymore','flash','smoke'];
+let selectedItem = 'smoke';
+let itemWheelOpen = false;
+let itemWheelPick = null;
+
+const FLASH_RADIUS = 260;
+const FLASH_BLIND  = 8.0;
+const FRAG_RADIUS  = 120;
+const CLAY_TRIGGER = 92;
+const CLAY_RADIUS  = 175;
+const CLAY_ARC     = 1.5;      // 부채꼴 폭(라디안)
+let claymores = [];
+
+function itemCount(id){ return ammo[id] || 0; }
+
+/* ===== 선택기 ===== */
+function openItemWheel(){
+  if(itemWheelOpen) return;
+  itemWheelOpen = true;
+  itemWheelPick = null;
+  const w = document.getElementById('itemWheel');
+  for(const id of ITEM_ORDER){
+    const el = document.getElementById('iw_'+id);
+    if(!el) continue;
+    const cnt = itemCount(id);
+    el.className = 'iwSlot' + (cnt<=0 ? ' empty' : '') + (selectedItem===id ? ' cur' : '');
+    el.querySelector('.iwCnt').textContent = cnt;
+  }
+  w.style.display='block';
+  if(audioCtx) playTone(660, 0.05, 0.10, 'triangle');
+}
+function updateItemWheel(dx, dy){
+  if(!itemWheelOpen) return;
+  const m = Math.hypot(dx,dy);
+  let pick = null;
+  if(m > 26){
+    // 상하좌우 중 가장 가까운 방향
+    pick = (Math.abs(dx) > Math.abs(dy))
+      ? (dx>0 ? 'smoke' : 'flash')
+      : (dy>0 ? 'claymore' : 'frag');
+  }
+  if(pick !== itemWheelPick){
+    itemWheelPick = pick;
+    for(const id of ITEM_ORDER){
+      const el = document.getElementById('iw_'+id);
+      if(!el) continue;
+      el.classList.toggle('hover', id===pick);
+    }
+    if(pick && audioCtx) playTone(880, 0.03, 0.06, 'triangle');
+  }
+}
+function closeItemWheel(commit){
+  if(!itemWheelOpen) return;
+  itemWheelOpen = false;
+  document.getElementById('itemWheel').style.display='none';
+  if(commit && itemWheelPick){
+    if(itemCount(itemWheelPick) <= 0){
+      showMsg(ITEM_DEFS[itemWheelPick].name + '을 모두 사용했습니다');
+    } else {
+      selectedItem = itemWheelPick;
+      showMsg(ITEM_DEFS[selectedItem].name + ' 선택 — ' + ITEM_DEFS[selectedItem].desc);
+      if(audioCtx){
+        playTone(1046, 0.06, 0.11, 'triangle');
+        setTimeout(()=>playTone(1318, 0.08, 0.09, 'triangle'), 60);
+      }
+    }
+  }
+  itemWheelPick = null;
+}
+
+/* ===== 섬광탄 ===== */
+function detonateFlash(x, y){
+  shakeAmt = Math.max(shakeAmt, 10);
+  // 화면 전체가 하얗게
+  const fl = document.getElementById('flashWhite');
+  if(fl){
+    const d = Math.hypot(player.x-x, player.y-y);
+    const near = Math.max(0, 1 - d/FLASH_RADIUS);
+    if(near > 0.05){
+      fl.style.display='block';
+      fl.style.opacity = String(Math.min(0.95, near));
+      setTimeout(()=>{ fl.style.opacity='0'; }, 90);
+      setTimeout(()=>{ fl.style.display='none'; }, 700);
+    }
+  }
+  if(audioCtx){
+    const pan = panOf(x);
+    playNoise(0.02, 1.0, 7000, 'highpass', pan);
+    playNoise(0.12, 0.55, 2600, 'bandpass', pan);
+    playTone(1800, 0.05, 0.30, 'sine', pan);
+    setTimeout(()=>playNoise(0.30, 0.16, 900, 'lowpass', pan), 60);
+  }
+  for(let i=0;i<26;i++){
+    const a=Math.random()*Math.PI*2, sp=2+Math.random()*5;
+    particles.push({x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:16+Math.random()*14, color:'#fffbe0'});
+  }
+  // 범위 내 적을 눈멀게 한다
+  let blinded=0;
+  for(const en of enemies){
+    if(en.state==='dying') continue;
+    const d = Math.hypot(en.x-x, en.y-y);
+    if(d > FLASH_RADIUS) continue;
+    if(!hasClearShot(x, y, en.x, en.y)) continue;
+    en.blindT = FLASH_BLIND * (1 - d/FLASH_RADIUS*0.5);
+    en.detect = 0;
+    if(en.state==='search'){ en.state='investigate'; en.investigateTimer=3; }
+    spawnText(en.x, en.y-30, '앞이 안 보여!', '#fffbe0');
+    blinded++;
+  }
+  showMsg(blinded>0 ? ('섬광 — '+blinded+'명이 눈을 잃었습니다') : '섬광탄 폭발');
+  checkNoiseHearing(x, y, 420);
+}
+
+/* ===== 수류탄 ===== */
+function detonateFrag(x, y){
+  shakeAmt = Math.max(shakeAmt, 15);
+  if(audioCtx){
+    const pan = panOf(x);
+    playNoise(0.03, 1.0, 6000, 'highpass', pan);
+    playTone(62, 0.40, 0.85, 'sine', pan);
+    playTone(96, 0.28, 0.55, 'triangle', pan);
+    playNoise(0.26, 0.65, 280, 'lowpass', pan);
+    setTimeout(()=>playNoise(0.32, 0.22, 720, 'lowpass', pan), 85);
+  }
+  for(let i=0;i<32;i++){
+    const a=Math.random()*Math.PI*2, sp=1.6+Math.random()*5;
+    particles.push({x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:20+Math.random()*22, color: i%3===0?'#ffd86e':(i%3===1?'#ff8a3a':'#8a5a3a')});
+  }
+  let killed=0;
+  for(const en of enemies){
+    if(en.state==='dying') continue;
+    const d = Math.hypot(en.x-x, en.y-y);
+    if(d > FRAG_RADIUS) continue;
+    if(!hasClearShot(x, y, en.x, en.y)) continue;
+    en.hp -= (d < FRAG_RADIUS*0.55) ? 99 : 2;
+    en.hitFlash = 0.3;
+    spawnBlood(en.x, en.y, Math.atan2(en.y-y, en.x-x), en.hp<=0?16:8, en.hp<=0);
+    if(en.hp<=0){
+      en.state='dying'; en.dieType='shot';
+      en.dieTimer=0.3; en.dieTotal=0.3; en.screamed=false;
+      stats.shotKills++; killed++;
+    } else {
+      en.state='search'; en.target={x,y}; en.searchTimer=8;
+    }
+  }
+  const pd = Math.hypot(player.x-x, player.y-y);
+  if(pd < FRAG_RADIUS && !caught){
+    const amt = Math.round(38 * (1 - pd/FRAG_RADIUS));
+    if(amt>0) damagePlayer(amt, Math.atan2(player.y-y, player.x-x), '폭발에 휘말림');
+  }
+  if(killed>0) showMsg('수류탄 — '+killed+'명 처치');
+  checkNoiseHearing(x, y, 950);
+  raiseAlarm(x, y, '폭발음');
+}
+
+/* ===== 크레모아 =====
+   설치 후 1초 뒤 무장. 적이 92px 안에 들어오면 바라보는 방향으로 부채꼴 폭발. */
+function placeClaymore(dirAngle){
+  if(itemCount('claymore')<=0){ showMsg('크레모아를 모두 사용했습니다'); return false; }
+  const ang = (dirAngle===undefined) ? player.angle : dirAngle;
+  ammo.claymore--;
+  claymores.push({
+    x: player.x + Math.cos(ang)*18,
+    y: player.y + Math.sin(ang)*18,
+    angle: ang, arm: 1.0, blink: 0
+  });
+  spawnText(player.x, player.y-26, '크레모아 설치', '#c8e85e');
+  showMsg('크레모아 설치 — 1초 후 무장 (남은 '+ammo.claymore+'개)');
+  if(audioCtx){
+    playTone(420, 0.05, 0.16, 'square', panOf(player.x));
+    setTimeout(()=>playTone(620, 0.04, 0.12, 'square', panOf(player.x)), 90);
+  }
+  return true;
+}
+function detonateClaymore(c){
+  shakeAmt = Math.max(shakeAmt, 17);
+  if(audioCtx){
+    const pan = panOf(c.x);
+    playNoise(0.025, 1.0, 6500, 'highpass', pan);
+    playTone(70, 0.34, 0.9, 'sine', pan);
+    playNoise(0.22, 0.7, 320, 'lowpass', pan);
+    setTimeout(()=>playNoise(0.30, 0.2, 800, 'lowpass', pan), 80);
+  }
+  // 부채꼴로 파편
+  for(let i=0;i<40;i++){
+    const a = c.angle + (Math.random()-0.5)*CLAY_ARC;
+    const sp = 4+Math.random()*7;
+    particles.push({x:c.x, y:c.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:18+Math.random()*18, color: i%4===0?'#ffd86e':'#c0c8d0'});
+  }
+  let killed=0;
+  for(const en of enemies){
+    if(en.state==='dying') continue;
+    const d = Math.hypot(en.x-c.x, en.y-c.y);
+    if(d > CLAY_RADIUS) continue;
+    const a = Math.atan2(en.y-c.y, en.x-c.x);
+    if(angleDiff(a, c.angle) > CLAY_ARC*0.5) continue;   // 부채꼴 밖은 안전
+    if(!hasClearShot(c.x, c.y, en.x, en.y)) continue;
+    en.hp -= 99;
+    spawnBlood(en.x, en.y, a, 18, true);
+    en.state='dying'; en.dieType='shot';
+    en.dieTimer=0.3; en.dieTotal=0.3; en.screamed=false;
+    stats.shotKills++; killed++;
+  }
+  // 설치자도 부채꼴 안에 있으면 다친다
+  const pd = Math.hypot(player.x-c.x, player.y-c.y);
+  if(pd < CLAY_RADIUS && !caught){
+    const pa = Math.atan2(player.y-c.y, player.x-c.x);
+    if(angleDiff(pa, c.angle) < CLAY_ARC*0.5){
+      damagePlayer(Math.round(46*(1-pd/CLAY_RADIUS)), pa, '크레모아 오작동');
+    }
+  }
+  showMsg('크레모아 폭발 — '+killed+'명 처치');
+  checkNoiseHearing(c.x, c.y, 1000);
+  raiseAlarm(c.x, c.y, '폭발음');
+}
+function updateClaymores(dt){
+  for(let i=claymores.length-1;i>=0;i--){
+    const c=claymores[i];
+    c.blink += dt*4;
+    if(c.arm>0){ c.arm -= dt; continue; }
+    let trip=false;
+    for(const en of enemies){
+      if(en.state==='dying'||en.kind==='cam') continue;
+      if(Math.hypot(en.x-c.x, en.y-c.y) < CLAY_TRIGGER){ trip=true; break; }
+    }
+    if(trip){ detonateClaymore(c); claymores.splice(i,1); }
+  }
+}
+function drawClaymores(camX, camY){
+  for(const c of claymores){
+    if(!onScreen(c.x, c.y, 20)) continue;
+    ctx.save();
+    ctx.translate(c.x-camX, c.y-camY);
+    ctx.rotate(c.angle);
+    // 부채꼴 위험 구역
+    ctx.globalAlpha = c.arm>0 ? 0.08 : 0.15;
+    ctx.fillStyle = '#ff6a4a';
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.arc(0,0, CLAY_RADIUS*0.5, -CLAY_ARC/2, CLAY_ARC/2);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+    // 본체 (곡면 판)
+    ctx.fillStyle='#4a5a34';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 4, 9, 0, 0, 7);
+    ctx.fill();
+    ctx.strokeStyle='#232c18'; ctx.lineWidth=1.2; ctx.stroke();
+    // 다리
+    ctx.strokeStyle='#3a4428'; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(-1,-7); ctx.lineTo(-6,-11); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-1, 7); ctx.lineTo(-6, 11); ctx.stroke();
+    // 무장 표시등
+    const on = c.arm>0 ? (Math.sin(c.blink*3)>0) : (Math.sin(c.blink)>0);
+    ctx.fillStyle = c.arm>0 ? (on?'#ffcf6e':'#5a5030') : (on?'#ff4040':'#5a2020');
+    ctx.beginPath(); ctx.arc(3, 0, 1.8, 0, 7); ctx.fill();
+    ctx.restore();
+  }
 }
 
 /* ===================== 그레네이드(연막/기절) ===================== */
@@ -4354,12 +5177,29 @@ function releaseThrow(type){
   aimLock=null;
   if(ammo[type] <= 0){ showMsg('남은 개수가 없습니다'); return; }
   ammo[type]--;
-  const range=210;
+  const range = (type==='frag') ? 280 : 210;
   const {x:hx,y:hy} = rayMarchLanding(player.x,player.y,player.angle,range);
-  playRoll();
+  const tpan = panOf(hx);
+  // 던지는 소리: 연막탄은 구르고, 나머지는 툭 떨어진다
+  if(type==='smoke') playCanRoll(tpan);
+  else               playCanThud(tpan);
+
+  // --- 신규 아이템: 폭발형 ---
+  if(type==='frag' || type==='flash'){
+    const label = ITEM_DEFS[type].name;
+    showMsg(label + ' 투척 (남은 '+ammo[type]+'개)');
+    habits.gun += (type==='frag') ? 1 : 0;
+    setTimeout(()=>{
+      if(type==='frag') detonateFrag(hx, hy);
+      else              detonateFlash(hx, hy);
+    }, type==='frag' ? 900 : 620);
+    return;
+  }
+
   showMsg((type==='smoke' ? '연막탄 투척' : '기절탄 투척') + ' (남은 '+ammo[type]+'개)');
   setTimeout(()=>{
-    playHiss();
+    if(type==='smoke') playSmokeHiss(tpan);
+    else               playStunHiss(tpan);
     const maxR = type==='smoke' ? 190 : 88;
     const life = type==='smoke' ? 11 : 8.5;
     const puffs = type==='smoke' ? Array.from({length:6},()=>({
@@ -4421,7 +5261,7 @@ function updatePlayer(dt){
   }
   if(mag>0.15){
     if(!aimActive) player.angle=Math.atan2(my,mx);
-    const stepLen = player.stunTimer>0 ? 0 : spd*(mag>1?1:mag);
+    const stepLen = (player.stunTimer>0 ? 0 : spd*(mag>1?1:mag)) * curTimeScale;
     const nx=player.x+ (mx/mag)*stepLen;
     const ny=player.y+ (my/mag)*stepLen;
     let blocked=false;
@@ -4709,6 +5549,7 @@ function updateEnemy(en,dt){
       }
       let mvSpd = en.speed * (en.state==='search'?1.18:(en.state==='caution'?1.12:1));
       if(alarmRaised) mvSpd *= 1.15;     // 비상 상황에선 조금 빨라진다
+      mvSpd *= curTimeScale;             // 슬로우모션 반영
       const ux=dx/d, uy=dy/d;
       const free=(tx,ty)=>{
         for(const w of solidsNear(tx,ty,en.r)){ if(circleRectCollide(tx,ty,en.r,w)) return false; }
@@ -4746,6 +5587,10 @@ function updateEnemy(en,dt){
 
   if(en.barkCd>0) en.barkCd-=dt;
   if(en.hideCheckCd>0) en.hideCheckCd-=dt;
+  if(en.blindT>0){
+    en.blindT-=dt;
+    if(en.blindT<=0) spawnText(en.x, en.y-28, '다시 보인다', '#ffd08a');
+  }
   // 예약된 방향(소리·경보)으로 서서히 돌아본다
   if(en.wantAngle!==undefined){
     turnToward(en, en.wantAngle, 3.0, dt);
@@ -4833,6 +5678,7 @@ function updateEnemy(en,dt){
     const dist=Math.hypot(dx,dy);
     const ang=Math.atan2(dy,dx);
     let visRange=en.visionRange*diff().vision;
+    if(en.blindT>0) visRange = 0;      // 섬광탄에 눈이 멀었다
     if(blackout>0) visRange*=0.42;     // 정전 — 손전등만으로는 멀리 못 본다
     // [그림자] 멈춰 있으면 잘 안 띈다
     if(perkMods.stillVision<1 && Math.hypot(dpad.x,dpad.y)<0.08 && joy.dx===0 && joy.dy===0)
@@ -4898,8 +5744,19 @@ function updateEnemy(en,dt){
       if(seen){en.target={x:player.x,y:player.y};en.searchTimer=6;}
     }
 
-    if(en.state==='search' && dist < en.r+player.r+6){
-      triggerCaught();
+    /* 예전에는 닿는 순간 즉시 체포였다. 이제 붙어서 때리며 HP를 깎는다.
+       플레이어는 격투로 반격할 수 있다. */
+    if(en.state==='search' && dist < en.r+player.r+10 && !en.stunned){
+      en.meleeCd = (en.meleeCd||0) - dt;
+      if(en.meleeCd<=0){
+        en.meleeCd = 0.85 + Math.random()*0.4;
+        const hitAng = Math.atan2(player.y-en.y, player.x-en.x);
+        damagePlayer(MELEE_DMG, hitAng, '구타');
+        if(audioCtx){
+          playNoise(0.06, 0.30, 420, 'lowpass', panOf(en.x));
+          playTone(140, 0.05, 0.20, 'square', panOf(en.x));
+        }
+      }
     }
 
     /* --- 반격 ---
@@ -5212,7 +6069,7 @@ function damagePlayer(amount, dirAngle, label){
 /* 처형·사망 중에는 조작할 수 없으므로 조이스틱과 버튼을 감춘다.
    남아 있으면 눌러도 반응하지 않아 오히려 혼란스럽다. */
 function setControlsVisible(v){
-  const ids = ['dpad','firePad','btns','btnNVG','btnThermal','gearBtn','joyZone','aimCancelBtn'];
+  const ids = ['dpad','firePad','throwPad','btns','btnNVG','btnThermal','gearBtn','joyZone','aimCancelBtn'];
   for(const id of ids){
     const el=document.getElementById(id);
     if(!el) continue;
@@ -5222,6 +6079,7 @@ function setControlsVisible(v){
       else if(id==='aimCancelBtn') el.style.display='none';   // 조준 중에만 뜨는 버튼
       else if(id==='joyZone') el.style.display = (settings.controlMode==='dpad') ? 'none' : 'block';
       else if(id==='dpad')    el.style.display = (settings.controlMode==='dpad') ? 'block' : 'none';
+      else if(id==='throwPad') el.style.display='block';
       else el.style.display='block';
     } else {
       el.style.display='none';
@@ -5231,8 +6089,10 @@ function setControlsVisible(v){
     // 눌린 상태로 남지 않게 입력도 함께 해제
     fireHeld=false; fireHoldGrace=0; sprintHeld=false; crouchHeld=false;
     aimActive=false; aimPad.x=0; aimPad.y=0;
+    throwActive=false; throwPad.x=0; throwPad.y=0; throwPower=0;
     dpad.x=0; dpad.y=0; joy.dx=0; joy.dy=0;
     aimLock=null;
+    closeItemWheel(false);
   }
 }
 
@@ -5264,6 +6124,8 @@ function respawn(){
   carriedCorpse=null;
   player.hp=player.maxHp; player.hurtTimer=0; player.regenDelay=0; player.stunTimer=0;
   magAmmo=MAG_SIZE_CUR; reloadTimer=0; spinUpT=0; grenades.length=0; fireHoldGrace=0;
+  claymores.length=0; closeItemWheel(false); throwFx.length=0;
+  throwActive=false; throwPad.x=0; throwPad.y=0; throwPower=0;
   bloodDecals.length=0;
   player.firePose=0; player.recoil=0; player.under=null;
   player.crouch=false; crouchHeld=false;
@@ -5324,7 +6186,10 @@ function quitToHome(){
   document.getElementById('joyZone').style.display='none';
   const fp0=document.getElementById('firePad');
   if(fp0) fp0.style.display='none';
+  const tp0=document.getElementById('throwPad');
+  if(tp0) tp0.style.display='none';
   aimPad.x=0; aimPad.y=0; aimActive=false;
+  throwPad.x=0; throwPad.y=0; throwActive=false;
   document.getElementById('gearBtn').style.display='none';
   document.getElementById('startOverlay').style.display='flex';
   // 이어하기 버튼을 새로 반영하기 위해 갱신
@@ -5383,6 +6248,7 @@ function restartLevel(){
       e.stunned = false; e.stunTimer = 0; e.dieTimer = 0; e.dieType = null;
       e.searchTimer = 0; e.investigateTimer = 0; e.cautionTimer = 0;
       e.hitFlash = 0; e.camAlerted = false; e.barkCd = 0;
+      e.meleeHP = undefined; e.meleeCd = 0; e.breakTarget = null; e.doorShout = false;
       e.wp = 0; e.lastKnown = null; e.mmGhost = null;
       enemies.push(e);
     }
@@ -5396,6 +6262,7 @@ function restartLevel(){
   // 연막탄·기절탄은 표준 장비 — 해금 없이 항상 10개
   ammo.smoke = GRENADE_BASE;
   ammo.stun  = GRENADE_BASE;
+  ammo.frag = 4; ammo.flash = 4; ammo.claymore = 3;
   blackout = 0;
   for(const b of breakers){ b.cooldown = 0; }
   for(const a of alarmPanels){ a.alive = true; }
@@ -5709,7 +6576,8 @@ function handleFire(){
   magAmmo--;
   habits.gun++;
   if(magAmmo===0) startReload();          // 마지막 탄 발사 후 자동 재장전
-  guardsArmed = true;                     // 총성을 들은 순간 경비도 무장한다
+  // 석궁은 거의 소리가 없어 경비가 무장하지 않는다
+  if(!WP.silent) guardsArmed = true;
   tutFlags.shot = true;
 
   fireCooldown = Math.max(fireCooldown, WP.interval);
@@ -5753,7 +6621,7 @@ function firePellet(ox, oy, ang, WP){
     const {dist:perp, t} = pointSegDist(en.x,en.y, ox,oy, tx,ty);
     if(t<0) continue;                       // 등 뒤는 제외
     if(perp > hitRadiusAt(dist)) continue;
-    if(!hasLineOfSight(ox,oy,en.x,en.y))continue;
+    if(!hasClearShot(ox,oy,en.x,en.y))continue;
     if(dist<bestDist){bestDist=dist;best=en;}
   }
 
@@ -5782,7 +6650,7 @@ function firePellet(ox, oy, ang, WP){
   if(best){
     // 궤적을 맞은 적 쪽으로 보정해서 "빗나간 것처럼 보이는데 죽는" 위화감을 없앤다
     shot.tx = best.x; shot.ty = best.y;
-    best.hp--;
+    best.hp -= WP.pierceAll ? 99 : 1;      // 저격총은 방탄도 한 발
     best.hitFlash = 0.22;
     spawnBlood(best.x, best.y, player.angle, best.hp<=0 ? 18 : 10, best.hp<=0);
 
@@ -5838,7 +6706,7 @@ function firePellet(ox, oy, ang, WP){
     const dist=Math.hypot(en.x-ox,en.y-oy);
     if(dist>FIRE_RANGE)continue;
     const {dist:perp,t} = pointSegDist(en.x,en.y,ox,oy,tx,ty);
-    if(perp<NEAR_MISS_DIST && t>0 && t<=1 && hasLineOfSight(ox,oy,en.x,en.y)){
+    if(perp<NEAR_MISS_DIST && t>0 && t<=1 && hasClearShot(ox,oy,en.x,en.y)){
       if(Math.random()<NEAR_MISS_ALERT_CHANCE){
         en.state='search'; en.target={x:player.x,y:player.y}; en.searchTimer=6;
         stats.detections++;
@@ -5925,7 +6793,7 @@ function currentAimTarget(){
     if(dist>FIRE_RANGE)continue;
     const {dist:perp, t} = pointSegDist(en.x,en.y, m.x,m.y, tx,ty);
     if(t<0 || perp > hitRadiusAt(dist)) continue;
-    if(!hasLineOfSight(m.x,m.y,en.x,en.y)) continue;
+    if(!hasClearShot(m.x,m.y,en.x,en.y)) continue;
     if(dist<bestDist){ bestDist=dist; best=en; }
   }
   return best;
@@ -6017,6 +6885,8 @@ function doTakedown(){
   {
     {
       const type=getTakedownType(en);
+      // 정면이면 한 번에 죽지 않고 연타로 제압한다
+      if(type==='melee'){ doMeleeStrike(en); return true; }
       en.state='dying';
       en.screamed=false; en.dustAccum=0;
       if(type==='knife'){
@@ -7551,6 +8421,8 @@ function drawWorld(camX,camY){
   drawClouds(camX,camY);
   drawBullets(camX,camY);
   drawGrenades(camX,camY);
+  drawClaymores(camX,camY);
+  drawThrowFx(camX,camY);
 
   for(const en of enemies){
     // 화면 밖 적은 스프라이트·링·레티클을 전부 건너뛴다
@@ -7810,6 +8682,7 @@ function rectOnScreen(x, y, w, h){
   return (x+w > cullX0 && x < cullX1 && y+h > cullY0 && y < cullY1);
 }
 
+let curTimeScale = 1;      // 슬로우모션 배율 (이동 계산에도 곱한다)
 let lastCamX=0, lastCamY=0;
 let aimTargetCache=null;
 
@@ -8112,7 +8985,13 @@ function loop(now){
   if(shakeAmt>0) shakeAmt = Math.max(0, shakeAmt - rdt*26);
   if(spotStingerCd>0) spotStingerCd -= rdt;
   if(spotBeepCd>0)    spotBeepCd    -= rdt;
-  const dt = rdt * (slowmo>0 ? 0.32 : 1);
+  /* 아이템 선택 중에는 시간이 느려진다 — 고르는 동안 죽지 않게.
+     주의: 이동은 px/frame 단위라 dt만 줄여서는 느려지지 않는다.
+     curTimeScale을 이동 계산에도 곱해야 한다. */
+  curTimeScale = 1;
+  if(itemWheelOpen) curTimeScale = 0.18;
+  else if(slowmo>0) curTimeScale = 0.32;
+  const dt = rdt * curTimeScale;
 
   if(gameStarted){
     updateAbilities(dt);
@@ -8135,6 +9014,8 @@ function loop(now){
       updateEnvironment(dt);
       updatePickups(dt);
       updateGrenades(dt);
+      updateClaymores(dt);
+      updateThrowFx(dt);
       updateNotes();
       updateCarriedCorpse();
       updateSave(dt);
@@ -8259,15 +9140,33 @@ function loop(now){
     // 웅크리기 상태를 HUD 배지 + 버튼 하이라이트로 이중 표시
     // 적에게 붙으면 사격 버튼이 '처치'로 바뀐다
     const tgt = takedownTarget();
+    /* 투척 조이스틱 라벨 — 현재 아이템과 수량 */
+    {
+      const tl=document.getElementById('tLabel');
+      const tp2=document.getElementById('throwPad');
+      if(tl && tp2){
+        const it=ITEM_DEFS[selectedItem];
+        const cnt=itemCount(selectedItem);
+        tl.textContent = L(it.name)+'\n'+cnt;
+        tp2.classList.toggle('empty', cnt<=0);
+      }
+    }
+
     /* 사격 조이스틱 라벨 — 상태를 노브 안에 표시한다 */
     const fl = document.getElementById('fLabel');
     const fpad = document.getElementById('firePad');
     if(fl && fpad){
-      fpad.classList.remove('takedown','locked');
+      fpad.classList.remove('takedown','locked','melee');
       if(tgt){
         const kind = getTakedownType(tgt);
-        fl.textContent = L(kind==='knife' ? '처치\n(기습)' : '처치\n(조르기)');
-        fpad.classList.add('takedown');
+        if(kind==='melee'){
+          const need = (tgt.meleeHP===undefined) ? meleeHitsNeeded(tgt) : tgt.meleeHP;
+          fl.textContent = L('격투')+'\n'+need;
+          fpad.classList.add('melee');
+        } else {
+          fl.textContent = L(kind==='knife' ? '처치\n(기습)' : '처치\n(조르기)');
+          fpad.classList.add('takedown');
+        }
       } else if(reloadTimer>0){
         fl.textContent = L('재장전');
       } else if(W().spinUp>0 && spinUpT>0 && spinUpT<W().spinUp){
@@ -8285,7 +9184,12 @@ function loop(now){
     ct.textContent = L(player.under ? '▼ 가구 아래 은폐' : '▼ 웅크림');
     document.getElementById('btnCrouch').className = 'btn' + (player.crouch ? ' active' : '');
     // 토글이 켜져 있으면 항상 표시하되, 실제로 달리는 중과 지친 상태를 구분
-    document.getElementById('btnSmoke').textContent = L('연막탄')+'\n'+ammo.smoke;
+    {
+      const ib=document.getElementById('btnItem');
+      const cur=ITEM_DEFS[selectedItem];
+      ib.textContent = L(cur.name)+'\n'+itemCount(selectedItem);
+      ib.style.opacity = itemCount(selectedItem)>0 ? '1' : '0.45';
+    }
     document.getElementById('btnStun').textContent  = L('기절탄')+'\n'+ammo.stun;
     document.getElementById('btnSmoke').style.opacity = ammo.smoke>0 ? '1' : '0.42';
     document.getElementById('btnStun').style.opacity  = ammo.stun >0 ? '1' : '0.42';
