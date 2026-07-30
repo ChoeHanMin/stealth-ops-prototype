@@ -174,6 +174,27 @@
        background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:6px;display:none;z-index:10;}
   #joyZone{position:fixed;left:0;bottom:0;width:45%;height:45%;display:none;}
   /* --- 원형 이동 패드 (360도) --- */
+  /* ===== 사격 조이스틱 (트윈스틱) ===== */
+  #firePad{position:fixed;display:none;width:172px;height:172px;z-index:40;
+       border-radius:50%;background:rgba(255,120,90,0.07);
+       border:2px solid rgba(255,150,120,0.30);
+       box-shadow:0 3px 14px rgba(0,0,0,0.55);touch-action:none;}
+  #fRing{position:absolute;left:50%;top:50%;width:112px;height:112px;margin:-56px 0 0 -56px;
+       border-radius:50%;border:1px dashed rgba(255,160,130,0.20);pointer-events:none;}
+  #fKnob{position:absolute;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;
+       border-radius:50%;background:rgba(255,255,255,0.24);
+       border:2px solid rgba(255,255,255,0.52);pointer-events:none;
+       box-shadow:0 2px 9px rgba(0,0,0,0.55);transition:none;
+       display:flex;align-items:center;justify-content:center;}
+  #fLabel{font-size:11px;font-weight:bold;color:#fff;letter-spacing:1px;
+       text-shadow:0 1px 3px rgba(0,0,0,0.8);pointer-events:none;white-space:pre-line;
+       text-align:center;line-height:1.2;}
+  #firePad.on #fKnob{background:rgba(255,110,90,0.48);border-color:#ff8a6a;}
+  #firePad.takedown{border-color:rgba(140,235,180,0.6);background:rgba(110,232,180,0.10);}
+  #firePad.takedown #fKnob{background:rgba(110,232,180,0.42);border-color:#8fe8b4;}
+  #firePad.locked{border-color:rgba(255,90,90,0.75);}
+  #fTicks{position:absolute;inset:0;pointer-events:none;opacity:0.26;}
+
   #dpad{position:fixed;display:none;width:150px;height:150px;z-index:39;
        border-radius:50%;background:rgba(255,255,255,0.07);
        border:2px solid rgba(255,255,255,0.26);
@@ -373,6 +394,17 @@
 <div id="gearBtn">⚙</div>
 <div id="aimCancelBtn">✕ 취소 (←스와이프)</div>
 
+<div id="firePad">
+  <svg id="fTicks" viewBox="0 0 172 172">
+    <g stroke="#fff" stroke-width="2" stroke-linecap="round">
+      <path d="M86 12 v11 M86 149 v11 M12 86 h11 M149 86 h11"/>
+      <path d="M34 34 l8 8 M138 34 l-8 8 M34 138 l8 -8 M138 138 l-8 -8"/>
+    </g>
+  </svg>
+  <div id="fRing"></div>
+  <div id="fKnob"><span id="fLabel">사격</span></div>
+</div>
+
 <div id="dpad">
   <svg id="dTicks" viewBox="0 0 150 150">
     <g stroke="#fff" stroke-width="2" stroke-linecap="round">
@@ -397,7 +429,7 @@
 <div class="btnPill" id="btnThermal">열화상</div>
 <div id="btns">
   <div class="btn" id="btnDecoy">유인</div>
-  <div class="btn" id="btnFire">사격</div>
+  <div class="btn" id="btnFire" style="display:none">사격</div>
   <div class="btn" id="btnSmoke">연막탄</div>
   <div class="btn" id="btnStun">기절탄</div>
   <div class="btn" id="btnSprint">달리기</div>
@@ -413,7 +445,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.6.1.0</div>
+  <div id="verText">Ver 4.7.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -696,7 +728,7 @@ const EN = {
   '여기 있었군!':'Found you!', '은신처 발각':'Hiding spot found',
   '권총':'Pistol', '미니건':'Minigun', '샷건':'Shotgun', '유탄발사기':'Grenade Launcher',
   '홈 화면으로 나가기':'Quit to title', '나가기':'Quit', '계속하기':'Continue',
-  '발견!':'Spotted!',
+  '발견!':'Spotted!', '재장전':'RELOAD', '예열':'SPIN-UP', '조준됨':'LOCKED',
   '진행 중인 작업이 손실될 수 있습니다.':'Your current progress may be lost.',
   '그래도 나가겠습니까?':'Quit anyway?',
   '자동 저장된 층까지는 "이어하기"로 복구할 수 있습니다.':'You can recover up to the last autosaved floor with Resume.',
@@ -783,19 +815,23 @@ function resize(){
    모바일 FPS 관례: 주 액션은 엄지 원위치에 가장 크게, 보조는 그 위로 호를 그리며 배치.
    각도는 "엄지 중심에서 위·안쪽으로" 도는 방향. 왼손 모드면 좌우 반전. */
 var btnLayoutReady = false;   // var: 호이스팅되어 resize()보다 먼저 평가돼도 안전
+/* 사격은 조이스틱(#firePad)이 담당하므로 중심을 비우고,
+   보조 버튼은 패드 위쪽 호에 배치한다. 반경을 넉넉히 잡아 패드(172px)와 겹치지 않게 한다. */
 const BTN_LAYOUT = [
   // id,          크기, 반경, 각도(deg), 글자크기
-  ['btnFire',      94,   0,     0,   12  ],   // 주 액션 → 중심, 가장 크게
-  ['btnAction',    56, 118,   170,    9.5],   // 상호작용 → 왼쪽, 작게
-  ['btnCrouch',    62, 118,   118,   10  ],
-  ['btnSprint',    58, 118,    66,   10  ],
-  ['btnDecoy',     52, 178,   135,    9.5],
-  ['btnSmoke',     52, 178,   105,    9.5],
-  ['btnStun',      52, 178,    75,    9.5]
+  ['btnAction',    62, 152,   162,   10  ],   // 상호작용 → 왼쪽
+  ['btnCrouch',    58, 158,   126,   10  ],
+  ['btnSprint',    56, 168,    96,    9.5],
+  ['btnDecoy',     50, 224,   150,    9  ],
+  ['btnSmoke',     50, 226,   122,    9  ],
+  ['btnStun',      50, 224,    94,    9  ]
 ];
 function layoutButtons(){
   const W=window.innerWidth, H=window.innerHeight;
   const mirror = settings.leftHanded ? -1 : 1;
+  // 사격은 조이스틱으로 대체되었으므로 옛 버튼은 감춘다
+  const oldFire=document.getElementById('btnFire');
+  if(oldFire) oldFire.style.display='none';
   // 엄지 원위치: 화면 하단 모서리에서 살짝 안쪽
   const cx = settings.leftHanded ? 84 : W-84;
   const cy = H-92;
@@ -2850,7 +2886,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'4.6.1.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'4.7.0.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -3650,6 +3686,78 @@ function joyEnd(){joy.active=false;joy.dx=0;joy.dy=0;joyBase.style.display='none
 /* ===== 원형 이동 패드 =====
    제자리에 고정된 아날로그 스틱. 중심에서 끌어낸 방향/거리가 그대로 이동 벡터가 된다.
    십자키와 달리 대각선을 포함한 360도 전 방향이 자연스럽게 나온다. */
+(function initFirePad(){
+  const el=document.getElementById('firePad'), knob=document.getElementById('fKnob');
+  const MAXR=58;
+  const DEAD=0.20;            // 이동 패드보다 조금 크게 — 탭과 조준을 구분하기 위해
+  let padId=null;
+  let dragged=false;          // 데드존을 넘어간 적이 있는가
+
+  function setVec(cx, cy, px, py){
+    let dx=px-cx, dy=py-cy;
+    const L=Math.hypot(dx,dy);
+    if(L>MAXR){ dx=dx/L*MAXR; dy=dy/L*MAXR; }
+    knob.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
+    let nx=dx/MAXR, ny=dy/MAXR;
+    const m=Math.hypot(nx,ny);
+    if(m<DEAD){
+      aimPad.x=0; aimPad.y=0; aimActive=false;
+      el.classList.remove('on');
+      return;
+    }
+    dragged=true;
+    const scaled=(m-DEAD)/(1-DEAD);
+    aimPad.x=nx/m*scaled; aimPad.y=ny/m*scaled;
+    aimAngle = Math.atan2(ny, nx);
+    aimActive = true;
+    el.classList.add('on');
+  }
+  function release(){
+    padId=null;
+    aimPad.x=0; aimPad.y=0; aimActive=false;
+    knob.style.transform='translate(0px,0px)';
+    el.classList.remove('on');
+    // 밀지 않고 떼었다면 '탭' — 근접 처치 또는 정면 단발
+    if(!dragged){ firePressed=true; }
+    dragged=false;
+    fireHoldGrace=0.10;
+  }
+  function center(){
+    const r=el.getBoundingClientRect();
+    return {x:r.left+r.width/2, y:r.top+r.height/2};
+  }
+
+  el.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    const t=e.changedTouches[0]; padId=t.identifier; dragged=false;
+    const c=center(); setVec(c.x,c.y,t.clientX,t.clientY);
+  }, {passive:false});
+  el.addEventListener('touchmove', e=>{
+    e.preventDefault();
+    const c=center();
+    for(const t of e.changedTouches){
+      if(t.identifier===padId){ setVec(c.x,c.y,t.clientX,t.clientY); }
+    }
+  }, {passive:false});
+  const endT=e=>{
+    for(const t of e.changedTouches){ if(t.identifier===padId) release(); }
+  };
+  el.addEventListener('touchend', endT);
+  el.addEventListener('touchcancel', endT);
+
+  // 마우스 (PC)
+  let mDown=false;
+  el.addEventListener('mousedown', e=>{
+    mDown=true; dragged=false;
+    const c=center(); setVec(c.x,c.y,e.clientX,e.clientY);
+  });
+  window.addEventListener('mousemove', e=>{
+    if(!mDown) return;
+    const c=center(); setVec(c.x,c.y,e.clientX,e.clientY);
+  });
+  window.addEventListener('mouseup', ()=>{ if(mDown){ mDown=false; release(); } });
+})();
+
 (function initPad(){
   const el=document.getElementById('dpad'), knob=document.getElementById('dKnob');
   const MAXR=52;              // 노브가 벗어날 수 있는 최대 반경
@@ -3707,6 +3815,15 @@ function joyEnd(){joy.active=false;joy.dx=0;joy.dy=0;joyBase.style.display='none
   window.addEventListener('mouseup', ()=>{ if(mouseOn){ mouseOn=false; release(); } });
 })();
 function layoutDpad(){
+  // --- 사격 조이스틱 : 이동 패드보다 크고 조금 더 위에 ---
+  const fp=document.getElementById('firePad');
+  if(fp){
+    fp.style.bottom='150px';
+    if(settings.leftHanded){ fp.style.right='auto'; fp.style.left='14px'; }
+    else { fp.style.left='auto'; fp.style.right='14px'; }
+    fp.style.display = gameStarted ? 'block' : 'none';
+  }
+
   const dp=document.getElementById('dpad');
   if(!dp)return;
   dp.style.bottom='112px';   // 폰을 잡은 엄지 위치에 맞춰 위로
@@ -3729,6 +3846,12 @@ window.addEventListener('mouseup',()=>{mouseDown=false;joyEnd();});
 
 let crouchHeld=false, actionPressed=false, decoyPressed=false, firePressed=false;
 let fireHeld=false, fireCooldown=0, fireHoldGrace=0;
+/* ===== 트윈스틱 조준 =====
+   지금까지 player.angle 하나가 이동 방향과 조준 방향을 겸해서,
+   왼쪽으로 걸으면 오른쪽으로 쏠 수 없었다. 조준을 분리한다. */
+let aimPad = {x:0, y:0};
+let aimActive = false;      // 사격 스틱을 밀고 있는가
+let aimAngle = 0;           // 마지막 조준 방향 (스틱을 놓아도 유지)
 const FIRE_INTERVAL = 0.16;   // 연사 간격 (초)
 (function(){
   /* 토글 방식. 이동용 패드를 다른 손가락으로 잡고 있어도 눌려야 하므로
@@ -4051,8 +4174,12 @@ function updatePlayer(dt){
   if(carriedCorpse) spd *= 0.60;         // 시체를 메면 더 느려진다
   if(W().spinUp>0 && spinUpT>0.05) spd *= 0.28;   // 미니건 예열/사격 중에는 거의 못 움직인다
   let moved=0;
+  // 사격 스틱을 밀고 있으면 그 방향을 바라본다 (이동 방향과 무관)
+  if(aimActive){
+    player.angle = aimAngle;
+  }
   if(mag>0.15){
-    player.angle=Math.atan2(my,mx);
+    if(!aimActive) player.angle=Math.atan2(my,mx);
     const stepLen = player.stunTimer>0 ? 0 : spd*(mag>1?1:mag);
     const nx=player.x+ (mx/mag)*stepLen;
     const ny=player.y+ (my/mag)*stepLen;
@@ -4685,8 +4812,8 @@ function updateReload(dt){
 function updateAutoFire(dt){
   if(fireCooldown>0) fireCooldown-=dt;
   if(fireHoldGrace>0) fireHoldGrace-=dt;
-  // 버튼을 놓친 직후 짧은 유예 동안은 계속 누른 것으로 본다 (연발 끊김 방지)
-  const holding = fireHeld || fireHoldGrace>0;
+  // 스틱을 밀고 있으면 계속 발사한다 (트윈스틱)
+  const holding = aimActive || fireHeld || fireHoldGrace>0;
 
   // 미니건 예열 — 누르고 있는 동안 차오르고, 떼면 천천히 식는다
   const WPa = W();
@@ -4925,6 +5052,9 @@ function quitToHome(){
   document.getElementById('btnThermal').style.display='none';
   document.getElementById('dpad').style.display='none';
   document.getElementById('joyZone').style.display='none';
+  const fp0=document.getElementById('firePad');
+  if(fp0) fp0.style.display='none';
+  aimPad.x=0; aimPad.y=0; aimActive=false;
   document.getElementById('gearBtn').style.display='none';
   document.getElementById('startOverlay').style.display='flex';
   // 이어하기 버튼을 새로 반영하기 위해 갱신
@@ -7749,22 +7879,25 @@ function loop(now){
     // 웅크리기 상태를 HUD 배지 + 버튼 하이라이트로 이중 표시
     // 적에게 붙으면 사격 버튼이 '처치'로 바뀐다
     const tgt = takedownTarget();
-    const fb = document.getElementById('btnFire');
-    if(tgt){
-      const kind = getTakedownType(tgt);
-      fb.textContent = L(kind==='knife' ? '처치\n(기습)' : '처치\n(조르기)');
-      fb.style.whiteSpace='pre-line';
-      fb.style.background='rgba(255,90,90,0.30)';
-      fb.style.borderColor='rgba(255,140,140,0.8)';
-    } else if(aimTargetCache){
-      fb.textContent = L('사격\n조준됨');
-      fb.style.whiteSpace='pre-line';
-      fb.style.background='rgba(255,120,90,0.30)';
-      fb.style.borderColor='rgba(255,150,120,0.85)';
-    } else {
-      fb.textContent = L('사격');
-      fb.style.background='rgba(120,255,120,0.18)';
-      fb.style.borderColor='rgba(255,255,255,0.34)';
+    /* 사격 조이스틱 라벨 — 상태를 노브 안에 표시한다 */
+    const fl = document.getElementById('fLabel');
+    const fpad = document.getElementById('firePad');
+    if(fl && fpad){
+      fpad.classList.remove('takedown','locked');
+      if(tgt){
+        const kind = getTakedownType(tgt);
+        fl.textContent = L(kind==='knife' ? '처치\n(기습)' : '처치\n(조르기)');
+        fpad.classList.add('takedown');
+      } else if(reloadTimer>0){
+        fl.textContent = L('재장전');
+      } else if(W().spinUp>0 && spinUpT>0 && spinUpT<W().spinUp){
+        fl.textContent = L('예열');
+      } else if(aimTargetCache){
+        fl.textContent = L('조준됨');
+        fpad.classList.add('locked');
+      } else {
+        fl.textContent = L('사격');
+      }
     }
 
     const ct=document.getElementById('crouchTag');
