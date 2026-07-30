@@ -172,6 +172,8 @@
   #hurtVig{position:fixed;inset:0;pointer-events:none;display:none;z-index:19;
        box-shadow:inset 0 0 150px 40px rgba(180,0,0,0.6);}
   /* --- 튜토리얼 --- */
+  #tutBox.done{border-color:#6ee8b4;box-shadow:0 0 16px rgba(110,232,180,0.35);}
+  #tutBox.done #tutTitle{color:#8fe8b4;}
   #tutBox{position:fixed;left:50%;transform:translateX(-50%);bottom:auto;top:96px;
        width:min(400px,90vw);z-index:44;display:none;
        background:rgba(14,18,24,0.94);border:1px solid #4a5a68;border-radius:10px;
@@ -536,7 +538,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 5.5.0.0</div>
+  <div id="verText">Ver 5.5.1.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -3279,7 +3281,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'5.5.0.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'5.5.1.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -5094,7 +5096,6 @@ function doMeleeStrike(en){
     slowmo = 0.5;
     shakeAmt = Math.max(shakeAmt, 8);
     vibrate(45);
-    tutFlags.takedown = true;
     if(hasPerk('butcher')) en.vanishOnDeath = true;
   } else {
     spawnText(en.x, en.y-32, en.meleeHP+'', '#ffcf6e');
@@ -5900,6 +5901,8 @@ function tutSpawnDummy(mode){
   d.state='idle'; d.homeState='idle';
   d.path=[]; d.wp=0; d.detect=0; d.stunned=false;
   d.meleeHP = undefined; d.blindT=0; d.empT=0; d.meleeCd=0;
+  d.buddyId = undefined; d.buddyMissTimer = 0; d.buddyAlertDone = true;   // 짝꿍 실종 판정 제외
+  d.commander = false; d.mmSeen = false;
   const dist = (mode==='far') ? 260 : 70;
   // 벽이 없는 방향을 찾아 배치
   let ang=0, best=0;
@@ -5945,6 +5948,7 @@ function startTutorial(){
   tutorialStep = 0;
   for(const k in tutFlags) tutFlags[k]=false;
   tutStartPos = {x:player.x, y:player.y};
+  tutAdvanceT = 0;
   tutClearEnemies();          // 배우는 동안에는 저택이 비어 있다
   tutPickDoor();
   document.getElementById('tutBox').style.display='block';
@@ -5954,6 +5958,9 @@ function startTutorial(){
 }
 function endTutorial(){
   tutorialOn = false;
+  tutAdvanceT = 0;
+  const tb0=document.getElementById('tutBox');
+  if(tb0) tb0.classList.remove('done');
   tutRemoveDummy();
   tutReleaseEnemies();        // 경비들이 근무를 시작한다
   tutDoor = null;
@@ -5995,23 +6002,47 @@ function tutFinishByDoor(){
   }
   vibrate([60,50,120]);
 }
-function updateTutorial(){
+let tutAdvanceT = 0;      // 단계 완료 후 남은 대기 시간
+
+function updateTutorial(dt){
   if(!tutorialOn) return;
+
+  /* 완료했으면 바로 넘기지 않고 1.5초 보여준다.
+     너무 빨리 넘어가면 무엇을 했는지 읽을 새가 없다. */
+  if(tutAdvanceT > 0){
+    tutAdvanceT -= (dt || 0.0167);
+    if(tutAdvanceT > 0) return;
+    advanceTutorial();
+    return;
+  }
+
   const s = TUTORIAL[tutorialStep];
   if(!s) return;
   let done=false;
   try{ done = !!s.ok(); }catch(e){ done=false; }
   if(!done) return;
+
+  // 완료 표시만 하고 대기에 들어간다
   playTone(880, 0.09, 0.12, 'triangle');
-  setTimeout(applyTutorialStep, 30);
   setTimeout(()=>playTone(1320, 0.12, 0.11, 'triangle'), 90);
   spawnText(player.x, player.y-40, s.t+' 완료', '#6ee8b4');
+  const tb=document.getElementById('tutBox');
+  if(tb) tb.classList.add('done');
+  const tt=document.getElementById('tutTitle');
+  if(tt) tt.textContent = L(s.t) + '  ✓';
+  tutAdvanceT = 1.5;
+}
+
+function advanceTutorial(){
+  const tb=document.getElementById('tutBox');
+  if(tb) tb.classList.remove('done');
   tutorialStep++;
   if(tutorialStep >= TUTORIAL.length){
     showMsg('튜토리얼 완료 — 남은 미션을 수행하세요');
     endTutorial();
     return;
   }
+  applyTutorialStep();
   if(tutorialStep===1) tutStartPos={x:player.x,y:player.y};
   renderTutorial();
 }
@@ -6049,6 +6080,7 @@ function updateMinimapVisibility(dt){
 }
 
 function updateRollCall(dt){
+  if(tutorialOn) return;   // 튜토리얼 중에는 경비가 전원 대기 상태라 점호가 의미 없다
   rollCallTimer -= dt;
   if(rollCallTimer > 0) return;
   rollCallTimer = 60;
@@ -6281,7 +6313,7 @@ function updateEnemy(en,dt){
     }
   }
 
-  if(en.buddyId!==undefined){
+  if(en.buddyId!==undefined && !tutorialOn){
     const buddy = enemyById(en.buddyId);
     if(!buddy && !en.buddyAlertDone && en.state!=='search'){
       en.buddyMissTimer += dt;
@@ -6326,6 +6358,7 @@ function updateEnemy(en,dt){
     const dist=Math.hypot(dx,dy);
     const ang=Math.atan2(dy,dx);
     let visRange=en.visionRange*diff().vision;
+    if(en.harmless) visRange = 0;      // 훈련용 더미는 아무것도 보지 못한다
     if(en.blindT>0) visRange = 0;      // 섬광탄에 눈이 멀었다
     if(blackout>0) visRange*=0.42;     // 정전 — 손전등만으로는 멀리 못 본다
     // [그림자] 멈춰 있으면 잘 안 띈다
@@ -6362,7 +6395,10 @@ function updateEnemy(en,dt){
         /* 발각 스팅어는 '처음 들켰다'는 신호다.
            적마다 0.42초씩 멈추면 20명이 몰려올 때 10초 내내 화면이 정지한다.
            이미 경보 중이거나 최근에 한 번 울렸으면 연출을 생략한다. */
-        const firstSpot = !alarmRaised && spotStingerCd<=0;
+        /* 튜토리얼 중에는 멈추지 않는다.
+           경보가 안 울리는 상태라 쿨다운 조건이 계속 맞아떨어져서
+           0.42초 프리즈와 진동이 반복되고, 조작이 막힌 것처럼 보였다. */
+        const firstSpot = !tutorialOn && !alarmRaised && spotStingerCd<=0;
         if(firstSpot){
           spotStingerCd = 6;                 // 6초 안에는 다시 멈추지 않는다
           spotFreeze = 0.42; spotEnemy = en; shakeAmt = 9;
@@ -6384,7 +6420,7 @@ function updateEnemy(en,dt){
       en.target={x:player.x,y:player.y};
       en.lastKnown={x:player.x,y:player.y};
       en.searchTimer=6;
-      if(!alarmRaised) vibrate(80);
+      if(!alarmRaised && !tutorialOn) vibrate(80);
       if(en.kind==='dog'){ dogBark(en); raiseAlarm(player.x, player.y, '경비견 발견'); }
       else raiseAlarm(player.x, player.y, '침입자 목격');
     }
@@ -7566,11 +7602,13 @@ function doTakedown(){
         actionLock={type:'knife',enemy:en,hitAngle:toPlayerAngle+Math.PI};
         showMsg('정면 기습 처치!');
         stats.knifeKills++;
+        tutFlags.takedown = true;
       } else {
         en.dieType='choke'; en.dieTimer=0.6; en.dieTotal=0.6;
         actionLock={type:'choke',enemy:en};
         showMsg('은밀 조르기 처치');
         stats.chokeKills++;
+        tutFlags.takedown = true;
       }
       tutFlags.takedown = true;
       habits.melee++;
@@ -9665,6 +9703,7 @@ let last=performance.now();
 function loop(now){
   const rdt=Math.min((now-last)/1000, 0.05); last=now;
   if(slowmo>0) slowmo -= rdt;
+  if(tutorialOn) spotFreeze = 0;     // 튜토리얼 중에는 절대 멈추지 않는다
   if(spotFreeze>0) spotFreeze -= rdt;
   if(shakeAmt>0) shakeAmt = Math.max(0, shakeAmt - rdt*26);
   if(spotStingerCd>0) spotStingerCd -= rdt;
@@ -9704,7 +9743,7 @@ function loop(now){
       updateNotes();
       updateCarriedCorpse();
       updateSave(dt);
-      updateTutorial();
+      updateTutorial(dt);
       spawnReinforcements(dt);
       withdrawReinforcements(dt);
       updateAlarm(dt);
