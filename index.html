@@ -445,7 +445,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.7.1.0</div>
+  <div id="verText">Ver 4.7.2.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -830,14 +830,18 @@ const PAD_SPEC = {
      zone 'moveL'   = 이동 패드 위 왼쪽 열
      zone 'moveR'   = 이동 패드 위 오른쪽 열
    bottom: 화면 아래에서의 거리(px) */
+/* 사격 패드 위 2x2 = 상호작용·유인·연막탄·기절탄
+   이동 패드 위 1x2 = 웅크리기·달리기
+     zone: 'fireL'/'fireR' = 사격 패드 위 좌/우 열
+           'moveL'/'moveR' = 이동 패드 위 좌/우 열 */
 const BTN_SLOTS = [
-  // id,          크기, zone,      bottom, 글자크기
-  ['btnAction',    64, 'fireTop',   336,  10  ],   // 가장 자주 쓰므로 사격 패드 바로 위
-  ['btnCrouch',    60, 'fireTop',   410,  10  ],
-  ['btnDecoy',     52, 'moveL',     276,   9  ],
-  ['btnSmoke',     52, 'moveR',     276,   9  ],
-  ['btnStun',      52, 'moveL',     340,   9  ],
-  ['btnSprint',    56, 'moveR',     340,   9.5]
+  // id,          크기, zone,     bottom, 글자크기
+  ['btnAction',    62, 'fireL',    336,  10  ],   // 가장 자주 쓰므로 패드 바로 위
+  ['btnDecoy',     56, 'fireR',    336,   9  ],
+  ['btnSmoke',     56, 'fireL',    408,   9  ],
+  ['btnStun',      56, 'fireR',    408,   9  ],
+  ['btnCrouch',    60, 'moveL',    278,  10  ],
+  ['btnSprint',    58, 'moveR',    278,   9.5]
 ];
 /* ===== 버튼 배치 계산 (DOM과 분리) =====
    DOM에 쓰기 전에 좌표를 계산해 두면 겹침을 실제로 검증할 수 있다.
@@ -855,17 +859,17 @@ function padRects(W, H, lh){
 }
 function computeButtonLayout(W, H, lh){
   const pads = padRects(W, H, lh);
-  const fireCx = pads.fire.x + pads.fire.w/2;
-  const moveCx = pads.move.x + pads.move.w/2;
-  // 이동 패드 위 2열 — 패드 폭 안에서 좌우로 나눈다
+  // 각 패드 위쪽 2열 — 패드 폭 안에서 좌우로 나눈다
+  const fL = pads.fire.x + pads.fire.w*0.24;
+  const fR = pads.fire.x + pads.fire.w*0.76;
   const mL = pads.move.x + pads.move.w*0.26;
   const mR = pads.move.x + pads.move.w*0.74;
-  // 미니맵(우상단)과 겹치지 않도록 최소 y 확보
-  const MIN_TOP = 176;
+  // 미니맵·알약(우상단)과 겹치지 않도록 최소 y 확보
+  const MIN_TOP = 180;
 
   const buttons=[];
   for(const [id,size,zone,bottom,fs] of BTN_SLOTS){
-    const cxp = zone==='fireTop' ? fireCx : (zone==='moveL' ? mL : mR);
+    const cxp = zone==='fireL' ? fL : (zone==='fireR' ? fR : (zone==='moveL' ? mL : mR));
     const x = Math.round(Math.max(4, Math.min(W - size - 4, cxp - size/2)));
     const y = Math.round(Math.max(MIN_TOP, H - bottom - size));
     buttons.push({id, x, y, w:size, h:size, fs});
@@ -2292,7 +2296,7 @@ let stamina = 100, sprintHeld = false, sprinting = false, sprintReady = true;
 /* 투척 장비 잔량 — 레벨당 각 10개.
    체크포인트 재시작은 잔량을 유지하고, 레벨 재시작에서만 보충된다. */
 const GRENADE_MAX = 10;
-const GRENADE_BASE = 3;     // 해금 전 기본 지급량
+const GRENADE_BASE = 10;    // 기본 지급량 (연막탄·기절탄은 표준 장비로 전환)
 let ammo = { smoke: GRENADE_MAX, stun: GRENADE_MAX };
 
 /* 탄창 — 30발 쓰면 재장전. 예비 탄약은 제한하지 않는다
@@ -2394,8 +2398,6 @@ function takePerk(id){
    처음엔 동전만 들고 시작하므로 장비 하나하나가 의미를 갖는다. */
 const META_KEY='stealthOps_meta';
 const UNLOCKS=[
-  {id:'smoke',    name:'연막탄',   cost:20, desc:'소지 3개 → 10개'},
-  {id:'stun',     name:'기절탄',   cost:25, desc:'소지 3개 → 10개'},
   {id:'nvg',      name:'야간투시', cost:35, desc:'어둠 제거'},
   {id:'thermal',  name:'열화상',   cost:45, desc:'벽 너머 적 표시'},
   {id:'armor',    name:'방탄복',   cost:60, desc:'최대 체력 100 → 140'},
@@ -2416,8 +2418,9 @@ function applyLoadout(){
   if(!META) loadMeta();
   /* 해금 전에도 최소 수량은 지급한다.
      0개로 두면 버튼이 계속 비활성이라 '버그'로 보이고, 튜토리얼도 진행할 수 없다. */
-  ammo.smoke = hasUnlock('smoke') ? GRENADE_MAX : GRENADE_BASE;
-  ammo.stun  = hasUnlock('stun')  ? GRENADE_MAX : GRENADE_BASE;
+  // 연막탄·기절탄은 표준 장비 — 해금 없이 항상 10개
+  ammo.smoke = GRENADE_BASE;
+  ammo.stun  = GRENADE_BASE;
   player.maxHp = Math.max(40, (hasUnlock('armor') ? 140 : 100) + (perkMods.hpBonus||0));
   player.hp = player.maxHp;
   magAmmo = MAG_SIZE + (perkMods.magBonus||0);
@@ -2932,7 +2935,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'4.7.1.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'4.7.2.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -5169,8 +5172,9 @@ function restartLevel(){
   for(const en of enemies){
     en.buddyAlertDone=false; en.buddyMissTimer=0; en.returnTimer=0; en.stuckTimer=0;
   }
-  ammo.smoke = hasUnlock('smoke') ? GRENADE_MAX : GRENADE_BASE;
-  ammo.stun  = hasUnlock('stun')  ? GRENADE_MAX : GRENADE_BASE;
+  // 연막탄·기절탄은 표준 장비 — 해금 없이 항상 10개
+  ammo.smoke = GRENADE_BASE;
+  ammo.stun  = GRENADE_BASE;
   blackout = 0;
   for(const b of breakers){ b.cooldown = 0; }
   for(const a of alarmPanels){ a.alive = true; }
