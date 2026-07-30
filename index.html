@@ -172,6 +172,7 @@
   #hurtVig{position:fixed;inset:0;pointer-events:none;display:none;z-index:19;
        box-shadow:inset 0 0 150px 40px rgba(180,0,0,0.6);}
   /* --- 튜토리얼 --- */
+  #tutHint{display:none;margin-top:6px;font-size:11px;color:#8fa0ae;text-align:right;}
   #tutBox.done{border-color:#6ee8b4;box-shadow:0 0 16px rgba(110,232,180,0.35);}
   #tutBox.done #tutTitle{color:#8fe8b4;}
   #tutBox{position:fixed;left:50%;transform:translateX(-50%);bottom:auto;top:96px;
@@ -418,6 +419,18 @@
   </div>
 </div>
 
+<div class="modal" id="tutAgainModal">
+  <div class="modalBox">
+    <h2 style="color:#ffcf6e;">튜토리얼 다시 보기</h2>
+    <p style="text-align:center;line-height:1.65;">
+      처음부터 재시작합니다.<br>지금까지 게임 진행 상황을 잃어버립니다.<br>괜찮으시겠습니까?
+    </p>
+    <div class="dmBtn" id="tutAgainYes" style="background:#7a5a20;border-color:#c8a050;">
+      처음부터 다시 시작</div>
+    <div class="dmBtn alt" id="tutAgainNo">취소</div>
+  </div>
+</div>
+
 <div class="modal" id="quitModal">
   <div class="modalBox">
     <h2 style="color:#ff9a6a;">홈 화면으로 나가기</h2>
@@ -457,6 +470,7 @@
   <div id="tutStep">단계 1 / 8</div>
   <div id="tutTitle">이동</div>
   <div id="tutDesc">왼쪽 원형 패드를 끌어 움직이세요.</div>
+  <div id="tutHint">탭하면 바로 넘어갑니다</div>
   <div id="tutBar"><div id="tutFill"></div></div>
 </div>
 <div id="tutSkip">튜토리얼 건너뛰기</div>
@@ -538,7 +552,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 5.5.1.0</div>
+  <div id="verText">Ver 5.6.2.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -830,6 +844,14 @@ const EN = {
   '문을 부순다!':'Breaking the door!',
   '수류탄':'Frag', '크레모아':'Claymore', '섬광탄':'Flashbang', '투척물':'THROW',
   '동전':'Coin', '난이도 선택':'Select difficulty', '문':'Door', '훈련용':'Training',
+  '튜토리얼 다시 보기':'Replay tutorial', '처음부터 다시 시작':'Restart from the beginning',
+  '처음부터 다시 시작합니다':'Restarting from the beginning',
+  '신참 · 테이저':'Rookie · Taser', '베테랑 · 소총':'Veteran · Rifle', '경비견':'Guard dog',
+  '탭하면 바로 넘어갑니다':'Tap to continue',
+  '노란 화살표를 따라 쪽지로 가세요':'Follow the yellow arrow to the note',
+  '노란 화살표를 따라 가구로 가세요':'Follow the yellow arrow to the furniture',
+  '가구':'Furniture',
+  '같은 방의 단말기로 가세요':'Head for the terminal in this room',
   '격투':'Melee', '사격':'Shoot', '문 열고 잠입 시작':'Open the door and begin',
   '노란 화살표를 따라 문으로 가세요':'Follow the yellow arrow to the door',
   '경비 근무 시작 — 잠입을 시작하십시오':'Guards on duty — begin the infiltration',
@@ -3281,7 +3303,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'5.5.1.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'5.6.2.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -4259,6 +4281,7 @@ document.getElementById('diffCancel').addEventListener('click',()=>{
 })();
 
 function beginRun(){
+  wantTutorial = true;      // 새 잠입 → 튜토리얼부터
   layoutButtons();
   loadMeta();
   loadWeaponsOwned();
@@ -4272,8 +4295,9 @@ function beginRun(){
   analytics.sessions=(analytics.sessions||0)+1;
   sessionStart=performance.now();
   saveAnalytics();
-  // 튜토리얼은 새 잠입을 시작할 때마다 반드시 거친다 ('이어하기'는 제외)
-  setTimeout(startTutorial, 600);
+  // 튜토리얼은 '게임 시작'으로 새 잠입을 열 때만 나온다.
+  // 체크포인트 재시작·이어하기에서는 나오지 않는다.
+  if(wantTutorial){ wantTutorial=false; setTimeout(startTutorial, 600); }
   document.getElementById('btnNVG').style.display='flex';
   document.getElementById('btnThermal').style.display='flex';
   initAudio();
@@ -4326,6 +4350,18 @@ document.getElementById('closeSettings').addEventListener('click',()=>{document.
     showMsg('다음 새로고침부터 적용됩니다');
     return LANG==='en'?'English':'한국어';
   });
+  {
+    const r=document.createElement('div');
+    r.className='closeBtn';
+    r.style.cssText='background:#4a3a18;border:1px solid #a08040;color:#ffe8c0;'+
+      'font-weight:bold;margin-top:4px;';
+    r.textContent='튜토리얼 다시 보기';
+    r.addEventListener('click',()=>{
+      document.getElementById('settingsModal').style.display='none';
+      document.getElementById('tutAgainModal').style.display='flex';
+    });
+    box.insertBefore(r, document.getElementById('closeSettings'));
+  }
   {
     const r=document.createElement('div');
     r.className='closeBtn';
@@ -5816,7 +5852,7 @@ const TUTORIAL = [
     d:'이동 스틱을 끌어 움직이세요. 살짝 밀면 천천히, 끝까지 밀면 빠르게 움직입니다.',
     ok:()=> tutStartPos && Math.hypot(player.x-tutStartPos.x, player.y-tutStartPos.y) > 160 },
 
-  { t:'조준은 이동과 따로',
+  { t:'조준은 이동과 따로', flag:'aim',
     d:'사격 스틱을 밀면 그 방향으로 쏩니다. 이동과 완전히 별개라, 왼쪽으로 걸으면서 오른쪽으로 쏠 수 있습니다.',
     ok:()=> tutFlags.aim },
 
@@ -5824,39 +5860,62 @@ const TUTORIAL = [
     d:'웅크리기 버튼을 누르세요. 발소리가 작아지고 적 시야에 잘 띄지 않습니다.',
     ok:()=> player.crouch },
 
-  { t:'가구 아래 숨기',
-    d:'웅크린 채로 침대·책상·소파 안으로 들어가 보세요. 실루엣만 보이고 거의 발각되지 않습니다.',
+  { t:'가구 아래 숨기', furn:true,
+    d:'웅크린 채로 침대·책상·소파 안으로 들어가 보세요. 노란 화살표가 이 방의 가구를 가리킵니다. 안에 들어가면 실루엣만 보이고 거의 발각되지 않습니다.',
     ok:()=> !!player.under },
 
   { t:'달리기',
     d:'달리기 버튼을 누르세요. 빠르지만 발소리가 크고 스태미나를 소모합니다.',
     ok:()=> sprinting },
 
-  { t:'동전으로 유인',
+  { t:'동전으로 유인', flag:'decoy',
     d:'투척물 스틱을 길게 눌러 가운데 "동전"을 고른 뒤, 원하는 방향으로 밀었다 떼세요. 동전은 무제한입니다.',
     ok:()=> tutFlags.decoy },
 
-  { t:'투척물 고르기',
-    d:'투척물 스틱을 제자리에서 길게 누르면 여덟 가지가 방사형으로 펼쳐집니다. 그 상태로 손가락을 밀어 고르세요. 고르는 동안에는 시간이 느려집니다.',
-    ok:()=> tutFlags.wheel },
+  { t:'투척물 고르기', flag:'wheel',
+    d:'이번에는 동전 말고 다른 것을 골라 보세요. 투척물 스틱을 제자리에서 길게 누르면 여덟 가지가 방사형으로 펼쳐집니다. 그 상태로 손가락을 밀어 고르세요. 고르는 동안에는 시간이 느려집니다.',
+    ok:()=> tutFlags.wheel && selectedItem!=='coin' },
 
-  { t:'투척물 던지기',
-    d:'투척물 스틱을 원하는 방향으로 밀었다 떼면 던집니다. 멀리 밀면 더 멀리 날아가고, 걸어가면서도 던질 수 있습니다.',
+  { t:'투척물 던지기', flag:'threw',
+    d:'방금 고른 것을 실제로 던져 봅시다. 투척물 스틱을 원하는 방향으로 밀었다 떼면 됩니다. 멀리 밀면 더 멀리 날아가고, 걸어가면서도 던질 수 있습니다.',
     ok:()=> tutFlags.threw },
 
-  { t:'맨손 제압', dummy:'back',
+  { t:'맨손 제압', dummy:'back', flag:'takedown',
     d:'훈련용 경비를 세워 두었습니다. 이 사람은 반격하지 않습니다. 뒤로 돌아가 사격 스틱을 밀지 말고 톡 누르면 한 번에 제압됩니다.',
     ok:()=> tutFlags.takedown },
 
-  { t:'격투', dummy:'front',
+  { t:'격투', dummy:'front', flag:'melee',
     d:'이번에는 정면입니다. 정면에서는 한 번에 죽지 않고 격투가 되어 여러 번 연타해야 합니다. 남은 횟수가 스틱에 표시됩니다.',
     ok:()=> tutFlags.melee },
 
-  { t:'사격', dummy:'far',
+  { t:'사격', dummy:'far', flag:'shot',
     d:'사격 스틱을 적 쪽으로 밀면 그 방향으로 쏩니다. 다만 총성은 저택 전체에 퍼져서, 실전에서 한 발이라도 쏘면 경비 전원이 무장합니다. 석궁만 예외입니다.',
     ok:()=> tutFlags.shot },
 
-  { t:'문 열고 잠입 시작', door:true,
+  { t:'경비 두 종류', dummy:'pair', info:6,
+    d:'왼쪽은 신참입니다. 테이저건을 쏘는데 피해는 작지만 1.3초간 몸이 굳습니다. 오른쪽은 베테랑입니다. 견장이 달려 있고 소총으로 한 발에 16을 깎습니다. 시야도 더 넓습니다.' },
+
+  { t:'경비견', dummy:'dog', info:6,
+    d:'경비견은 시야가 짧지만 청각이 사람의 2.6배입니다. 발소리를 들으면 달려와 뭅니다. 한 번 짖으면 620px 안의 모든 경비가 그쪽으로 옵니다. 개 앞에서는 반드시 웅크리세요.' },
+
+  { t:'화면 읽는 법', info:8,
+    d:'초록색 원은 시작 지점이자 탈출 지점입니다. 미션은 종류마다 색이 다릅니다 — 하늘색은 카드키 단말기, 보라색은 CCTV 해킹, 주황색은 금고 락픽, 노란색은 선 연결, 연두색은 배전반입니다. 바닥에 떨어진 작은 원은 보급품입니다.' },
+
+  { t:'미니맵과 화살표', info:8,
+    d:'오른쪽 위 미니맵에서 흰 점이 나, 주황 점이 미션, 노란 점이 쪽지입니다. 적은 직접 보이거나 수색 중일 때만 표시되고, 그 외에는 마지막으로 본 자리가 흐리게 남습니다. 화면 가장자리 화살표는 지금 가야 할 곳을 가리킵니다.' },
+
+  { t:'쪽지 줍기', note:true,
+    d:'단말기 미션에는 코드가 필요합니다. 이 방에 쪽지를 놓아두었습니다. 노란 화살표를 따라가 가까이 서면 자동으로 읽고, 코드가 화면 왼쪽에 계속 표시됩니다.',
+    ok:()=> decor.some(d=>d.type==='note' && d.read) },
+
+  { t:'미션 수행', mission:true,
+    d:'이제 같은 방의 단말기로 가서 상호작용 버튼을 누르세요. 방금 읽은 코드를 입력하면 됩니다. 실전에서는 이런 미션을 다섯 개 처리해야 합니다.',
+    ok:()=> missions.some(m=>m.done) },
+
+  { t:'놓치기 쉬운 것들', info:9,
+    d:'시체는 발견되면 비상벨이 울립니다. 상호작용으로 들쳐메 옷장에 숨기세요. 기절한 적은 결박하면 깨어나지 않습니다. 두꺼비집을 내리면 26초간 정전이라 적 시야가 크게 줄고, 경보기를 부수면 그 구역에서는 비상벨 자체가 울리지 않습니다.' },
+
+  { t:'문 열고 잠입 시작', door:true, flag:'door',
     d:'마지막입니다. 노란 화살표가 가리키는 문으로 가서 상호작용 버튼을 누르세요. 문이 열리면 경비들이 근무를 시작하고 실제 잠입이 시작됩니다.',
     ok:()=> tutFlags.door }
 ];
@@ -5868,8 +5927,13 @@ const tutFlags = { decoy:false, takedown:false, shot:false, aim:false,
    전원을 잠시 빼두었다가, 마지막에 문을 열면 되돌린다.
    처치를 가르치는 단계에서만 '훈련용 더미'를 한 명 세운다(공격력 0). */
 let tutHeldEnemies = [];
-let tutDummy = null;
+let tutDummy = null;          // 단일 더미
+let tutDummies = [];          // 여러 명일 때
 let tutDoor = null;
+let tutInfoT = 0;             // 읽기 전용 단계의 남은 시간
+let tutNote = null;           // 이 방에 옮겨 둔 쪽지
+let tutMission = null;        // 이 방에 옮겨 둔 미션
+let tutHideFurn = null;       // 이 방에 확보한 '숨을 수 있는 가구'
 
 function tutClearEnemies(){
   tutHeldEnemies = enemies.slice();
@@ -5888,46 +5952,177 @@ function tutReleaseEnemies(){
   tutDummy = null;
 }
 
-/* 훈련용 더미 — 반격하지 않고 경보도 울리지 않는다 */
-function tutSpawnDummy(mode){
-  tutRemoveDummy();
+/* 훈련용 더미 — 반격하지 않고 아무것도 보지 못한다 */
+function tutMakeDummy(opts){
   const base = tutHeldEnemies.find(e=>e.kind==='guard') || tutHeldEnemies[0];
-  if(!base) return;
+  if(!base) return null;
   const d = Object.assign({}, base);
-  d._id = 900001;
-  d.kind='guard'; d.rank='rookie'; d.armored=false;
+  d._id = 900000 + tutDummies.length + 1;
+  d.kind = opts.kind || 'guard';
+  d.rank = opts.rank || 'rookie';
+  d.armored = false;
   d.harmless = true;              // 공격력 0
   d.hp = 1; d.maxHp = 1;
+  d.r = (d.kind==='dog') ? 8 : 12;
   d.state='idle'; d.homeState='idle';
   d.path=[]; d.wp=0; d.detect=0; d.stunned=false;
   d.meleeHP = undefined; d.blindT=0; d.empT=0; d.meleeCd=0;
-  d.buddyId = undefined; d.buddyMissTimer = 0; d.buddyAlertDone = true;   // 짝꿍 실종 판정 제외
+  d.buddyId = undefined; d.buddyMissTimer = 0; d.buddyAlertDone = true;
   d.commander = false; d.mmSeen = false;
-  const dist = (mode==='far') ? 260 : 70;
-  // 벽이 없는 방향을 찾아 배치
+  d.bandana = (d.rank==='veteran');
+  return d;
+}
+/* 플레이어 주변에서 벽에 막히지 않는 방향을 찾는다 */
+function tutFreeDir(minDist){
   let ang=0, best=0;
   for(let a=0;a<360;a+=10){
     const r=a*Math.PI/180;
-    const L=rayMarchLanding(player.x, player.y, r, dist+60);
+    const L=rayMarchLanding(player.x, player.y, r, minDist+80);
     const reach=Math.hypot(L.x-player.x, L.y-player.y);
     if(reach>best){ best=reach; ang=r; }
   }
-  d.x = player.x + Math.cos(ang)*Math.min(dist, best-30);
-  d.y = player.y + Math.sin(ang)*Math.min(dist, best-30);
+  return {ang, reach:best};
+}
+function tutPlaceDummy(d, dist, offset, facePlayer){
+  const {ang, reach} = tutFreeDir(dist);
+  const use = Math.min(dist, Math.max(40, reach-40));
+  const px = -Math.sin(ang), py = Math.cos(ang);   // 수직 방향
+  d.x = player.x + Math.cos(ang)*use + px*(offset||0);
+  d.y = player.y + Math.sin(ang)*use + py*(offset||0);
   d.homeX=d.x; d.homeY=d.y;
-  // 'back'이면 플레이어에게 등을 보이고, 'front'면 마주 본다
   const toPlayer = Math.atan2(player.y-d.y, player.x-d.x);
-  d.angle = (mode==='back') ? toPlayer + Math.PI : toPlayer;
+  d.angle = facePlayer ? toPlayer : toPlayer + Math.PI;
   d.homeAngle = d.angle;
-  tutDummy = d;
   enemies.push(d);
+  tutDummies.push(d);
+}
+function tutSpawnDummy(mode){
+  tutRemoveDummy();
+  if(mode==='pair'){
+    const a = tutMakeDummy({rank:'rookie'});
+    const b = tutMakeDummy({rank:'veteran'});
+    if(a){ tutPlaceDummy(a, 110, -46, true); spawnText(a.x, a.y-34, '신참 · 테이저', '#8fe8b4'); }
+    if(b){ tutPlaceDummy(b, 110,  46, true); spawnText(b.x, b.y-34, '베테랑 · 소총', '#8fe8b4'); }
+    tutDummy = a;
+    return;
+  }
+  if(mode==='dog'){
+    const g = tutMakeDummy({kind:'dog'});
+    if(g){ tutPlaceDummy(g, 90, 0, true); spawnText(g.x, g.y-30, '경비견', '#8fe8b4'); }
+    tutDummy = g;
+    return;
+  }
+  const d = tutMakeDummy({rank:'rookie'});
+  if(!d) return;
+  tutPlaceDummy(d, (mode==='far') ? 260 : 70, 0, mode!=='back');
+  tutDummy = d;
   spawnText(d.x, d.y-34, '훈련용', '#8fe8b4');
 }
 function tutRemoveDummy(){
-  if(!tutDummy) return;
-  const i = enemies.indexOf(tutDummy);
-  if(i>=0) enemies.splice(i,1);
+  for(const d of tutDummies){
+    const i = enemies.indexOf(d);
+    if(i>=0) enemies.splice(i,1);
+  }
+  tutDummies = [];
   tutDummy = null;
+}
+
+/* 가구를 옮긴 뒤 충돌 배열을 다시 만든다.
+   furnitureSolids는 decor의 좌표를 복사해 두므로 그냥 옮기면 반영되지 않는다. */
+function rebuildFurnitureSolids(){
+  refill(furnitureSolids, decor.filter(d=>d.solid).map(d=>({
+    x:d.x, y:d.y, w:d.w, h:d.h,
+    crouchPassable: CROUCH_PASSABLE.has(d.type),
+    src: d
+  })));
+  refill(solidRects, walls.concat(furnitureSolids));
+  buildCollisionGrid();
+  buildNavGrid();
+}
+
+/* 튜토리얼용으로 쪽지 하나와 그 코드를 쓰는 미션 하나를
+   플레이어가 서 있는 방 안으로 옮긴다. 저택을 헤매지 않고 배우게 한다. */
+function tutRoomOf(x, y){
+  for(const r of (MAPGEN.rooms||[])){
+    if(x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h) return r;
+  }
+  return null;
+}
+/* 가구 크기를 고려한 빈 자리 (플레이어 근처, 다른 가구와 겹치지 않게) */
+function tutFreeSpotFor(room, w, h){
+  for(let i=0;i<120;i++){
+    const x = room.x + 30 + Math.random()*Math.max(10, room.w - w - 60);
+    const y = room.y + 30 + Math.random()*Math.max(10, room.h - h - 60);
+    let ok = true;
+    for(const wl of walls) if(rectsOverlap(x-6,y-6,w+12,h+12, wl.x,wl.y,wl.w,wl.h)){ ok=false; break; }
+    if(ok) for(const d of decor){
+      if(!d.solid || !d.w) continue;
+      if(rectsOverlap(x-6,y-6,w+12,h+12, d.x,d.y,d.w,d.h)){ ok=false; break; }
+    }
+    if(!ok) continue;
+    // 플레이어를 가구 안에 가두지 않도록 조금 떨어뜨린다
+    const cx=x+w/2, cy=y+h/2;
+    const dp=Math.hypot(cx-player.x, cy-player.y);
+    if(dp < 50 || dp > 340) continue;
+    return {x, y};
+  }
+  return null;
+}
+function rectsOverlap(ax,ay,aw,ah, bx,by,bw,bh){
+  return ax < bx+bw && ax+aw > bx && ay < by+bh && ay+ah > by;
+}
+
+function tutFreeSpotIn(room, tries){
+  for(let i=0;i<(tries||60);i++){
+    const x = room.x + 40 + Math.random()*Math.max(10, room.w-80);
+    const y = room.y + 40 + Math.random()*Math.max(10, room.h-80);
+    let ok = true;
+    for(const w of solidRects) if(circleRectCollide(x,y,20,w)){ ok=false; break; }
+    if(ok && Math.hypot(x-player.x, y-player.y) > 60) return {x,y};
+  }
+  return null;
+}
+function tutSetupRoom(){
+  tutNote = null; tutMission = null; tutHideFurn = null;
+  const room = tutRoomOf(player.x, player.y);
+  if(!room) return;
+
+  /* 웅크려 들어갈 가구가 이 방에 하나는 있어야 한다.
+     없으면 '가구 아래 숨기' 단계에서 진행이 막힌다. */
+  const inRoom = (o)=> o.x>=room.x-10 && o.x<=room.x+room.w+10 &&
+                       o.y>=room.y-10 && o.y<=room.y+room.h+10;
+  let hide = decor.find(d=>d.solid && CROUCH_PASSABLE.has(d.type) && inRoom(d));
+  if(!hide){
+    // 방 밖에서 하나 끌어온다
+    const cand = decor.find(d=>d.solid && CROUCH_PASSABLE.has(d.type));
+    if(cand){
+      const spot = tutFreeSpotFor(room, cand.w, cand.h);
+      if(spot){ cand.x=spot.x; cand.y=spot.y; hide=cand; }
+    }
+  }
+  if(!hide){
+    // 그래도 없으면 책상을 하나 새로 놓는다
+    const w=64, h=40;
+    const spot = tutFreeSpotFor(room, w, h);
+    if(spot){
+      hide = {type:'desk', x:spot.x, y:spot.y, w, h, solid:true};
+      decor.push(hide);
+    }
+  }
+  if(hide){ tutHideFurn = hide; rebuildFurnitureSolids(); }
+  // 코드가 필요한 미션(카드키)을 우선 고른다
+  let m = missions.find(q=>!q.done && q.id==='card') ||
+          missions.find(q=>!q.done && q.puzzleType==='dial') ||
+          missions.find(q=>!q.done);
+  if(!m) return;
+  const ms = tutFreeSpotIn(room);
+  if(ms){ m.x=ms.x; m.y=ms.y; tutMission = m; }
+  // 그 미션의 쪽지도 같은 방으로
+  const nd = noteFor(m.id);
+  if(nd){
+    const ns = tutFreeSpotIn(room);
+    if(ns){ nd.x=ns.x; nd.y=ns.y; nd.read=false; tutNote = nd; }
+  }
 }
 
 /* 마지막 단계에서 열 문을 고른다 — 플레이어에게서 가장 가까운 문 */
@@ -5948,8 +6143,10 @@ function startTutorial(){
   tutorialStep = 0;
   for(const k in tutFlags) tutFlags[k]=false;
   tutStartPos = {x:player.x, y:player.y};
-  tutAdvanceT = 0;
+  tutAdvanceT = 0; tutInfoT = 0; tutMinT = 0;
+  tutDummies = [];
   tutClearEnemies();          // 배우는 동안에는 저택이 비어 있다
+  tutSetupRoom();             // 쪽지와 미션을 이 방으로 옮긴다
   tutPickDoor();
   document.getElementById('tutBox').style.display='block';
   document.getElementById('tutSkip').style.display='block';
@@ -5958,7 +6155,8 @@ function startTutorial(){
 }
 function endTutorial(){
   tutorialOn = false;
-  tutAdvanceT = 0;
+  tutAdvanceT = 0; tutInfoT = 0; tutMinT = 0;
+  tutNote = null; tutMission = null; tutHideFurn = null;
   const tb0=document.getElementById('tutBox');
   if(tb0) tb0.classList.remove('done');
   tutRemoveDummy();
@@ -5974,11 +6172,25 @@ function applyTutorialStep(){
   if(!tutorialOn) return;
   const st = TUTORIAL[tutorialStep];
   if(!st) return;
+  /* 이전 단계에서 이미 켜진 플래그 때문에 도착하자마자 완료되는 것을 막는다.
+     예: 동전을 던지려면 휠을 열어야 하므로 wheel·threw가 미리 켜졌다. */
+  if(st.flag) tutFlags[st.flag] = false;
+  // 어떤 단계든 최소 이만큼은 읽을 시간을 준다
+  tutMinT = st.info ? 0 : 2.0;
   if(st.dummy) tutSpawnDummy(st.dummy);
   else         tutRemoveDummy();
-  if(st.door && tutDoor){
-    showMsg('노란 화살표를 따라 문으로 가세요');
-  }
+  tutInfoT = st.info || 0;
+  if(st.furn && tutHideFurn)  showMsg('노란 화살표를 따라 가구로 가세요');
+  if(st.note && tutNote)      showMsg('노란 화살표를 따라 쪽지로 가세요');
+  if(st.mission && tutMission) showMsg('같은 방의 단말기로 가세요');
+  if(st.door && tutDoor)      showMsg('노란 화살표를 따라 문으로 가세요');
+}
+
+/* 읽기 단계에서는 남은 시간을 진행바로 보여준다 */
+function tutInfoProgress(){
+  const st = TUTORIAL[tutorialStep];
+  if(!st || !st.info) return -1;
+  return 1 - (tutInfoT / st.info);
 }
 function renderTutorial(){
   const s = TUTORIAL[tutorialStep];
@@ -5989,6 +6201,10 @@ function renderTutorial(){
   document.getElementById('tutTitle').textContent = L(s.t);
   document.getElementById('tutDesc').textContent = L(s.d);
   document.getElementById('tutFill').style.width = (tutorialStep/TUTORIAL.length*100)+'%';
+  // 읽기 단계면 '탭하면 넘어감' 안내를 붙인다
+  const st2 = TUTORIAL[tutorialStep];
+  const hint = document.getElementById('tutHint');
+  if(hint) hint.style.display = (st2 && st2.info) ? 'block' : 'none';
 }
 /* 튜토리얼 종료 연출 — 문이 열리고 경비가 들어온다 */
 function tutFinishByDoor(){
@@ -6003,6 +6219,8 @@ function tutFinishByDoor(){
   vibrate([60,50,120]);
 }
 let tutAdvanceT = 0;      // 단계 완료 후 남은 대기 시간
+let tutMinT = 0;          // 단계 진입 후 최소 표시 시간 (읽을 틈)
+let wantTutorial = true;  // '게임 시작'을 눌렀을 때만 켜진다
 
 function updateTutorial(dt){
   if(!tutorialOn) return;
@@ -6016,10 +6234,22 @@ function updateTutorial(dt){
     return;
   }
 
+  // 들어오자마자 넘어가지 않도록 최소 표시 시간을 둔다
+  if(tutMinT > 0){
+    tutMinT -= (dt || 0.0167);
+    if(tutMinT > 0) return;
+  }
+
   const s = TUTORIAL[tutorialStep];
   if(!s) return;
   let done=false;
-  try{ done = !!s.ok(); }catch(e){ done=false; }
+  if(s.info){
+    // 읽기만 하는 단계 — 시간이 지나면 자동으로 넘어간다
+    tutInfoT -= (dt || 0.0167);
+    done = tutInfoT <= 0;
+  } else {
+    try{ done = !!s.ok(); }catch(e){ done=false; }
+  }
   if(!done) return;
 
   // 완료 표시만 하고 대기에 들어간다
@@ -6046,6 +6276,18 @@ function advanceTutorial(){
   if(tutorialStep===1) tutStartPos={x:player.x,y:player.y};
   renderTutorial();
 }
+/* 읽기 단계는 탭하면 바로 넘어간다 (다 읽은 사람을 기다리게 하지 않는다) */
+(function(){
+  const box=document.getElementById('tutBox');
+  const skipInfo=()=>{
+    if(!tutorialOn) return;
+    const st=TUTORIAL[tutorialStep];
+    if(st && st.info && tutInfoT>0) tutInfoT = 0;
+  };
+  box.addEventListener('click', skipInfo);
+  box.addEventListener('touchstart', e=>{ e.preventDefault(); skipInfo(); }, {passive:false});
+})();
+
 document.getElementById('tutSkip').addEventListener('click', ()=>{
   endTutorial();
   showMsg('튜토리얼을 건너뛰었습니다');
@@ -6851,7 +7093,8 @@ function askQuitToHome(){
 function closeAllOverlays(){
   const ids = ['quitModal','settingsModal','deathMenu','pauseOverlay','resultModal',
                'wstoreModal','shopModal','execOverlay','itemWheel','spotFlash',
-               'flashWhite','alarmFlash','hurtVig','successBanner','diffModal'];
+               'flashWhite','alarmFlash','hurtVig','successBanner','diffModal',
+               'tutAgainModal'];
   for(const id of ids){
     const el=document.getElementById(id);
     if(el) el.style.display='none';
@@ -6891,6 +7134,27 @@ function quitToHome(){
   // 이어하기 버튼을 새로 반영하기 위해 갱신
   refreshResumeButton();
 }
+document.getElementById('tutAgainNo').addEventListener('click',()=>{
+  document.getElementById('tutAgainModal').style.display='none';
+});
+document.getElementById('tutAgainYes').addEventListener('click',()=>{
+  document.getElementById('tutAgainModal').style.display='none';
+  closeAllOverlays();
+  closePuzzle();
+  // 진행 상황을 버리고 1층부터 다시
+  clearRun();
+  runFloor = 1; runVariant = 'manor';
+  runPerks = []; applyPerks();
+  resetHabits();
+  caught=false; deathMenuOpen=false; escapePhase=false; missionsComplete=false;
+  loadFloor(1, undefined, 'manor');
+  applyLoadout(); applyWeapon();
+  setControlsVisible(true);
+  wantTutorial = true;
+  setTimeout(startTutorial, 400);
+  showMsg('처음부터 다시 시작합니다');
+});
+
 document.getElementById('quitYes').addEventListener('click', quitToHome);
 document.getElementById('quitNo').addEventListener('click',()=>{
   document.getElementById('quitModal').style.display='none';
@@ -9401,9 +9665,17 @@ let aimTargetCache=null;
 function drawObjectiveArrow(camX, camY){
   let tgt=null, col='#6ee8b4', label='';
   // 튜토리얼 마지막 단계에서는 열어야 할 문을 가리킨다
-  if(tutorialOn && tutDoor && TUTORIAL[tutorialStep] && TUTORIAL[tutorialStep].door){
+  const tstep = tutorialOn ? TUTORIAL[tutorialStep] : null;
+  if(tstep && tstep.door && tutDoor){
     tgt = {x:tutDoor.x+tutDoor.w/2, y:tutDoor.y+tutDoor.h/2};
     col='#ffd86e'; label='문';
+  } else if(tstep && tstep.furn && tutHideFurn && !player.under){
+    tgt = {x:tutHideFurn.x+tutHideFurn.w/2, y:tutHideFurn.y+tutHideFurn.h/2};
+    col='#ffd86e'; label='가구';
+  } else if(tstep && tstep.note && tutNote && !tutNote.read){
+    tgt = tutNote; col='#ffe27a'; label='쪽지';
+  } else if(tstep && tstep.mission && tutMission && !tutMission.done){
+    tgt = tutMission; col=tutMission.color||'#6ee8b4'; label=tutMission.label;
   } else if(escapePhase){
     tgt = {x:checkpoint.x, y:checkpoint.y};
     col = '#ffcf6e'; label = '탈출';
