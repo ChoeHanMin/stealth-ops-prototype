@@ -445,7 +445,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.7.3.0</div>
+  <div id="verText">Ver 4.8.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -2940,7 +2940,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'4.7.3.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'4.8.0.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -3406,48 +3406,237 @@ function playThermalSound(){
   osc.connect(gain);gain.connect(audioCtx.destination);
   osc.start();osc.stop(now+0.68);
 }
-function playScream(volScale){
+/* ===== 사망 발성 =====
+   성대를 두 개의 포먼트(공명)로 흉내낸다. 사람 목소리는 기본 주파수 하나가 아니라
+   여러 공명이 겹쳐 나므로, 톱니파 하나만 쓰면 기계음처럼 들린다.
+   type: 'scream' 으악 (정면 기습) / 'grunt' 윽 (총격) / 'choke' 끄윽 (조르기) */
+function playVoiceDeath(type, volScale, pan){
   if(!audioCtx) return;
   const now = audioCtx.currentTime;
-  const variant = Math.random()<0.5 ? 1 : 0;
-  const startFreq = variant ? 560 : 460;
-  const osc = audioCtx.createOscillator(); osc.type='sawtooth';
-  osc.frequency.setValueAtTime(startFreq, now);
-  osc.frequency.exponentialRampToValueAtTime(140, now+0.34);
-  const gain = audioCtx.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.linearRampToValueAtTime(0.32*volScale*settings.sfxVol, now+0.035);
-  gain.gain.exponentialRampToValueAtTime(0.001, now+0.4);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(); osc.stop(now+0.42);
-  playNoise(0.22, 0.14*volScale, 900, 'bandpass');
+  const V = (volScale===undefined?1:volScale) * settings.sfxVol;
+  if(V<=0.001) return;
+
+  // 개인차 — 같은 소리가 반복되지 않게
+  const pitch = 0.82 + Math.random()*0.42;
+
+  let f0, f1, f2, dur, atk, vol, wob;
+  if(type==='scream'){        // 으악!
+    f0 = 300*pitch; f1 = 780*pitch; f2 = 2100*pitch;
+    dur = 0.52; atk = 0.02; vol = 0.34; wob = 7;
+  } else if(type==='choke'){  // 끄윽... (목이 막힌 소리)
+    f0 = 150*pitch; f1 = 430*pitch; f2 = 1150*pitch;
+    dur = 0.40; atk = 0.05; vol = 0.20; wob = 3;
+  } else {                    // 윽!
+    f0 = 205*pitch; f1 = 620*pitch; f2 = 1600*pitch;
+    dur = 0.30; atk = 0.015; vol = 0.28; wob = 5;
+  }
+
+  const out = audioCtx.createGain();
+  out.gain.setValueAtTime(0.0001, now);
+  out.gain.linearRampToValueAtTime(vol*V, now+atk);
+  out.gain.exponentialRampToValueAtTime(0.0008, now+dur);
+  // 스테레오
+  if(pan!==undefined && audioCtx.createStereoPanner){
+    const pn = audioCtx.createStereoPanner();
+    pn.pan.value = Math.max(-1, Math.min(1, pan));
+    out.connect(pn); pn.connect(audioCtx.destination);
+  } else {
+    out.connect(audioCtx.destination);
+  }
+
+  // 성대(기본 주파수) — 끝에서 힘이 빠지며 내려간다
+  const glide = type==='scream' ? 0.42 : 0.62;
+  const src = audioCtx.createOscillator();
+  src.type = 'sawtooth';
+  src.frequency.setValueAtTime(f0, now);
+  src.frequency.exponentialRampToValueAtTime(Math.max(60, f0*glide), now+dur*0.95);
+  // 떨림 (사람 목소리의 불규칙함)
+  const lfo = audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value=wob;
+  const lfoG = audioCtx.createGain(); lfoG.gain.value = f0*0.06;
+  lfo.connect(lfoG); lfoG.connect(src.frequency);
+
+  // 포먼트 2개 — 이게 '사람 소리'처럼 들리게 하는 핵심
+  for(const [ff, q, g] of [[f1, 7, 1.0], [f2, 9, 0.45]]){
+    const bp = audioCtx.createBiquadFilter();
+    bp.type='bandpass'; bp.frequency.value=ff; bp.Q.value=q;
+    const fg = audioCtx.createGain(); fg.gain.value=g;
+    src.connect(bp); bp.connect(fg); fg.connect(out);
+  }
+  // 원음도 약간 섞어 두께를 준다
+  const dry = audioCtx.createGain(); dry.gain.value=0.35;
+  const lp = audioCtx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1400;
+  src.connect(lp); lp.connect(dry); dry.connect(out);
+
+  src.start(now); lfo.start(now);
+  src.stop(now+dur+0.05); lfo.stop(now+dur+0.05);
+
+  // 숨소리 / 기침 (자음 성분)
+  playNoise(type==='choke'?0.30:0.16, 0.12*V, type==='choke'?520:900, 'bandpass', pan);
+  if(type==='scream'){
+    setTimeout(()=>playNoise(0.14, 0.08*V, 700, 'bandpass', pan), 260);
+  }
+  // 쓰러지는 소리
+  setTimeout(()=>{
+    if(document.hidden||paused) return;
+    playNoise(0.11, 0.16*V, 220, 'lowpass', pan);
+    playTone(70, 0.09, 0.13*V, 'sine', pan);
+  }, Math.round(dur*700));
 }
+
+/* 기존 호출부 호환 */
+function playScream(volScale, pan){ playVoiceDeath('scream', volScale, pan); }
+
+/* ===================== 총성 합성 =====================
+   기존 문제: playTone은 고정 주파수라 총성이 '탕'이 아니라 '삑/둥'으로 들렸다.
+   실제 총성의 핵심은 (1) 1~3ms의 극단적으로 빠른 상승과
+   (2) 주파수가 아래로 급격히 훑고 내려가는 스윕이다. 둘을 직접 만든다.
+
+   구조: 머즐 블라스트(광대역 임펄스) → 크랙(고역) → 바디(하강 스윕)
+         → 서브(저역) → 실내 잔향 꼬리 → 기계 작동음 */
+function gunNoiseBuffer(dur){
+  const n = Math.max(1, Math.floor(audioCtx.sampleRate*dur));
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<n;i++) d[i] = Math.random()*2-1;
+  return buf;
+}
+function playGunshot(cfg, pan){
+  if(!audioCtx) return;
+  const V = settings.sfxVol * (cfg.vol===undefined?1:cfg.vol);
+  if(V<=0.001) return;
+  const now = audioCtx.currentTime;
+  const dest = audioOut(pan);
+
+  /* 1) 머즐 블라스트 — 1~3ms. 이게 '충격'을 만든다 */
+  {
+    const src = audioCtx.createBufferSource();
+    src.buffer = gunNoiseBuffer(0.05);
+    const hp = audioCtx.createBiquadFilter();
+    hp.type='highpass'; hp.frequency.value=800;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(1.0*V, now);
+    g.gain.exponentialRampToValueAtTime(0.0008, now + cfg.blast);
+    src.connect(hp); hp.connect(g); g.connect(dest);
+    src.start(now);
+  }
+
+  /* 2) 크랙 — 총알이 공기를 찢는 고역. 대역을 좁혀 '쨍'하게 */
+  {
+    const src = audioCtx.createBufferSource();
+    src.buffer = gunNoiseBuffer(0.09);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type='bandpass'; bp.frequency.value=cfg.crack; bp.Q.value=1.1;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.85*V, now);
+    g.gain.exponentialRampToValueAtTime(0.0008, now + cfg.crackDur);
+    src.connect(bp); bp.connect(g); g.connect(dest);
+    src.start(now);
+  }
+
+  /* 3) 바디 — 주파수를 위에서 아래로 훑는다. '탕'의 정체 */
+  {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(cfg.sweepFrom, now);
+    osc.frequency.exponentialRampToValueAtTime(cfg.sweepTo, now + cfg.sweepDur);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.9*V, now);
+    g.gain.exponentialRampToValueAtTime(0.0008, now + cfg.sweepDur*1.15);
+    // 약간의 왜곡감을 위해 대역 제한
+    const lp = audioCtx.createBiquadFilter();
+    lp.type='lowpass'; lp.frequency.value=2600;
+    osc.connect(lp); lp.connect(g); g.connect(dest);
+    osc.start(now); osc.stop(now + cfg.sweepDur*1.3);
+  }
+
+  /* 4) 서브 — 가슴을 치는 저역. 폰 스피커에서는 거의 안 들리지만 이어폰에서 차이가 크다 */
+  if(cfg.sub>0){
+    const osc = audioCtx.createOscillator();
+    osc.type='sine';
+    osc.frequency.setValueAtTime(cfg.subFrom, now);
+    osc.frequency.exponentialRampToValueAtTime(cfg.subTo, now + cfg.subDur);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(cfg.sub*V, now);
+    g.gain.exponentialRampToValueAtTime(0.0008, now + cfg.subDur*1.1);
+    osc.connect(g); g.connect(dest);
+    osc.start(now); osc.stop(now + cfg.subDur*1.25);
+  }
+
+  /* 5) 실내 잔향 꼬리 — 벽에 부딪혀 돌아오는 소리. 짧게 두 겹 */
+  if(cfg.tail>0){
+    const mk=(delay, dur, gain, freq)=>{
+      const src = audioCtx.createBufferSource();
+      src.buffer = gunNoiseBuffer(dur);
+      const bp = audioCtx.createBiquadFilter();
+      bp.type='lowpass'; bp.frequency.value=freq;
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.0001, now+delay);
+      g.gain.linearRampToValueAtTime(gain*V, now+delay+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0006, now+delay+dur);
+      src.connect(bp); bp.connect(g); g.connect(dest);
+      src.start(now+delay);
+    };
+    mk(0.022, cfg.tail,      0.26, 1500);
+    mk(0.075, cfg.tail*1.35, 0.13, 700);
+  }
+
+  /* 6) 기계 작동음 — 노리쇠·펌프 */
+  if(cfg.action>0){
+    setTimeout(()=>{
+      if(document.hidden||paused) return;
+      const src = audioCtx.createBufferSource();
+      src.buffer = gunNoiseBuffer(0.045);
+      const bp = audioCtx.createBiquadFilter();
+      bp.type='bandpass'; bp.frequency.value=3400; bp.Q.value=2.2;
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(cfg.action*V, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0008, audioCtx.currentTime+0.05);
+      src.connect(bp); bp.connect(g); g.connect(audioOut(pan));
+      src.start();
+    }, cfg.actionAt||70);
+  }
+}
+
+/* 무기별 파라미터 — 스윕 폭과 꼬리 길이가 성격을 결정한다 */
+const GUNSHOT = {
+  pistol:   { vol:0.85, blast:0.006, crack:3600, crackDur:0.028,
+              sweepFrom:520, sweepTo:75,  sweepDur:0.075,
+              sub:0.45, subFrom:150, subTo:52, subDur:0.10,
+              tail:0.14, action:0.16, actionAt:80 },
+  minigun:  { vol:0.42, blast:0.0035, crack:4200, crackDur:0.016,
+              sweepFrom:430, sweepTo:110, sweepDur:0.034,
+              sub:0.20, subFrom:130, subTo:70, subDur:0.045,
+              tail:0.05, action:0.05, actionAt:26 },
+  shotgun:  { vol:1.0,  blast:0.010, crack:2600, crackDur:0.055,
+              sweepFrom:400, sweepTo:42,  sweepDur:0.16,
+              sub:0.80, subFrom:120, subTo:34, subDur:0.22,
+              tail:0.30, action:0.24, actionAt:340 },
+  launcher: { vol:0.9,  blast:0.014, crack:1400, crackDur:0.07,
+              sweepFrom:260, sweepTo:48,  sweepDur:0.13,
+              sub:0.70, subFrom:100, subTo:38, subDur:0.18,
+              tail:0.20, action:0.14, actionAt:200 },
+  enemy:    { vol:0.5,  blast:0.006, crack:3000, crackDur:0.026,
+              sweepFrom:420, sweepTo:80,  sweepDur:0.068,
+              sub:0.28, subFrom:130, subTo:50, subDur:0.09,
+              tail:0.16, action:0, actionAt:0 },
+  sniper:   { vol:0.95, blast:0.008, crack:5200, crackDur:0.040,
+              sweepFrom:620, sweepTo:60,  sweepDur:0.11,
+              sub:0.60, subFrom:140, subTo:40, subDur:0.16,
+              tail:0.34, action:0.18, actionAt:220 }
+};
+
 /* 무기별 사격음 */
 function playWeaponShot(WP, pan){
-  if(!audioCtx) return;
-  if(WP.id==='minigun'){
-    playNoise(0.010, 0.42, 5200, 'highpass', pan);
-    playNoise(0.026, 0.34, 1400, 'bandpass', pan);
-    playTone(180, 0.045, 0.28, 'square', pan);
-    playTone(70,  0.05,  0.20, 'sine', pan);
-    return;
-  }
-  if(WP.id==='shotgun'){
-    playNoise(0.016, 1.0, 5600, 'highpass', pan);
-    playNoise(0.075, 0.9, 900,  'bandpass', pan);
-    playTone(150, 0.11, 0.62, 'triangle', pan);
-    playTone(72,  0.14, 0.44, 'sine', pan);
-    setTimeout(()=>playNoise(0.16, 0.24, 700, 'lowpass', pan), 55);
-    setTimeout(()=>{ // 펌프 장전
-      playTone(320, 0.04, 0.18, 'square', pan);
-      playNoise(0.05, 0.16, 4200, 'highpass', pan);
-    }, 320);
-    return;
-  }
-  playSuppressedShot(0.9, pan);
+  playGunshot(GUNSHOT[WP.id] || GUNSHOT.pistol, pan);
 }
 
 function playSuppressedShot(volScale, pan){
+  // 새 합성기로 위임 (구 호출부 호환)
+  const cfg = Object.assign({}, GUNSHOT.pistol);
+  cfg.vol *= (volScale===undefined?1:volScale);
+  playGunshot(cfg, pan);
+  return;
+  /* eslint-disable */
   /* 실탄 총성 "탕".
      이전 버전은 78Hz 서브베이스가 중심이라 "두웅"에 가까웠다.
      '탕'은 저역이 아니라 (1) 아주 빠른 상승 (2) 짧은 감쇠에서 나온다.
@@ -3508,14 +3697,12 @@ function playTaserSound(pan){
   }
 }
 function playEnemyShot(pan, vol){
-  if(!audioCtx) return;
-  const v=vol===undefined?0.5:vol;
-  // 플레이어 총성과 같은 계열이되 조금 더 멀고 둔하게
-  playNoise(0.012, 0.8*v, 6000, 'highpass', pan);
-  playNoise(0.045, 0.62*v, 1100, 'bandpass', pan);
-  playTone(190, 0.07, 0.44*v, 'triangle', pan);
-  playTone(88,  0.08, 0.26*v, 'sine', pan);
-  setTimeout(()=>playNoise(0.11, 0.16*v, 900, 'bandpass', pan), 45);
+  const v = vol===undefined?0.5:vol;
+  // 저격은 더 날카롭고 잔향이 길다
+  const base = v>0.7 ? GUNSHOT.sniper : GUNSHOT.enemy;
+  const cfg = Object.assign({}, base);
+  cfg.vol *= (v/0.5);
+  playGunshot(cfg, pan);
 }
 function playPlayerHurt(){
   if(!audioCtx) return;
@@ -5022,9 +5209,37 @@ function damagePlayer(amount, dirAngle, label){
   if(player.hp<=0) triggerCaught(true);
 }
 
+/* 처형·사망 중에는 조작할 수 없으므로 조이스틱과 버튼을 감춘다.
+   남아 있으면 눌러도 반응하지 않아 오히려 혼란스럽다. */
+function setControlsVisible(v){
+  const ids = ['dpad','firePad','btns','btnNVG','btnThermal','gearBtn','joyZone','aimCancelBtn'];
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(!el) continue;
+    if(v){
+      // 원래 표시 방식으로 되돌린다
+      if(id==='btnNVG'||id==='btnThermal'||id==='gearBtn') el.style.display='flex';
+      else if(id==='aimCancelBtn') el.style.display='none';   // 조준 중에만 뜨는 버튼
+      else if(id==='joyZone') el.style.display = (settings.controlMode==='dpad') ? 'none' : 'block';
+      else if(id==='dpad')    el.style.display = (settings.controlMode==='dpad') ? 'block' : 'none';
+      else el.style.display='block';
+    } else {
+      el.style.display='none';
+    }
+  }
+  if(!v){
+    // 눌린 상태로 남지 않게 입력도 함께 해제
+    fireHeld=false; fireHoldGrace=0; sprintHeld=false; crouchHeld=false;
+    aimActive=false; aimPad.x=0; aimPad.y=0;
+    dpad.x=0; dpad.y=0; joy.dx=0; joy.dy=0;
+    aimLock=null;
+  }
+}
+
 function triggerCaught(byDamage){
   if(caught)return;
   caught=true; execTimer=1.6;
+  setControlsVisible(false);      // 처형 중에는 조작 UI를 숨긴다
   stats.caughtCount++;
   logDeath(byDamage ? 'shot' : (player.stunTimer>0 ? 'taser_capture' : 'capture'));
   if(byDamage){
@@ -5044,6 +5259,7 @@ function respawn(){
   const af0=document.getElementById('alarmFlash');
   if(af0) af0.style.display='none';
   clearReinforcements();
+  setControlsVisible(true);
   aimTargetCache=null;
   carriedCorpse=null;
   player.hp=player.maxHp; player.hurtTimer=0; player.regenDelay=0; player.stunTimer=0;
@@ -6970,23 +7186,120 @@ function drawBloodDecals(camX,camY){
   ctx.restore();
 }
 
+/* ===== 시신 =====
+   전에는 타원 하나 + 원 하나였다. 엎어진 자세가 읽히도록
+   피 웅덩이 → 다리 → 팔 → 몸통 → 머리 순으로 겹쳐 그린다. */
 function drawCorpse(c,camX,camY){
+  const x=c.x-camX, y=c.y-camY;
+  // 시신마다 조금씩 다르게 (같은 자세가 반복되지 않도록)
+  if(c.seed===undefined) c.seed = Math.random()*6.28;
+  const sd=c.seed, wob=(k)=>Math.sin(sd*k)*0.5;
+
   ctx.save();
-  ctx.translate(c.x-camX,c.y-camY);
+  ctx.translate(x,y);
   ctx.rotate(c.angle||0);
-  if(c.dieType==='knife'){
-    ctx.fillStyle='rgba(150,30,30,0.35)';
-    ctx.beginPath();ctx.ellipse(0,0,16,10,0,0,7);ctx.fill();
+
+  // --- 피 웅덩이 (머리·몸통 쪽으로 번진다) ---
+  const pool = c.dieType==='knife' ? 1.0 : (c.dieType==='shot' ? 0.85 : 0.35);
+  if(pool>0.4){
+    ctx.fillStyle='rgba(96,14,14,0.42)';
+    ctx.beginPath();
+    ctx.ellipse(3+wob(3)*4, wob(5)*3, 19*pool, 12*pool, wob(2), 0, 7);
+    ctx.fill();
+    ctx.fillStyle='rgba(70,8,8,0.34)';
+    ctx.beginPath();
+    ctx.ellipse(-6+wob(7)*3, wob(4)*4, 11*pool, 7*pool, 0, 0, 7);
+    ctx.fill();
+  } else {
+    // 조르기 — 거의 흘리지 않는다
+    ctx.fillStyle='rgba(80,12,12,0.16)';
+    ctx.beginPath(); ctx.ellipse(2,0,12,8,0,0,7); ctx.fill();
   }
-  ctx.fillStyle='#5a4d3e';
-  ctx.beginPath();ctx.ellipse(0,0,13,8,0,0,7);ctx.fill();
-  ctx.fillStyle='#7d6e58';
-  ctx.beginPath();ctx.arc(9,0,6,0,7);ctx.fill();
-  if(c.discovered){
-    ctx.strokeStyle='rgba(255,60,60,0.8)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.ellipse(0,0,17,12,0,0,7);ctx.stroke();
+
+  // --- 다리 (엎어져서 벌어진 모양) ---
+  ctx.fillStyle='#3c3428';
+  for(const side of [-1,1]){
+    const sp = 5 + Math.abs(wob(side>0?3:5))*5;
+    ctx.save();
+    ctx.translate(-8, side*sp);
+    ctx.rotate(side*(0.28+wob(side>0?2:6)*0.3));
+    ctx.beginPath(); ctx.ellipse(0,0,8.5,3.4,0,0,7); ctx.fill();
+    ctx.fillStyle='#2a2419';
+    ctx.beginPath(); ctx.ellipse(-7,0,3.2,2.6,0,0,7); ctx.fill();   // 신발
+    ctx.fillStyle='#3c3428';
+    ctx.restore();
+  }
+
+  // --- 팔 (한쪽은 앞으로, 한쪽은 몸 밑으로) ---
+  ctx.fillStyle='#4a4133';
+  ctx.save();
+  ctx.translate(2, -7);
+  ctx.rotate(-0.9 + wob(3)*0.5);
+  ctx.fillRect(0,-1.9, 11, 3.8);
+  ctx.fillStyle='#3a3227';
+  ctx.beginPath(); ctx.arc(11.5,0,2.4,0,7); ctx.fill();
+  ctx.restore();
+  ctx.fillStyle='#403829';
+  ctx.save();
+  ctx.translate(-2, 6);
+  ctx.rotate(0.55 + wob(5)*0.4);
+  ctx.fillRect(0,-1.7, 8, 3.4);
+  ctx.restore();
+
+  // --- 몸통 ---
+  const g = ctx.createLinearGradient(0,-8,0,8);
+  g.addColorStop(0, '#6a5c48');
+  g.addColorStop(1, '#42392c');
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.ellipse(0,0,13,8.4,0,0,7); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.45)'; ctx.lineWidth=1; ctx.stroke();
+  // 등 접힘선
+  ctx.strokeStyle='rgba(0,0,0,0.22)';
+  ctx.beginPath(); ctx.moveTo(-7,-2); ctx.lineTo(6,-1); ctx.stroke();
+  // 총상이면 등에 탄흔
+  if(c.dieType==='shot'){
+    ctx.fillStyle='rgba(70,10,10,0.85)';
+    ctx.beginPath(); ctx.arc(-1+wob(3)*4, wob(4)*3, 2.1, 0, 7); ctx.fill();
+  }
+
+  // --- 머리 (몸통보다 살짝 옆으로 꺾임) ---
+  ctx.save();
+  ctx.translate(10.5, wob(6)*3);
+  ctx.rotate(wob(4)*0.5);
+  ctx.fillStyle='#8a7a60';
+  ctx.beginPath(); ctx.arc(0,0,5.8,0,7); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=0.9; ctx.stroke();
+  // 머리카락
+  ctx.fillStyle= c.hair || '#3a2a1e';
+  ctx.beginPath(); ctx.arc(-1.5,0,4.6, Math.PI*0.35, Math.PI*1.65); ctx.fill();
+  // 칼 처치면 목에 상처
+  if(c.dieType==='knife'){
+    ctx.strokeStyle='rgba(120,16,16,0.9)'; ctx.lineWidth=1.8;
+    ctx.beginPath(); ctx.moveTo(-4,3); ctx.lineTo(2,4.5); ctx.stroke();
   }
   ctx.restore();
+
+  // --- 떨어진 손전등 (아직 켜져 있다) ---
+  if(!c.hidden && c.dropLight!==false){
+    ctx.save();
+    ctx.rotate(1.1 + wob(7));
+    ctx.fillStyle='#222';
+    ctx.fillRect(14,-1.4, 9, 2.8);
+    ctx.fillStyle='rgba(255,225,150,0.30)';
+    ctx.beginPath(); ctx.arc(24,0,2.6,0,7); ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // --- 발견 표시 (회전 영향을 받지 않게 밖에서) ---
+  if(c.discovered){
+    const t=performance.now()/240;
+    ctx.save();
+    ctx.strokeStyle='rgba(255,60,60,'+(0.55+Math.sin(t)*0.3)+')';
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.ellipse(x,y,19,13,0,0,7); ctx.stroke();
+    ctx.restore();
+  }
 }
 
 /* ===================== 배경 소품 드로잉 ===================== */
@@ -7851,14 +8164,26 @@ function loop(now){
           enemies.splice(i,1);
           continue;
         }
-        if(en.dieType==='knife' && !en.screamed){
+        /* 처치 방식마다 다른 발성.
+           knife = 으악 (크게, 근처 적이 조사하러 옴)
+           shot  = 윽   (총성에 섞임)
+           choke = 끄윽 (거의 안 들림, 소음 전파 없음) */
+        if(!en.screamed){
           en.screamed=true;
-          for(let k=0;k<14;k++){
-            particles.push({x:en.x,y:en.y,vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,life:34,color:'#d43030'});
+          const vol=clamp(1-Math.hypot(player.x-en.x,player.y-en.y)/650,0.12,1);
+          const pan=panOf(en.x);
+          if(en.dieType==='knife'){
+            for(let k=0;k<14;k++){
+              particles.push({x:en.x,y:en.y,vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,life:34,color:'#d43030'});
+            }
+            playVoiceDeath('scream', vol, pan);
+            checkNoiseHearing(en.x,en.y,170);
+          } else if(en.dieType==='choke'){
+            playVoiceDeath('choke', vol*0.55, pan);
+          } else {
+            playVoiceDeath('grunt', vol*0.8, pan);
+            checkNoiseHearing(en.x,en.y,60);
           }
-          const vol=clamp(1-Math.hypot(player.x-en.x,player.y-en.y)/650,0.15,1);
-          playScream(vol);
-          checkNoiseHearing(en.x,en.y,170);
         }
         if(en.dieType==='choke'){
           en.dustAccum = (en.dustAccum||0)+dt;
@@ -7870,7 +8195,7 @@ function loop(now){
 
         if(en.dieTimer<=0){
           enemies.splice(i,1);
-          corpses.push({x:en.x,y:en.y,angle:en.angle,dieType:en.dieType,discovered:false,hidden:false,life:9999});
+          corpses.push({x:en.x,y:en.y,angle:en.angle,dieType:en.dieType,hair:en.hair,discovered:false,hidden:false,life:9999});
           if(actionLock && actionLock.enemy===en) actionLock=null;
         }
       }
