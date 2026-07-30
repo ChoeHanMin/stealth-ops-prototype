@@ -35,6 +35,16 @@
   #blackoutTag{display:none;margin-top:4px;font-size:11.5px;font-weight:bold;
        color:#a8d8ff;background:rgba(20,35,60,0.75);border:1px solid #4a6a9a;
        border-radius:4px;padding:2px 6px;width:fit-content;}
+  /* ===== 난이도 선택 ===== */
+  .diffOpt{margin:9px 0;padding:12px 13px;border-radius:10px;text-align:left;
+       background:#1b222a;border:2px solid #39434e;cursor:pointer;
+       transition:border-color 0.1s, background 0.1s;}
+  .diffOpt:active{background:#26303a;}
+  .diffOpt.cur{border-color:#ffd86e;background:#2a2618;}
+  .diffName{font-size:17px;font-weight:bold;color:#eef4fa;}
+  .diffBody{margin-top:3px;font-size:12.5px;color:#ffd86e;}
+  .diffNote{margin-top:3px;font-size:11px;color:#8d99a5;line-height:1.5;}
+
   /* ===== 무기 상점 ===== */
   .wsBox{width:min(430px,94vw);max-height:88vh;overflow-y:auto;
        background:linear-gradient(160deg,#151a21 0%,#0f1318 100%);
@@ -144,11 +154,10 @@
        box-shadow:0 0 14px rgba(255,216,110,0.45);}
   .iwSlot.empty{opacity:0.35;}
   .iwSlot.empty .iwCnt{color:#8a8a8a;}
-  .iwCenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-       font-size:12px;color:rgba(255,255,255,0.34);letter-spacing:2px;
-       border:1px dashed rgba(255,255,255,0.18);border-radius:50%;
-       width:64px;height:64px;margin:-32px 0 0 -32px;
-       display:flex;align-items:center;justify-content:center;}
+  .iwCoin{width:74px;border-radius:50%;padding:14px 4px;
+       border-color:#8a7a48;background:rgba(40,34,16,0.92);}
+  .iwCoin .iwName{font-size:12px;}
+  .iwCoin .iwCnt{font-size:13px;}
   .iwHint{position:absolute;left:50%;top:-26px;transform:translateX(-50%);
        font-size:11px;color:#9aa6b2;white-space:nowrap;}
 
@@ -201,6 +210,8 @@
   #joyZone{position:fixed;left:0;bottom:0;width:45%;height:45%;display:none;}
   /* --- 원형 이동 패드 (360도) --- */
   /* ===== 투척 조이스틱 ===== */
+  /* ::before로 실제 터치 영역을 시각 크기보다 22px 넓게 잡는다 */
+  #throwPad::before{content:'';position:absolute;inset:-22px;border-radius:50%;}
   #throwPad{position:fixed;display:none;width:104px;height:104px;z-index:40;
        border-radius:50%;background:rgba(255,210,110,0.08);
        border:2px solid rgba(255,215,130,0.32);
@@ -380,7 +391,29 @@
   <div class="iwSlot" id="iw_stun"><div class="iwName">기절탄</div><div class="iwCnt">0</div></div>
   <div class="iwSlot" id="iw_claymore"><div class="iwName">크레모아</div><div class="iwCnt">0</div></div>
   <div class="iwSlot" id="iw_flash"><div class="iwName">섬광탄</div><div class="iwCnt">0</div></div>
-  <div class="iwCenter">투척물</div>
+  <div class="iwSlot iwCoin" id="iw_coin"><div class="iwName">동전</div><div class="iwCnt">∞</div></div>
+</div>
+
+<div class="modal" id="diffModal">
+  <div class="modalBox" style="max-width:340px;">
+    <h2>난이도 선택</h2>
+    <div class="diffOpt" data-d="easy">
+      <div class="diffName">쉬움</div>
+      <div class="diffBody">적 <b>×0.65</b> · 투척물 <b>8종</b></div>
+      <div class="diffNote">적이 적고 시야가 좁습니다. 투척물을 넉넉히 지급합니다.</div>
+    </div>
+    <div class="diffOpt" data-d="normal">
+      <div class="diffName">보통</div>
+      <div class="diffBody">적 <b>×1.0</b> · 투척물 <b>5종</b></div>
+      <div class="diffNote">표준. 수류탄·연막·기절·크레모아·섬광탄.</div>
+    </div>
+    <div class="diffOpt" data-d="hard">
+      <div class="diffName">어려움</div>
+      <div class="diffBody">적 <b>×1.45</b> · 투척물 <b>3종</b></div>
+      <div class="diffNote">적이 훨씬 많고 시야도 넓습니다. 연막·기절·수류탄뿐입니다.</div>
+    </div>
+    <div class="closeBtn" id="diffCancel">취소</div>
+  </div>
 </div>
 
 <div class="modal" id="quitModal">
@@ -489,7 +522,6 @@
 <div class="btnPill" id="btnNVG">야간투시</div>
 <div class="btnPill" id="btnThermal">열화상</div>
 <div id="btns">
-  <div class="btn" id="btnDecoy">유인</div>
   <div class="btn" id="btnFire" style="display:none">사격</div>
   <div class="btn" id="btnSprint">달리기</div>
   <div class="btn" id="btnCrouch">웅크리기</div>
@@ -504,7 +536,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 5.3.0.0</div>
+  <div id="verText">Ver 5.5.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -795,6 +827,16 @@ const EN = {
   '격투':'MELEE', '제압':'Subdued', '구타':'Beaten', '격투 발생':'Melee started',
   '문을 부순다!':'Breaking the door!',
   '수류탄':'Frag', '크레모아':'Claymore', '섬광탄':'Flashbang', '투척물':'THROW',
+  '동전':'Coin', '난이도 선택':'Select difficulty', '문':'Door', '훈련용':'Training',
+  '격투':'Melee', '사격':'Shoot', '문 열고 잠입 시작':'Open the door and begin',
+  '노란 화살표를 따라 문으로 가세요':'Follow the yellow arrow to the door',
+  '경비 근무 시작 — 잠입을 시작하십시오':'Guards on duty — begin the infiltration',
+  '훈련용 경비를 세워 두었습니다. 이 사람은 반격하지 않습니다. 뒤로 돌아가 사격 스틱을 밀지 말고 톡 누르면 한 번에 제압됩니다.':'A training guard is set up. He will not fight back. Get behind him and tap the fire stick without pushing it for a one-hit takedown.',
+  '이번에는 정면입니다. 정면에서는 한 번에 죽지 않고 격투가 되어 여러 번 연타해야 합니다. 남은 횟수가 스틱에 표시됩니다.':'This time from the front. Front attacks become melee — tap repeatedly. The remaining count shows on the stick.',
+  '사격 스틱을 적 쪽으로 밀면 그 방향으로 쏩니다. 다만 총성은 저택 전체에 퍼져서, 실전에서 한 발이라도 쏘면 경비 전원이 무장합니다. 석궁만 예외입니다.':'Push the fire stick toward the target to shoot. But gunfire carries across the manor — in a real run one shot arms every guard. Only the crossbow is silent.',
+  '마지막입니다. 노란 화살표가 가리키는 문으로 가서 상호작용 버튼을 누르세요. 문이 열리면 경비들이 근무를 시작하고 실제 잠입이 시작됩니다.':'Last step. Go to the door the yellow arrow points at and press Interact. Once it opens, the guards go on duty and the real infiltration begins.',
+  '투척물 스틱을 길게 눌러 가운데 "동전"을 고른 뒤, 원하는 방향으로 밀었다 떼세요. 동전은 무제한입니다.':'Hold the throw stick, pick "Coin" in the center, then push in any direction and release. Coins are unlimited.',
+  '쉬움':'Easy', '보통':'Normal', '어려움':'Hard',
   '화염병':'Molotov', '끈끈이':'Tar Bomb',
   '화염병 — 불바다가 생겼습니다':'Molotov — the floor is on fire',
   '끈끈이 — 밟은 적은 거의 못 움직입니다':'Tar — anyone stepping in can barely move',
@@ -902,6 +944,30 @@ function translateStaticUI(){
   try{ walk(document.body); }catch(e){}
 }
 
+/* ===================== 난이도 =====================
+   적 수와 소지 투척물 가짓수로 나눈다.
+   floorParams가 파일 앞쪽에서 diff()를 호출하므로 여기서 미리 정의한다.
+   (const로 뒤쪽에 두면 'Cannot access DIFF before initialization'이 난다) */
+/* floorParams가 파일 앞쪽에서 난이도를 참조하므로 settings와 별개로 둔다.
+   (settings도 뒤쪽 선언이라 직접 읽으면 TDZ 오류가 난다) */
+var curDifficulty = 'normal';
+try{ curDifficulty = localStorage.getItem('stealthOps_diff') || 'normal'; }catch(e){}
+
+var DIFF = {
+  easy:   {vision:0.82, detect:0.7,  cones:true,  label:'쉬움',
+           enemyMul:0.65, itemMul:1.5,
+           items:['frag','emp','smoke','stun','claymore','molotov','flash','tar'],
+           desc:'적이 적고 시야가 좁습니다. 투척물 8종을 넉넉히 지급합니다.'},
+  normal: {vision:1.0,  detect:1.0,  cones:false, label:'보통',
+           enemyMul:1.0,  itemMul:1.0,
+           items:['frag','smoke','stun','claymore','flash'],
+           desc:'표준. 투척물 5종을 지급합니다.'},
+  hard:   {vision:1.18, detect:1.35, cones:false, label:'어려움',
+           enemyMul:1.45, itemMul:0.6,
+           items:['smoke','stun','frag'],
+           desc:'적이 훨씬 많고 시야도 넓습니다. 투척물은 3종뿐입니다.'}
+};
+
 translateStaticUI();
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -936,8 +1002,7 @@ const PAD_SPEC = {
    bottom: 화면 아래에서의 거리(px) */
 const BTN_SLOTS = [
   // id,          크기, zone,     bottom, 글자크기
-  ['btnAction',    62, 'fireL',    292,  10  ],   // 상호작용
-  ['btnDecoy',     56, 'fireR',    292,   9.5],   // 유인
+  ['btnAction',    64, 'fireL',    298,  10.5],   // 상호작용 (우측 유일한 버튼이라 크게)
   ['btnCrouch',    60, 'moveL',    278,  10  ],
   ['btnSprint',    58, 'moveR',    278,   9.5]
 ];
@@ -1604,6 +1669,7 @@ function floorParams(floor, variant){
   // 엘리트 층은 경로를 고를 수 없다 — 반드시 경비대장과 맞선다
   if(isEliteFloor(f)) variant = 'elite';
   const V = FLOOR_VARIANTS[variant] || FLOOR_VARIANTS.manor;
+  const dm = (DIFF[curDifficulty]||DIFF.normal).enemyMul || 1;
   const m = V.mul;
   return {
     floor: f,
@@ -1611,12 +1677,12 @@ function floorParams(floor, variant){
     hCount:  Math.min(3, 1 + Math.floor(f/4)),       // 가로 분할
     variant: variant || 'manor',
     scoreMul: V.score,
-    patrol:  Math.max(4, Math.round(Math.min(22, 8 + f*2)*m)),
-    idle:    Math.max(3, Math.round(Math.min(20, 8 + Math.floor(f*1.5))*m)),
-    dogs:    Math.max(0, Math.round(Math.min(6,  1 + Math.floor(f/2))*m)),
-    cams:    Math.max(0, Math.round(Math.min(8,  1 + Math.floor(f/2))*m)),
+    patrol:  Math.max(3, Math.round(Math.min(22, 8 + f*2)*m*dm)),
+    idle:    Math.max(2, Math.round(Math.min(20, 8 + Math.floor(f*1.5))*m*dm)),
+    dogs:    Math.max(0, Math.round(Math.min(6,  1 + Math.floor(f/2))*m*dm)),
+    cams:    Math.max(0, Math.round(Math.min(8,  1 + Math.floor(f/2))*m*dm)),
     // 배율을 곱한 뒤에 다시 상한을 건다. 렌더 부담이 여기서 결정된다
-    reinfMax:Math.max(20, Math.min(100, Math.round((45 + f*14)*m))),
+    reinfMax:Math.max(15, Math.min(100, Math.round((45 + f*14)*m*dm))),
     panels:  Math.max(2, 9 - Math.floor(f/2)),       // 경보기(적을수록 파괴가 쉬움→아니라 어려움)
     armored: Math.min(0.45, 0.06 + f*0.05),          // 방탄 비율
     breakers:Math.max(1, 3 - Math.floor(f/4))
@@ -2373,6 +2439,7 @@ function clearReinforcements(){
    순찰 인원 전원이 목격 지점으로 향하고,
    앉아있는 근무자는 자리를 지키되 일어나 경계 태세로 전환한다. */
 function raiseAlarm(x, y, reason){
+  if(tutorialOn) return;      // 튜토리얼 중에는 경보가 울리지 않는다
   // EMP 구역 안에서는 무전이 나가지 않는다
   if(empBlocks(x, y)){
     if(adapt.backupRadio){
@@ -2495,12 +2562,15 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, showCones:false,
                 controlMode:'dpad', difficulty:'normal', cbMode:false};
-const DIFF = {
-  easy:   {vision:0.82, detect:0.7,  cones:true,  label:'쉬움'},
-  normal: {vision:1.0,  detect:1.0,  cones:false, label:'보통'},
-  hard:   {vision:1.18, detect:1.35, cones:false, label:'어려움'}
-};
-function diff(){ return DIFF[settings.difficulty] || DIFF.normal; }
+function diff(){ return DIFF[curDifficulty] || DIFF.normal; }
+/* 난이도 변경 — settings와 curDifficulty를 함께 맞춘다 */
+function setDifficulty(id){
+  if(!DIFF[id]) return;
+  curDifficulty = id;
+  settings.difficulty = id;
+  try{ localStorage.setItem('stealthOps_diff', id); }catch(e){}
+  if(typeof persistSettings==='function') persistSettings();
+}
 btnLayoutReady = true; layoutButtons();
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, shotKills:0};
 
@@ -2637,6 +2707,8 @@ function applyLoadout(){
   ammo.stun  = GRENADE_BASE;
   ammo.frag = 4; ammo.flash = 4; ammo.claymore = 3;
   ammo.emp = 3; ammo.molotov = 3; ammo.tar = 3;
+  ammo.coin = 99;
+  applyDifficultyItems();
   player.maxHp = Math.max(40, (hasUnlock('armor') ? 140 : 100) + (perkMods.hpBonus||0));
   player.hp = player.maxHp;
   magAmmo = MAG_SIZE + (perkMods.magBonus||0);
@@ -3137,6 +3209,13 @@ function rebuildDoorSolids(){
 }
 
 function toggleDoor(d){
+  // 튜토리얼 마지막 단계: 이 문을 열면 잠입이 시작된다
+  if(tutorialOn && tutDoor===d && TUTORIAL[tutorialStep] && TUTORIAL[tutorialStep].door){
+    d.locked = false;
+    rebuildDoorSolids();
+    tutFinishByDoor();
+    return;
+  }
   if(d.broken){ showMsg('부서진 문은 잠글 수 없습니다'); return; }
   d.locked = !d.locked;
   d.breaking = 0;
@@ -3200,7 +3279,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'5.3.0.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'5.5.0.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -4152,7 +4231,32 @@ refreshResumeButton();
   el.parentNode.insertBefore(info, el.nextSibling);
 })();
 
+/* 게임 시작을 누르면 난이도부터 고른다.
+   고른 뒤 beginRun()이 실제 시작을 담당한다. */
 document.getElementById('btnStart').addEventListener('click',()=>{
+  const m=document.getElementById('diffModal');
+  for(const el of m.querySelectorAll('.diffOpt'))
+    el.classList.toggle('cur', el.getAttribute('data-d')===curDifficulty);
+  m.style.display='flex';
+});
+document.getElementById('diffCancel').addEventListener('click',()=>{
+  document.getElementById('diffModal').style.display='none';
+});
+(function bindDiffOptions(){
+  for(const el of document.querySelectorAll('#diffModal .diffOpt')){
+    el.addEventListener('click', ()=>{
+      const id = el.getAttribute('data-d');
+      setDifficulty(id);
+      settings.showCones = diff().cones;
+      document.getElementById('diffModal').style.display='none';
+      // 난이도가 적 수를 바꾸므로 맵을 다시 만든다
+      loadFloor(runFloor, undefined, runVariant);
+      beginRun();
+    });
+  }
+})();
+
+function beginRun(){
   layoutButtons();
   loadMeta();
   loadWeaponsOwned();
@@ -4160,14 +4264,14 @@ document.getElementById('btnStart').addEventListener('click',()=>{
   applyLoadout();
   applyWeapon();
   pickObjective(runFloor);
-  setTimeout(()=>showMsg(runFloor+'층 — '+objective.name+': '+objective.desc), 900);
+  // 목표 안내는 튜토리얼이 끝난 뒤에 (튜토리얼 문구와 겹치지 않게)
+  setTimeout(()=>{ if(!tutorialOn) showMsg(runFloor+'층 — '+objective.name+': '+objective.desc); }, 900);
   loadAnalytics();
   analytics.sessions=(analytics.sessions||0)+1;
   sessionStart=performance.now();
   saveAnalytics();
-  let tutDone=false;
-  try{ tutDone = localStorage.getItem('stealthOps_tutDone')==='1'; }catch(e){}
-  if(!tutDone) setTimeout(startTutorial, 600);
+  // 튜토리얼은 새 잠입을 시작할 때마다 반드시 거친다 ('이어하기'는 제외)
+  setTimeout(startTutorial, 600);
   document.getElementById('btnNVG').style.display='flex';
   document.getElementById('btnThermal').style.display='flex';
   initAudio();
@@ -4180,7 +4284,7 @@ document.getElementById('btnStart').addEventListener('click',()=>{
   document.getElementById('gearBtn').style.display='flex';
   document.getElementById('minimap').style.display='block';
   startBGM();
-});
+}
 document.getElementById('btnHow').addEventListener('click',()=>{document.getElementById('howModal').style.display='flex';});
 document.getElementById('btnDev').addEventListener('click',()=>{document.getElementById('devModal').style.display='flex';});
 document.getElementById('gearBtn').addEventListener('click',()=>{document.getElementById('settingsModal').style.display='flex';});
@@ -4206,8 +4310,8 @@ document.getElementById('closeSettings').addEventListener('click',()=>{document.
   });
   const order=['easy','normal','hard'];
   mkRow('난이도', diff().label, ()=>{
-    let i=order.indexOf(settings.difficulty);
-    settings.difficulty = order[(i+1)%order.length];
+    let i=order.indexOf(curDifficulty);
+    setDifficulty(order[(i+1)%order.length]);
     settings.showCones = diff().cones;
     return diff().label;
   });
@@ -4288,21 +4392,25 @@ function joyEnd(){joy.active=false;joy.dx=0;joy.dy=0;joyBase.style.display='none
   /* 투척 조이스틱 하나로 두 가지를 한다.
        밀었다 떼면          → 그 방향으로 투척
        제자리에서 길게 누르면 → 선택 휠이 열리고, 그때부터 방향은 '선택'이 된다
-     구분 기준: 0.28초 안에 데드존을 넘었는지. */
+     구분 기준: HOLD_MS 안에 HOLD_SLOP(px)를 넘어 움직였는지.
+     손가락이 미세하게 흔들려도 휠이 열리도록 넉넉하게 잡는다. */
   const el=document.getElementById('throwPad'), knob=document.getElementById('tKnob');
-  const MAXR=38, DEAD=0.22;
+  const MAXR=38, DEAD=0.30;     // 데드존을 키워 미세한 흔들림으로 투척되지 않게
+  const HOLD_SLOP = 26;         // 길게 누르는 동안 이만큼은 움직여도 봐준다 (px)
+  const HOLD_MS   = 230;        // 손가락이 떨려도 잘 열리도록 짧게
   let padId=null, dragged=false, holdTimer=null, wheelMode=false;
   let sx=0, sy=0;
 
   function armHold(){
     clearTimeout(holdTimer);
     holdTimer = setTimeout(()=>{
-      if(dragged) return;              // 이미 밀었으면 투척 조준으로 확정
+      if(dragged){ holdTimer=null; return; }
       wheelMode = true;
       throwActive=false; throwPad.x=0; throwPad.y=0; throwPower=0;
+      knob.style.transform='translate(0px,0px)';
       el.classList.remove('on');
       openItemWheel();
-    }, 280);
+    }, HOLD_MS);
   }
   function setVec(cx, cy, px, py){
     let dx=px-cx, dy=py-cy;
@@ -4319,13 +4427,21 @@ function joyEnd(){joy.active=false;joy.dx=0;joy.dy=0;joyBase.style.display='none
     knob.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
     const nx=dx/MAXR, ny=dy/MAXR;
     const m=Math.hypot(nx,ny);
+    /* 길게 누르기가 살아 있는 동안에는 손가락이 HOLD_SLOP 안에서 흔들려도
+       투척으로 확정하지 않는다. 예전에는 데드존만 넘으면 바로 취소되어
+       휠이 잘 열리지 않았다. */
+    if(holdTimer && Math.hypot(px-sx, py-sy) < HOLD_SLOP){
+      throwPad.x=0; throwPad.y=0; throwActive=false; throwPower=0;
+      el.classList.remove('on');
+      return;
+    }
     if(m<DEAD){
       throwPad.x=0; throwPad.y=0; throwActive=false; throwPower=0;
       el.classList.remove('on');
       return;
     }
     dragged=true;
-    clearTimeout(holdTimer);           // 밀었으니 휠은 열지 않는다
+    clearTimeout(holdTimer); holdTimer=null;   // 확실히 밀었으니 휠은 열지 않는다
     const scaled=(m-DEAD)/(1-DEAD);
     throwPad.x=nx/m*scaled; throwPad.y=ny/m*scaled;
     throwAngle = Math.atan2(ny, nx);
@@ -4335,7 +4451,7 @@ function joyEnd(){joy.active=false;joy.dx=0;joy.dy=0;joyBase.style.display='none
   }
   function release(){
     padId=null;
-    clearTimeout(holdTimer);
+    clearTimeout(holdTimer); holdTimer=null;
     knob.style.transform='translate(0px,0px)';
     el.classList.remove('on');
     if(wheelMode){
@@ -4587,8 +4703,7 @@ const FIRE_INTERVAL = 0.16;   // 연사 간격 (초)
 document.getElementById('btnCrouch').addEventListener('click',()=>{crouchHeld=!crouchHeld;});
 document.getElementById('btnAction').addEventListener('touchstart',e=>{e.preventDefault();actionPressed=true;});
 document.getElementById('btnAction').addEventListener('click',()=>{actionPressed=true;});
-document.getElementById('btnDecoy').addEventListener('touchstart',e=>{e.preventDefault();decoyPressed=true;});
-document.getElementById('btnDecoy').addEventListener('click',()=>{decoyPressed=true;});
+/* 유인 버튼은 투척물 휠의 중앙 슬롯(동전)으로 통합되어 삭제되었다 */
 (function(){
   /* 이동과 동시에 사격할 때 연발이 끊기는 문제:
      touchcancel / mouseleave 로 fireHeld가 순간적으로 풀렸다.
@@ -4696,6 +4811,7 @@ function useSelectedItem(dirAngle, power){
 
 /* 아이템을 실제로 던진다 — 이동 중에도 가능하다 */
 function throwItem(type, ang, power){
+  if(type==='coin'){ throwCoin(ang, power); return; }
   if(ammo[type] <= 0){ showMsg(ITEM_DEFS[type].name+'을 모두 사용했습니다'); return; }
   ammo[type]--;
   const base = (type==='frag') ? 300 : 230;
@@ -4741,6 +4857,21 @@ function throwItem(type, ang, power){
       clouds.push({x:hx,y:hy,type,radius:8,maxRadius:maxR,age:0,life,puffs});
     }, 430);
   }
+}
+
+/* 동전 — 소리로 유인한다. 수량 제한이 없다. */
+function throwCoin(ang, power){
+  if(caught||actionLock||player.hiddenIn) return;
+  const range = 240 * (0.5 + (power===undefined?1:power)*0.5);
+  const {x:hx, y:hy} = rayMarchLanding(player.x, player.y, ang, range);
+  decoys.push({x:hx, y:hy, life:40});
+  for(let i=0;i<8;i++) particles.push({x:hx,y:hy,
+    vx:(Math.random()-0.5)*2, vy:(Math.random()-0.5)*2, life:24, color:'#e8d060'});
+  throwFx.push({x:player.x, y:player.y, tx:hx, ty:hy, t:0, dur:0.40, color:'#e8d060'});
+  playCoin(panOf(hx));
+  tutFlags.decoy = true; tutFlags.threw = true;
+  const lured = decoyLure(hx,hy);
+  showMsg(lured>1 ? ('동전 짤랑 — '+lured+'명이 몰려온다!') : '유인용 소음 발생 (동전 짤랑)');
 }
 
 /* 투척 궤적 */
@@ -4933,7 +5064,7 @@ function meleeHitsNeeded(en){
   return h;
 }
 function doMeleeStrike(en){
-  tutFlags.takedown = true;      // 한 대만 때려도 튜토리얼은 통과
+  tutFlags.melee = true;         // 한 대만 때려도 튜토리얼은 통과
   en.meleeHP = (en.meleeHP===undefined) ? meleeHitsNeeded(en) : en.meleeHP;
   en.meleeHP--;
   en.hitFlash = 0.18;
@@ -4993,6 +5124,11 @@ const ITEM_DEFS = {
   tar:      {name:'끈끈이',   ang:-135,color:'#9a7ae8', desc:'점착 구역. 밟으면 거의 못 움직인다'}
 };
 const ITEM_ORDER = ['frag','emp','smoke','stun','claymore','molotov','flash','tar'];
+/* 동전은 방향 슬롯이 아니라 '중앙'이다.
+   8방향은 45도로 꽉 찼고, 동전은 가장 자주 쓰는 기본 도구라
+   아무 방향도 밀지 않고 떼면 선택되도록 했다. */
+const ITEM_CENTER = 'coin';
+ITEM_DEFS.coin = {name:'동전', ang:null, color:'#e8d060', desc:'소리로 유인. 적이 소리 쪽으로 몰려온다'};
 let selectedItem = 'smoke';
 let itemWheelOpen = false;
 let itemWheelPick = null;
@@ -5005,7 +5141,24 @@ const CLAY_RADIUS  = 175;
 const CLAY_ARC     = 1.5;      // 부채꼴 폭(라디안)
 let claymores = [];
 
-function itemCount(id){ return ammo[id] || 0; }
+function itemCount(id){ return id===ITEM_CENTER ? 99 : (ammo[id] || 0); }
+
+/* 난이도에 따라 쓸 수 있는 투척물 종류와 수량을 정한다.
+   목록에 없는 것은 0개가 되어 휠에서 흐리게 표시된다. */
+function applyDifficultyItems(){
+  const D = diff();
+  const allow = D.items || ITEM_ORDER;
+  const mul = D.itemMul || 1;
+  for(const id of ITEM_ORDER){
+    if(allow.indexOf(id) < 0){ ammo[id] = 0; continue; }
+    ammo[id] = Math.max(1, Math.round((ammo[id]||0) * mul));
+  }
+  ammo.coin = 99;
+  if(selectedItem!==ITEM_CENTER && itemCount(selectedItem)<=0){
+    const first = allow.find(id=>itemCount(id)>0);
+    selectedItem = first || ITEM_CENTER;
+  }
+}
 
 /* ===== 선택기 ===== */
 function openItemWheel(){
@@ -5014,6 +5167,14 @@ function openItemWheel(){
   itemWheelPick = null;
   const w = document.getElementById('itemWheel');
   const R = 96;   // 중심에서 슬롯까지
+  {
+    const el = document.getElementById('iw_coin');
+    if(el){
+      el.className = 'iwSlot iwCoin' + (selectedItem===ITEM_CENTER ? ' cur' : '');
+      el.querySelector('.iwCnt').textContent = '∞';
+      el.style.transform = 'translate(-50%,-50%)';
+    }
+  }
   for(const id of ITEM_ORDER){
     const el = document.getElementById('iw_'+id);
     if(!el) continue;
@@ -5032,7 +5193,7 @@ function openItemWheel(){
 function updateItemWheel(dx, dy){
   if(!itemWheelOpen) return;
   const m = Math.hypot(dx,dy);
-  let pick = null;
+  let pick = ITEM_CENTER;      // 아무 방향도 안 밀면 중앙(동전)
   if(m > 24){
     // 손가락 방향에 가장 가까운 슬롯 (72도 간격)
     const a = Math.atan2(dy, dx) * 180/Math.PI;
@@ -5046,7 +5207,7 @@ function updateItemWheel(dx, dy){
   }
   if(pick !== itemWheelPick){
     itemWheelPick = pick;
-    for(const id of ITEM_ORDER){
+    for(const id of ITEM_ORDER.concat([ITEM_CENTER])){
       const el = document.getElementById('iw_'+id);
       if(!el) continue;
       el.classList.toggle('hover', id===pick);
@@ -5670,12 +5831,8 @@ const TUTORIAL = [
     d:'달리기 버튼을 누르세요. 빠르지만 발소리가 크고 스태미나를 소모합니다.',
     ok:()=> sprinting },
 
-  { t:'맨손 제압',
-    d:'적에게 붙어 사격 스틱을 밀지 말고 톡 누르세요. 뒤를 잡았으면 한 번에 기습, 정면이면 격투가 되어 여러 번 연타해야 합니다.',
-    ok:()=> tutFlags.takedown },
-
   { t:'동전으로 유인',
-    d:'유인 버튼을 한 번 누르면 조준하고 있는 방향으로 동전을 던집니다. 주변 경비가 소리 쪽으로 몰려옵니다.',
+    d:'투척물 스틱을 길게 눌러 가운데 "동전"을 고른 뒤, 원하는 방향으로 밀었다 떼세요. 동전은 무제한입니다.',
     ok:()=> tutFlags.decoy },
 
   { t:'투척물 고르기',
@@ -5686,34 +5843,135 @@ const TUTORIAL = [
     d:'투척물 스틱을 원하는 방향으로 밀었다 떼면 던집니다. 멀리 밀면 더 멀리 날아가고, 걸어가면서도 던질 수 있습니다.',
     ok:()=> tutFlags.threw },
 
-  { t:'쪽지 찾기',
-    d:'단말기 미션에는 코드가 필요합니다. 노란 화살표와 미니맵의 노란 점이 쪽지 위치입니다. 가까이 가면 자동으로 읽습니다.',
-    ok:()=> decor.some(d=>d.type==='note' && d.read) },
+  { t:'맨손 제압', dummy:'back',
+    d:'훈련용 경비를 세워 두었습니다. 이 사람은 반격하지 않습니다. 뒤로 돌아가 사격 스틱을 밀지 말고 톡 누르면 한 번에 제압됩니다.',
+    ok:()=> tutFlags.takedown },
 
-  { t:'미션 수행',
-    d:'화면 가장자리 화살표를 따라 미션 지점으로 가서 상호작용 버튼을 누르세요. 미션은 모두 5개입니다.',
-    ok:()=> missions.some(m=>m.done) },
+  { t:'격투', dummy:'front',
+    d:'이번에는 정면입니다. 정면에서는 한 번에 죽지 않고 격투가 되어 여러 번 연타해야 합니다. 남은 횟수가 스틱에 표시됩니다.',
+    ok:()=> tutFlags.melee },
 
-  { t:'총은 최후의 수단',
-    d:'총성은 저택 전체에 퍼집니다. 한 발이라도 쏘면 비상벨이 울리고 경비 전원이 무장해 반격합니다. 석궁만 예외입니다.',
-    ok:()=> guardsArmed || tutFlags.shot }
+  { t:'사격', dummy:'far',
+    d:'사격 스틱을 적 쪽으로 밀면 그 방향으로 쏩니다. 다만 총성은 저택 전체에 퍼져서, 실전에서 한 발이라도 쏘면 경비 전원이 무장합니다. 석궁만 예외입니다.',
+    ok:()=> tutFlags.shot },
+
+  { t:'문 열고 잠입 시작', door:true,
+    d:'마지막입니다. 노란 화살표가 가리키는 문으로 가서 상호작용 버튼을 누르세요. 문이 열리면 경비들이 근무를 시작하고 실제 잠입이 시작됩니다.',
+    ok:()=> tutFlags.door }
 ];
-const tutFlags = { decoy:false, takedown:false, shot:false, aim:false, wheel:false, threw:false };
+const tutFlags = { decoy:false, takedown:false, shot:false, aim:false,
+                   wheel:false, threw:false, melee:false, door:false };
+
+/* ===== 튜토리얼 안전 구역 =====
+   조작을 배우는 동안에는 경비가 한 명도 없어야 한다.
+   전원을 잠시 빼두었다가, 마지막에 문을 열면 되돌린다.
+   처치를 가르치는 단계에서만 '훈련용 더미'를 한 명 세운다(공격력 0). */
+let tutHeldEnemies = [];
+let tutDummy = null;
+let tutDoor = null;
+
+function tutClearEnemies(){
+  tutHeldEnemies = enemies.slice();
+  enemies.length = 0;
+  clearReinforcements();
+  alarmRaised=false; alarmTimer=0; guardsArmed=false;
+}
+function tutReleaseEnemies(){
+  for(const e of tutHeldEnemies){
+    e.state = e.homeState || 'patrol';
+    e.detect = 0; e.target = null; e.harmless = false;
+    e.hp = e.maxHp;
+  }
+  refill(enemies, tutHeldEnemies);
+  tutHeldEnemies = [];
+  tutDummy = null;
+}
+
+/* 훈련용 더미 — 반격하지 않고 경보도 울리지 않는다 */
+function tutSpawnDummy(mode){
+  tutRemoveDummy();
+  const base = tutHeldEnemies.find(e=>e.kind==='guard') || tutHeldEnemies[0];
+  if(!base) return;
+  const d = Object.assign({}, base);
+  d._id = 900001;
+  d.kind='guard'; d.rank='rookie'; d.armored=false;
+  d.harmless = true;              // 공격력 0
+  d.hp = 1; d.maxHp = 1;
+  d.state='idle'; d.homeState='idle';
+  d.path=[]; d.wp=0; d.detect=0; d.stunned=false;
+  d.meleeHP = undefined; d.blindT=0; d.empT=0; d.meleeCd=0;
+  const dist = (mode==='far') ? 260 : 70;
+  // 벽이 없는 방향을 찾아 배치
+  let ang=0, best=0;
+  for(let a=0;a<360;a+=10){
+    const r=a*Math.PI/180;
+    const L=rayMarchLanding(player.x, player.y, r, dist+60);
+    const reach=Math.hypot(L.x-player.x, L.y-player.y);
+    if(reach>best){ best=reach; ang=r; }
+  }
+  d.x = player.x + Math.cos(ang)*Math.min(dist, best-30);
+  d.y = player.y + Math.sin(ang)*Math.min(dist, best-30);
+  d.homeX=d.x; d.homeY=d.y;
+  // 'back'이면 플레이어에게 등을 보이고, 'front'면 마주 본다
+  const toPlayer = Math.atan2(player.y-d.y, player.x-d.x);
+  d.angle = (mode==='back') ? toPlayer + Math.PI : toPlayer;
+  d.homeAngle = d.angle;
+  tutDummy = d;
+  enemies.push(d);
+  spawnText(d.x, d.y-34, '훈련용', '#8fe8b4');
+}
+function tutRemoveDummy(){
+  if(!tutDummy) return;
+  const i = enemies.indexOf(tutDummy);
+  if(i>=0) enemies.splice(i,1);
+  tutDummy = null;
+}
+
+/* 마지막 단계에서 열 문을 고른다 — 플레이어에게서 가장 가까운 문 */
+function tutPickDoor(){
+  let best=null, bd=Infinity;
+  for(const d of doors){
+    if(d.broken) continue;
+    const cx=d.x+d.w/2, cy=d.y+d.h/2;
+    const dist=Math.hypot(cx-player.x, cy-player.y);
+    if(dist<bd){ bd=dist; best=d; }
+  }
+  tutDoor = best;
+  if(tutDoor) tutDoor.locked = true;   // 열어야 하므로 잠가 둔다
+}
 
 function startTutorial(){
   tutorialOn = true;
   tutorialStep = 0;
-  tutFlags.decoy = tutFlags.takedown = tutFlags.shot = false;
+  for(const k in tutFlags) tutFlags[k]=false;
   tutStartPos = {x:player.x, y:player.y};
+  tutClearEnemies();          // 배우는 동안에는 저택이 비어 있다
+  tutPickDoor();
   document.getElementById('tutBox').style.display='block';
   document.getElementById('tutSkip').style.display='block';
   renderTutorial();
+  applyTutorialStep();
 }
 function endTutorial(){
   tutorialOn = false;
+  tutRemoveDummy();
+  tutReleaseEnemies();        // 경비들이 근무를 시작한다
+  tutDoor = null;
   document.getElementById('tutBox').style.display='none';
   document.getElementById('tutSkip').style.display='none';
   try{ localStorage.setItem('stealthOps_tutDone','1'); }catch(e){}
+}
+
+/* 단계가 바뀔 때마다 그 단계에 필요한 것만 준비한다 */
+function applyTutorialStep(){
+  if(!tutorialOn) return;
+  const st = TUTORIAL[tutorialStep];
+  if(!st) return;
+  if(st.dummy) tutSpawnDummy(st.dummy);
+  else         tutRemoveDummy();
+  if(st.door && tutDoor){
+    showMsg('노란 화살표를 따라 문으로 가세요');
+  }
 }
 function renderTutorial(){
   const s = TUTORIAL[tutorialStep];
@@ -5725,6 +5983,18 @@ function renderTutorial(){
   document.getElementById('tutDesc').textContent = L(s.d);
   document.getElementById('tutFill').style.width = (tutorialStep/TUTORIAL.length*100)+'%';
 }
+/* 튜토리얼 종료 연출 — 문이 열리고 경비가 들어온다 */
+function tutFinishByDoor(){
+  tutFlags.door = true;
+  showMsg('경비 근무 시작 — 잠입을 시작하십시오');
+  shakeAmt = Math.max(shakeAmt, 8);
+  if(audioCtx){
+    playTone(392, 0.16, 0.16, 'triangle');
+    setTimeout(()=>playTone(311, 0.20, 0.16, 'triangle'), 170);
+    setTimeout(()=>playTone(233, 0.32, 0.18, 'triangle'), 360);
+  }
+  vibrate([60,50,120]);
+}
 function updateTutorial(){
   if(!tutorialOn) return;
   const s = TUTORIAL[tutorialStep];
@@ -5733,6 +6003,7 @@ function updateTutorial(){
   try{ done = !!s.ok(); }catch(e){ done=false; }
   if(!done) return;
   playTone(880, 0.09, 0.12, 'triangle');
+  setTimeout(applyTutorialStep, 30);
   setTimeout(()=>playTone(1320, 0.12, 0.11, 'triangle'), 90);
   spawnText(player.x, player.y-40, s.t+' 완료', '#6ee8b4');
   tutorialStep++;
@@ -6123,7 +6394,8 @@ function updateEnemy(en,dt){
 
     /* 예전에는 닿는 순간 즉시 체포였다. 이제 붙어서 때리며 HP를 깎는다.
        플레이어는 격투로 반격할 수 있다. */
-    if(en.state==='search' && dist < en.r+player.r+10 && !en.stunned){
+    if(en.harmless) { /* 훈련용 더미는 때리지 않는다 */ }
+    else if(en.state==='search' && dist < en.r+player.r+10 && !en.stunned){
       en.meleeCd = (en.meleeCd||0) - dt;
       if(en.meleeCd<=0){
         en.meleeCd = 0.85 + Math.random()*0.4;
@@ -6516,6 +6788,8 @@ function respawn(){
   document.getElementById('spotFlash').style.display='none';
   const sb=document.getElementById('successBanner');
   if(sb) sb.style.display='none';
+  const eo=document.getElementById('execOverlay');
+  if(eo) eo.style.display='none';
   for(const en of enemies){
     en.detect=0; en.target=null; en.stunned=false; en.lastKnown=null;
     en.state=en.homeState; en.cautionTimer=0;
@@ -6535,13 +6809,22 @@ function askQuitToHome(){
   }
   document.getElementById('quitModal').style.display='flex';
 }
+/* 화면에 남을 수 있는 오버레이를 한 곳에서 전부 닫는다.
+   예전에는 quitToHome이 execOverlay(처형 화면)를 빠뜨려서,
+   홈으로 나가면 시작 메뉴 뒤에 '처형됨'과 해골이 비쳐 보였다. */
+function closeAllOverlays(){
+  const ids = ['quitModal','settingsModal','deathMenu','pauseOverlay','resultModal',
+               'wstoreModal','shopModal','execOverlay','itemWheel','spotFlash',
+               'flashWhite','alarmFlash','hurtVig','successBanner','diffModal'];
+  for(const id of ids){
+    const el=document.getElementById(id);
+    if(el) el.style.display='none';
+  }
+  itemWheelOpen=false; itemWheelPick=null;
+}
+
 function quitToHome(){
-  document.getElementById('quitModal').style.display='none';
-  document.getElementById('settingsModal').style.display='none';
-  document.getElementById('deathMenu').style.display='none';
-  document.getElementById('pauseOverlay').style.display='none';
-  document.getElementById('resultModal').style.display='none';
-  document.getElementById('wstoreModal').style.display='none';
+  closeAllOverlays();
   closePuzzle();
 
   // 나가기 전 마지막 저장 (사망 상태가 아니라면)
@@ -6641,6 +6924,8 @@ function restartLevel(){
   ammo.stun  = GRENADE_BASE;
   ammo.frag = 4; ammo.flash = 4; ammo.claymore = 3;
   ammo.emp = 3; ammo.molotov = 3; ammo.tar = 3;
+  ammo.coin = 99;
+  applyDifficultyItems();
   blackout = 0;
   for(const b of breakers){ b.cooldown = 0; }
   for(const a of alarmPanels){ a.alive = true; }
@@ -6960,6 +7245,7 @@ function handleFire(){
 
   magAmmo--;
   habits.gun++;
+  tutFlags.shot = true;
   if(magAmmo===0) startReload();          // 마지막 탄 발사 후 자동 재장전
   // 석궁은 거의 소리가 없어 경비가 무장하지 않는다
   if(!WP.silent) guardsArmed = true;
@@ -9076,7 +9362,11 @@ let aimTargetCache=null;
    2000x1500 맵에서 단서가 미니맵 점뿐이라 처음 하는 사람은 헤맨다. */
 function drawObjectiveArrow(camX, camY){
   let tgt=null, col='#6ee8b4', label='';
-  if(escapePhase){
+  // 튜토리얼 마지막 단계에서는 열어야 할 문을 가리킨다
+  if(tutorialOn && tutDoor && TUTORIAL[tutorialStep] && TUTORIAL[tutorialStep].door){
+    tgt = {x:tutDoor.x+tutDoor.w/2, y:tutDoor.y+tutDoor.h/2};
+    col='#ffd86e'; label='문';
+  } else if(escapePhase){
     tgt = {x:checkpoint.x, y:checkpoint.y};
     col = '#ffcf6e'; label = '탈출';
   } else if(loot && !loot.taken){
@@ -9344,6 +9634,12 @@ function drawMinimap(camX,camY){
      4) 그 외 → 마지막으로 본 위치를 흐릿한 잔상으로 (시간이 지나면 사라짐) */
   for(const en of enemies){
     if(en.state==='dying')continue;
+    if(en.harmless){
+      // 훈련용 더미는 항상 보여준다
+      mmCtx.fillStyle='#8fe8b4';
+      mmCtx.fillRect(5+en.x*sx-2, 5+en.y*sy-2, 4, 4);
+      continue;
+    }
     const alerted = (en.state==='search' || en.state==='caution');
     const visible = en.mmSeen;
     if(thermalActive || visible || alerted){
