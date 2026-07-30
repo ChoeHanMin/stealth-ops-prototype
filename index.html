@@ -35,6 +35,85 @@
   #blackoutTag{display:none;margin-top:4px;font-size:11.5px;font-weight:bold;
        color:#a8d8ff;background:rgba(20,35,60,0.75);border:1px solid #4a6a9a;
        border-radius:4px;padding:2px 6px;width:fit-content;}
+  /* ===== 무기 상점 ===== */
+  .wsBox{width:min(430px,94vw);max-height:88vh;overflow-y:auto;
+       background:linear-gradient(160deg,#151a21 0%,#0f1318 100%);
+       border:1px solid #3d4a58;border-radius:14px;padding:0 0 16px;
+       box-shadow:0 12px 40px rgba(0,0,0,0.75);}
+  .wsHeader{padding:18px 18px 14px;
+       background:linear-gradient(160deg,#22303c 0%,#1a232c 100%);
+       border-bottom:1px solid #3d4a58;border-radius:14px 14px 0 0;}
+  .wsTitle{font-size:22px;font-weight:bold;color:#ffd86e;letter-spacing:2px;
+       text-shadow:0 2px 8px rgba(0,0,0,0.6);}
+  .wsSub{margin-top:5px;font-size:11.5px;color:#8d9aa6;}
+  #wsList{padding:14px 14px 4px;}
+  .wsCard{position:relative;margin-bottom:13px;border-radius:12px;overflow:hidden;
+       background:linear-gradient(160deg,#1d242c 0%,#161b21 100%);
+       border:1px solid #39434e;text-align:left;
+       box-shadow:0 3px 12px rgba(0,0,0,0.35);}
+  .wsCard.owned{border-color:#4a8a68;}
+  .wsCard.equipped{border-color:#ffd86e;box-shadow:0 0 0 1px rgba(255,216,110,0.35),0 3px 14px rgba(0,0,0,0.45);}
+
+  /* 총기 일러스트 영역 */
+  .wsArt{position:relative;height:78px;display:flex;align-items:center;justify-content:center;
+       background:radial-gradient(ellipse at 50% 120%,#2b3641 0%,#141a20 70%);
+       border-bottom:1px solid #2b333c;overflow:hidden;}
+  .wsArt::after{content:'';position:absolute;inset:0;
+       background:repeating-linear-gradient(90deg,rgba(255,255,255,0.025) 0 1px,transparent 1px 7px);}
+  .wsArt.free{background:radial-gradient(ellipse at 50% 120%,#26332c 0%,#141a20 70%);}
+  .wsArt svg{filter:drop-shadow(0 3px 5px rgba(0,0,0,0.6));position:relative;z-index:1;}
+  .wsKindBadge{position:absolute;top:7px;left:8px;font-size:9.5px;font-weight:bold;
+       padding:2px 7px;border-radius:9px;letter-spacing:1px;z-index:2;}
+  .wsKindBadge.paid{background:rgba(74,58,28,0.9);color:#ffd86e;border:1px solid #8a6c28;}
+  .wsKindBadge.free{background:rgba(44,74,56,0.9);color:#8fe8b4;border:1px solid #3f7a58;}
+  .wsEquipBadge{position:absolute;top:7px;right:8px;font-size:9.5px;font-weight:bold;
+       padding:2px 7px;border-radius:9px;z-index:2;
+       background:rgba(255,216,110,0.92);color:#20180a;}
+
+  .wsBody{padding:11px 13px 4px;}
+  .wsName{font-size:17px;font-weight:bold;color:#eef4fa;letter-spacing:0.5px;}
+  .wsTagline{margin-top:2px;font-size:11.5px;color:#8fa0ae;font-style:italic;}
+
+  /* 지표 게이지 */
+  .wsGauges{margin:10px 0 9px;}
+  .wsRow{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .wsLabel{flex:0 0 42px;font-size:10.5px;color:#8d99a5;}
+  .wsTrack{position:relative;flex:1;height:9px;border-radius:5px;
+       background:#0f1418;border:1px solid #252d35;overflow:hidden;}
+  .wsFill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;
+       box-shadow:0 0 6px rgba(255,255,255,0.12) inset;}
+  .wsTick{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,0.45);}
+  .wsVal{flex:0 0 16px;text-align:right;font-size:10.5px;font-weight:bold;color:#c2ccd6;
+       font-family:Consolas,monospace;}
+
+  .wsDesc{font-size:11.5px;color:#9aa6b2;line-height:1.55;}
+  .wsStats{margin-top:7px;padding:6px 8px;border-radius:6px;
+       background:#10151a;border:1px solid #242c34;
+       font-size:10.5px;color:#7f8b96;font-family:Consolas,monospace;line-height:1.5;}
+
+  /* 가격 + 버튼 */
+  .wsAction{display:flex;align-items:center;justify-content:space-between;
+       gap:10px;padding:10px 13px 13px;}
+  .wsPriceBox{display:flex;align-items:baseline;gap:3px;flex-wrap:wrap;}
+  .wsWon{font-size:13px;font-weight:bold;color:#ffd86e;}
+  .wsNum{font-size:21px;font-weight:bold;color:#ffd86e;letter-spacing:-0.5px;
+       text-shadow:0 1px 3px rgba(0,0,0,0.5);}
+  .wsNum.free{color:#8fe8b4;font-size:19px;}
+  .wsOnce{flex:0 0 100%;font-size:9.5px;color:#78838d;margin-top:1px;}
+  .wsPaid{flex:0 0 100%;font-size:9.5px;color:#6ee8a0;margin-top:1px;font-weight:bold;}
+  .wsBtn{padding:11px 18px;border-radius:8px;font-size:13px;font-weight:bold;
+       user-select:none;cursor:pointer;white-space:nowrap;
+       box-shadow:0 2px 6px rgba(0,0,0,0.4);}
+  .wsBtn.buy{background:linear-gradient(180deg,#e8c060,#a8842e);
+       border:1px solid #ffdf8a;color:#241a06;}
+  .wsBtn.buy:active{filter:brightness(0.9);}
+  .wsBtn.equip{background:linear-gradient(180deg,#3f8a5e,#2a6044);
+       border:1px solid #6fd39a;color:#e8fff2;}
+  .wsBtn.on{background:#333a42;border:1px solid #5a636c;color:#aab4be;cursor:default;
+       box-shadow:none;}
+  .wsNotice{margin:6px 14px 12px;padding:10px 11px;border-radius:8px;
+       background:rgba(70,52,16,0.55);border:1px solid #7a6428;
+       font-size:11px;color:#e8d8a8;line-height:1.55;}
   #successBanner{position:fixed;left:0;right:0;top:34%;z-index:58;display:none;
        text-align:center;pointer-events:none;}
   #successTitle{font-size:40px;font-weight:bold;color:#6ee8b4;letter-spacing:6px;
@@ -217,6 +296,18 @@
 </div>
 <div id="spotFlash"></div>
 <div id="hurtVig"></div>
+<div class="modal" id="wstoreModal">
+  <div class="wsBox">
+    <div class="wsHeader">
+      <div class="wsTitle">무기 상점</div>
+      <div class="wsSub">기본 권총은 무료입니다. 특수 무기는 구매 후 영구 사용</div>
+    </div>
+    <div id="wsList"></div>
+    <div class="wsNotice" id="wsNotice"></div>
+    <div class="closeBtn" id="wsClose">닫기</div>
+  </div>
+</div>
+
 <div id="successBanner">
   <div id="successTitle">미션 성공</div>
   <div id="successSub">시작 지점으로 탈출하십시오</div>
@@ -299,7 +390,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.3.0.0</div>
+  <div id="verText">Ver 4.5.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -580,6 +671,8 @@ const EN = {
   '두꺼비집에 경비가 붙었습니다':'A guard is watching the breaker',
   '은신처 확인':'Checking hiding spot',
   '여기 있었군!':'Found you!', '은신처 발각':'Hiding spot found',
+  '권총':'Pistol', '미니건':'Minigun', '샷건':'Shotgun', '유탄발사기':'Grenade Launcher',
+  '{t} 장착':'{t} equipped', '폭발음':'Explosion', '폭발에 휘말림':'Caught in blast',
   '대장이...!':'The Warden...!',
   '단말기 미션에는 코드가 필요합니다. 노란 화살표와 미니맵의 노란 점이 쪽지 위치입니다. 가까이 가면 자동으로 읽습니다.':'Terminal missions need a code. The yellow arrow and the yellow dot on the minimap mark the note. Walk close to read it.'
 };
@@ -730,6 +823,402 @@ function todaySeed(){
 const ROOM_THEMES = ['bedroom','study','lounge','dining','storage','patio'];
 
 /* 층수에 따라 규모와 밀도가 커진다. 값이 튀지 않도록 전부 상한을 둔다. */
+
+
+/* ===================== 무기 =====================
+   기본 권총 외 3종은 상점에서 구매해야 장착할 수 있다.
+   각각 사격 방식이 달라 플레이 스타일이 바뀐다. */
+const WEAPONS = {
+  pistol: {
+    id:'pistol', name:'권총', price:0, paid:false,
+    desc:'기본 지급. 단발·연사 겸용, 정확도 높음',
+    stats:'사거리 800 · 초당 6발 · 탄창 30 · 재장전 1.9s',
+    /* 지표 (0~10) — 상점 게이지 표시용. 실측값을 10점 척도로 환산 */
+    gauge:{ dmg:5, rate:4, range:9, ammo:4, ctrl:9 },
+    tagline:'다루기 쉽고 어디서나 통한다',
+    mag:30, interval:0.16, reload:1.9, range:800,
+    pellets:1, spread:0, spinUp:0, noise:720, kind:'bullet'
+  },
+  minigun: {
+    id:'minigun', name:'미니건', price:4900, paid:true,
+    desc:'예열 후 초당 약 12발을 쉬지 않고 쏟아낸다. 예열·사격 중에는 거의 못 움직인다',
+    stats:'사거리 620 · 초당 12발 · 탄창 150 · 예열 0.45s · 재장전 4.2s',
+    gauge:{ dmg:5, rate:10, range:7, ammo:10, ctrl:2 },
+    tagline:'멈춰 서서 탄막을 쏟아붓는다',
+    mag:150, interval:0.055, reload:4.2, range:620,
+    pellets:1, spread:0.055, spinUp:0.45, noise:900, kind:'bullet'
+  },
+  shotgun: {
+    id:'shotgun', name:'샷건', price:3900, paid:true,
+    desc:'한 발이 6갈래로 퍼진다. 근거리에서 여러 명을 동시에 제압',
+    stats:'사거리 340 · 탄자 6개 · 초당 1발 · 탄창 8 · 재장전 2.8s',
+    gauge:{ dmg:9, rate:2, range:3, ammo:2, ctrl:6 },
+    tagline:'문을 열면 앞이 비어 있다',
+    mag:8, interval:0.85, reload:2.8, range:340,
+    pellets:6, spread:0.24, spinUp:0, noise:820, kind:'bullet'
+  },
+  launcher: {
+    id:'launcher', name:'유탄발사기', price:6900, paid:true,
+    desc:'폭발하는 유탄. 범위 안의 모든 적을 쓸어버린다. 아군 오사 주의',
+    stats:'사거리 560 · 폭발 반경 115 · 탄창 6 · 재장전 3.4s',
+    gauge:{ dmg:10, rate:1, range:6, ammo:1, ctrl:3 },
+    tagline:'한 발로 방 하나를 정리한다',
+    mag:6, interval:1.7, reload:3.4, range:560,
+    pellets:1, spread:0.02, spinUp:0, noise:1100, kind:'grenade',
+    blastRadius:115, selfDamage:34
+  }
+};
+/* 유료 무기 소유 상태.
+   실제 결제는 Google Play Billing(Digital Goods API) 연동이 필요하다.
+   지금은 구매 요청 지점만 마련해 두고, 연동 전에는 안내를 표시한다. */
+/* 베타 기간에는 특수 무기를 무료로 열어준다.
+   정식 출시 시 false로 바꾸면 결제 경로만 남는다. */
+const BETA_FREE = true;
+const WSTORE_KEY = 'stealthOps_weaponsOwned';
+let weaponsOwned = {};
+function loadWeaponsOwned(){
+  try{ weaponsOwned = JSON.parse(localStorage.getItem(WSTORE_KEY) || '{}') || {}; }
+  catch(e){ weaponsOwned = {}; }
+}
+function saveWeaponsOwned(){
+  try{ localStorage.setItem(WSTORE_KEY, JSON.stringify(weaponsOwned)); }catch(e){}
+}
+function ownsWeapon(id){ return !!weaponsOwned[id]; }
+function grantWeapon(id){ weaponsOwned[id]=true; saveWeaponsOwned(); }
+loadWeaponsOwned();
+
+let currentWeapon = 'pistol';
+function W(){ return WEAPONS[currentWeapon] || WEAPONS.pistol; }
+let spinUpT = 0;          // 미니건 예열 경과
+let grenades = [];        // 유탄
+
+function loadWeaponChoice(){
+  try{
+    const w = localStorage.getItem('stealthOps_weapon');
+    if(w && WEAPONS[w] && (!WEAPONS[w].paid || ownsWeapon(w))) currentWeapon = w;
+    else currentWeapon = 'pistol';
+  }catch(e){ currentWeapon = 'pistol'; }
+}
+function setWeapon(id){
+  if(!WEAPONS[id]) return;
+  if(WEAPONS[id].paid && !ownsWeapon(id)) return;
+  currentWeapon = id;
+  try{ localStorage.setItem('stealthOps_weapon', id); }catch(e){}
+  applyWeapon();
+  showMsg(WEAPONS[id].name + ' 장착');
+}
+/* 무기 수치를 게임 상수에 반영 */
+function applyWeapon(){
+  const w = W();
+  MAG_SIZE_CUR = w.mag + (perkMods.magBonus||0);
+  magAmmo = MAG_SIZE_CUR;
+  reloadTimer = 0;
+  spinUpT = 0;
+  NOISE.gunshot = hasUnlock('silencer') ? Math.round(w.noise*0.36) : w.noise;
+}
+let MAG_SIZE_CUR = 30;
+
+/* ===== 무기 상점 ===== */
+function weaponIconSVG(id){
+  /* 총기 일러스트 — 라스터 이미지를 만들 수 없으므로 SVG로 그린다.
+     금속 그라디언트와 부품 분리로 실루엣이 읽히게 했다. */
+  const g = (gid, a, b) =>
+    '<linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0" stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient>';
+  const steel = g('st','#b8c4cf','#5d6b78');
+  const dark  = g('dk','#5a6470','#2b333c');
+  const wood  = g('wd','#a87548','#5e4127');
+  const brass = g('br','#e8c874','#a8842e');
+
+  if(id==='pistol') return ''+
+    '<svg viewBox="0 0 120 60" width="118" height="59"><defs>'+steel+dark+'</defs>'+
+    '<rect x="18" y="20" width="70" height="11" rx="2" fill="url(#st)"/>'+       // 슬라이드
+    '<rect x="22" y="24" width="58" height="3" fill="#3c4650" opacity=".6"/>'+
+    '<rect x="86" y="22" width="16" height="7" rx="1.5" fill="url(#dk)"/>'+      // 총구
+    '<rect x="30" y="31" width="30" height="6" fill="url(#dk)"/>'+               // 프레임
+    '<path d="M32 37 L44 37 L40 56 L28 56 Z" fill="url(#dk)"/>'+                // 손잡이
+    '<path d="M33 39 L42 39 L39 54 L30 54 Z" fill="#1e252c" opacity=".55"/>'+
+    '<circle cx="47" cy="40" r="4.5" fill="none" stroke="url(#dk)" stroke-width="2.6"/>'+ // 방아쇠울
+    '<rect x="45" y="37" width="2" height="6" fill="#c8d2dc"/>'+                 // 방아쇠
+    '<rect x="20" y="17" width="4" height="4" fill="#e8eef4"/>'+                 // 가늠자
+    '<rect x="82" y="17" width="3" height="4" fill="#e8eef4"/>'+
+    '</svg>';
+
+  if(id==='minigun') return ''+
+    '<svg viewBox="0 0 120 60" width="118" height="59"><defs>'+steel+dark+brass+'</defs>'+
+    '<circle cx="30" cy="30" r="17" fill="url(#dk)"/>'+                          // 회전 하우징
+    '<circle cx="30" cy="30" r="11" fill="#1c2329"/>'+
+    '<circle cx="30" cy="30" r="4" fill="url(#br)"/>'+
+    '<rect x="44" y="15" width="56" height="5" rx="2" fill="url(#st)"/>'+        // 총열 6개
+    '<rect x="44" y="22" width="60" height="5" rx="2" fill="url(#st)"/>'+
+    '<rect x="44" y="29" width="62" height="5" rx="2" fill="url(#st)"/>'+
+    '<rect x="44" y="36" width="60" height="5" rx="2" fill="url(#st)"/>'+
+    '<rect x="44" y="43" width="56" height="5" rx="2" fill="url(#st)"/>'+
+    '<rect x="40" y="12" width="8" height="39" rx="2" fill="url(#dk)"/>'+        // 총열 고정대
+    '<rect x="96" y="20" width="6" height="22" rx="2" fill="url(#dk)"/>'+
+    '<path d="M14 42 L26 42 L24 57 L12 57 Z" fill="url(#dk)"/>'+                // 손잡이
+    '<rect x="6" y="26" width="12" height="9" rx="2" fill="url(#br)"/>'+        // 탄약 급탄부
+    '</svg>';
+
+  if(id==='shotgun') return ''+
+    '<svg viewBox="0 0 120 60" width="118" height="59"><defs>'+steel+dark+wood+'</defs>'+
+    '<rect x="34" y="24" width="72" height="9" rx="2" fill="url(#st)"/>'+        // 총열
+    '<rect x="34" y="34" width="60" height="7" rx="2" fill="url(#dk)"/>'+        // 펌프 튜브
+    '<rect x="58" y="33" width="20" height="10" rx="3" fill="url(#wd)"/>'+       // 펌프 손잡이
+    '<rect x="100" y="22" width="8" height="13" rx="1" fill="url(#dk)"/>'+       // 총구
+    '<path d="M6 30 L34 24 L34 42 L10 46 Z" fill="url(#wd)"/>'+                 // 개머리판
+    '<path d="M10 33 L32 28 L32 39 L13 42 Z" fill="#3c2a18" opacity=".35"/>'+
+    '<circle cx="42" cy="40" r="4.5" fill="none" stroke="url(#dk)" stroke-width="2.6"/>'+
+    '<rect x="40" y="37" width="2" height="6" fill="#c8d2dc"/>'+
+    // 산탄 확산 표시
+    '<g stroke="#ffb86e" stroke-width="1.6" opacity=".85">'+
+    '<path d="M110 28 L118 20"/><path d="M110 29 L119 26"/>'+
+    '<path d="M110 30 L120 30"/><path d="M110 31 L119 34"/>'+
+    '<path d="M110 32 L118 40"/></g>'+
+    '</svg>';
+
+  return ''+
+    '<svg viewBox="0 0 120 60" width="118" height="59"><defs>'+steel+dark+brass+'</defs>'+
+    '<rect x="30" y="22" width="52" height="14" rx="3" fill="url(#dk)"/>'+       // 몸통
+    '<circle cx="88" cy="29" r="15" fill="none" stroke="url(#st)" stroke-width="6"/>'+ // 총구
+    '<circle cx="88" cy="29" r="7" fill="#171d23"/>'+
+    '<circle cx="88" cy="29" r="3.4" fill="url(#br)"/>'+
+    '<rect x="24" y="25" width="10" height="8" rx="2" fill="url(#st)"/>'+
+    '<path d="M36 36 L50 36 L46 55 L32 55 Z" fill="url(#dk)"/>'+                // 손잡이
+    '<circle cx="54" cy="40" r="4.5" fill="none" stroke="url(#dk)" stroke-width="2.6"/>'+
+    '<rect x="52" y="37" width="2" height="6" fill="#c8d2dc"/>'+
+    '<rect x="40" y="16" width="30" height="6" rx="2" fill="url(#st)"/>'+        // 조준기
+    '<rect x="46" y="11" width="6" height="6" fill="url(#dk)"/>'+
+    // 폭발 표시
+    '<g fill="#ff9a4a" opacity=".9">'+
+    '<circle cx="112" cy="14" r="3"/><circle cx="116" cy="22" r="2"/>'+
+    '<circle cx="113" cy="44" r="2.4"/></g>'+
+    '</svg>';
+}
+
+/* 실제 결제 요청 지점.
+   TWA/PWA에서 실결제를 하려면 Google Play Billing(Digital Goods API)이 필요하다.
+   연동되어 있으면 그것을 쓰고, 없으면 안내만 표시한다. */
+async function requestPurchase(w){
+  const notice = document.getElementById('wsNotice');
+  try{
+    if(window.getDigitalGoodsService){
+      const svc = await window.getDigitalGoodsService('https://play.google.com/billing');
+      const details = await svc.getDetails([w.id]);
+      if(details && details.length){
+        const req = await window.PaymentRequest && new PaymentRequest(
+          [{supportedMethods:'https://play.google.com/billing', data:{sku:w.id}}],
+          {total:{label:w.name, amount:{currency:'KRW', value:String(w.price)}}}
+        );
+        const res = await req.show();
+        await res.complete('success');
+        grantWeapon(w.id);
+        setWeapon(w.id);
+        openWeaponStore();
+        return;
+      }
+    }
+    throw new Error('billing-unavailable');
+  }catch(e){
+    notice.innerHTML =
+      '<b>결제가 아직 연결되지 않았습니다.</b><br>' +
+      'Play Console에서 인앱 상품(' + w.id + ')을 등록하고 Digital Goods API를 연동하면 ' +
+      '이 버튼으로 바로 결제됩니다.<br>' +
+      '<span style="color:#a8b4c0">지금은 아래 "테스트로 사용해보기"로 성능을 확인할 수 있습니다.</span>' +
+      '<div id="wsTest" style="margin-top:9px;padding:8px;border-radius:6px;' +
+      'background:#2a3038;border:1px solid #59636d;color:#cfd6dd;font-size:11.5px;' +
+      'cursor:pointer;text-align:center;">테스트로 사용해보기 (' + w.name + ')</div>';
+    const tb = document.getElementById('wsTest');
+    if(tb) tb.addEventListener('click', ()=>{
+      grantWeapon(w.id);
+      setWeapon(w.id);
+      openWeaponStore();
+    });
+  }
+}
+
+function openWeaponStore(){
+  const list = document.getElementById('wsList');
+  const notice = document.getElementById('wsNotice');
+  list.innerHTML='';
+  notice.innerHTML = BETA_FREE
+    ? '<b style="color:#8fe8b4">베타 테스트 기간</b> — 특수 무기를 무료로 사용할 수 있습니다.'+
+      '<br><span style="color:#a8b4c0">정식 출시 시에는 유료로 전환됩니다. 무기는 언제든 바꿀 수 있습니다.</span>'
+    : '특수 무기는 한 번 구매하면 계속 쓸 수 있습니다. 무기는 언제든 바꿀 수 있습니다.';
+
+  for(const id of ['pistol','minigun','shotgun','launcher']){
+    const w = WEAPONS[id];
+    const owned = !w.paid || ownsWeapon(id);
+    const equipped = currentWeapon===id;
+
+    const card = document.createElement('div');
+    card.className = 'wsCard' + (owned?' owned':'') + (equipped?' equipped':'');
+    const G = w.gauge || {dmg:5,rate:5,range:5,ammo:5,ctrl:5};
+    const bar = (label, v, color) =>
+      '<div class="wsRow">' +
+        '<div class="wsLabel">'+label+'</div>' +
+        '<div class="wsTrack">' +
+          '<div class="wsFill" style="width:'+(v*10)+'%;background:'+color+';"></div>' +
+          Array.from({length:9},(_,i)=>'<div class="wsTick" style="left:'+((i+1)*10)+'%"></div>').join('') +
+        '</div>' +
+        '<div class="wsVal">'+v+'</div>' +
+      '</div>';
+
+    card.innerHTML =
+      '<div class="wsArt'+(w.paid?'':' free')+'">' +
+        weaponIconSVG(id) +
+        (equipped?'<div class="wsEquipBadge">장착중</div>':'') +
+        '<div class="wsKindBadge '+(w.paid?'paid':'free')+'">'+(w.paid?'특수':'기본')+'</div>' +
+      '</div>' +
+      '<div class="wsBody">' +
+        '<div class="wsName">'+w.name+'</div>' +
+        '<div class="wsTagline">'+(w.tagline||'')+'</div>' +
+        '<div class="wsGauges">' +
+          bar('피해력',  G.dmg,   'linear-gradient(90deg,#c05050,#ff7a5a)') +
+          bar('연사력',  G.rate,  'linear-gradient(90deg,#c79a2e,#ffd86e)') +
+          bar('사거리',  G.range, 'linear-gradient(90deg,#2f6b8a,#6ec8e8)') +
+          bar('장탄수',  G.ammo,  'linear-gradient(90deg,#3a7a52,#6ee8a0)') +
+          bar('조작성',  G.ctrl,  'linear-gradient(90deg,#6a5a8a,#b09ae8)') +
+        '</div>' +
+        '<div class="wsDesc">'+w.desc+'</div>' +
+        '<div class="wsStats">'+w.stats+'</div>' +
+      '</div>';
+
+    const act = document.createElement('div');
+    act.className = 'wsAction';
+    const price = document.createElement('div');
+    price.className = 'wsPriceBox' + (w.paid?'':' free');
+    if(w.paid){
+      price.innerHTML = '<div class="wsWon">₩</div><div class="wsNum">'+
+        w.price.toLocaleString()+'</div>' +
+        (owned?'<div class="wsPaid">구매 완료</div>':'<div class="wsOnce">1회 결제 · 영구</div>');
+    } else {
+      price.innerHTML = '<div class="wsNum free">무료</div><div class="wsOnce">기본 지급</div>';
+    }
+    act.appendChild(price);
+
+    const btn = document.createElement('div');
+    if(equipped){
+      btn.className='wsBtn on'; btn.textContent='장착중';
+    } else if(owned){
+      btn.className='wsBtn equip'; btn.textContent='장착';
+      btn.addEventListener('click', ()=>{ setWeapon(id); openWeaponStore(); });
+    } else if(BETA_FREE){
+      btn.className='wsBtn equip'; btn.textContent='베타 무료';
+      btn.addEventListener('click', ()=>{ grantWeapon(id); setWeapon(id); openWeaponStore(); });
+    } else {
+      btn.className='wsBtn buy'; btn.textContent='구매';
+      btn.addEventListener('click', ()=>{ requestPurchase(w); });
+    }
+    act.appendChild(btn);
+    card.appendChild(act);
+    list.appendChild(card);
+  }
+  document.getElementById('wstoreModal').style.display='flex';
+}
+
+/* ===== 유탄 ===== */
+function fireGrenade(ox, oy, ang){
+  const w = W();
+  grenades.push({
+    x:ox, y:oy, vx:Math.cos(ang)*7.4, vy:Math.sin(ang)*7.4,
+    life:w.range/7.4/60 + 0.05, spin:0
+  });
+  if(audioCtx){
+    playNoise(0.05, 0.5, 500, 'lowpass', panOf(ox));
+    playTone(120, 0.16, 0.44, 'triangle', panOf(ox));
+  }
+}
+function explodeGrenade(g){
+  const w = W();
+  const R = w.blastRadius || 110;
+  shakeAmt = Math.max(shakeAmt, 16);
+  if(audioCtx){
+    const pan = panOf(g.x);
+    playNoise(0.03, 1.0, 6000, 'highpass', pan);
+    playTone(58, 0.42, 0.9, 'sine', pan);
+    playTone(92, 0.30, 0.6, 'triangle', pan);
+    playNoise(0.28, 0.7, 260, 'lowpass', pan);
+    setTimeout(()=>playNoise(0.34, 0.24, 700, 'lowpass', pan), 90);
+  }
+  for(let i=0;i<34;i++){
+    const a=Math.random()*Math.PI*2, sp=1.5+Math.random()*5;
+    particles.push({x:g.x, y:g.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:22+Math.random()*22, color: i%3===0?'#ffd86e':(i%3===1?'#ff8a3a':'#8a5a3a')});
+  }
+  // 범위 내 적에게 피해
+  for(const en of enemies){
+    if(en.state==='dying') continue;
+    const d = Math.hypot(en.x-g.x, en.y-g.y);
+    if(d > R) continue;
+    if(!hasLineOfSight(g.x, g.y, en.x, en.y)) continue;
+    const dmg = d < R*0.5 ? 99 : 2;      // 중심부는 즉사, 외곽은 2피해
+    en.hp -= dmg;
+    en.hitFlash = 0.3;
+    spawnBlood(en.x, en.y, Math.atan2(en.y-g.y, en.x-g.x), en.hp<=0?16:9, en.hp<=0);
+    if(en.hp<=0){
+      en.state='dying'; en.dieType='shot';
+      en.dieTimer=0.3; en.dieTotal=0.3;
+      stats.shotKills++;
+    } else {
+      en.state='search'; en.target={x:g.x,y:g.y}; en.searchTimer=8;
+    }
+  }
+  // 자폭 피해
+  const pd = Math.hypot(player.x-g.x, player.y-g.y);
+  if(pd < R && !caught){
+    const amt = Math.round((W().selfDamage||30) * (1 - pd/R));
+    if(amt>0) damagePlayer(amt, Math.atan2(player.y-g.y, player.x-g.x), '폭발에 휘말림');
+  }
+  checkNoiseHearing(g.x, g.y, 900);
+  raiseAlarm(g.x, g.y, '폭발음');
+}
+function updateGrenades(dt){
+  for(let i=grenades.length-1;i>=0;i--){
+    const g=grenades[i];
+    g.spin += dt*14;
+    let hit=false;
+    const nx=g.x+g.vx, ny=g.y+g.vy;
+    for(const w2 of solidsNear(nx,ny,5)){
+      if(circleRectCollide(nx,ny,5,w2)){ hit=true; break; }
+    }
+    // 적에게 직격
+    if(!hit){
+      for(const en of enemies){
+        if(en.state==='dying'||en.kind==='cam') continue;
+        if(Math.hypot(en.x-nx, en.y-ny) < en.r+5){ hit=true; break; }
+      }
+    }
+    g.x=nx; g.y=ny;
+    g.life -= dt;
+    if(hit || g.life<=0 || g.x<10||g.y<10||g.x>WORLD_W-10||g.y>WORLD_H-10){
+      explodeGrenade(g);
+      grenades.splice(i,1);
+    }
+  }
+}
+function drawGrenades(camX,camY){
+  for(const g of grenades){
+    if(!onScreen(g.x,g.y,14)) continue;
+    ctx.save();
+    ctx.translate(g.x-camX, g.y-camY);
+    ctx.rotate(g.spin);
+    ctx.fillStyle='#3f4a34';
+    ctx.beginPath(); ctx.ellipse(0,0,6,4,0,0,7); ctx.fill();
+    ctx.fillStyle='#8a9a6a';
+    ctx.fillRect(-6,-1.2, 4, 2.4);
+    ctx.restore();
+    // 궤적
+    ctx.save();
+    ctx.globalAlpha=0.35;
+    ctx.strokeStyle='#ffb06a'; ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(g.x-camX-g.vx*2, g.y-camY-g.vy*2);
+    ctx.lineTo(g.x-camX, g.y-camY);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
 
 /* ===================== 적의 학습 =====================
    런이 진행되는 동안 플레이어의 습관을 기록하고, 다음 층에서 경비가 대응한다.
@@ -1618,7 +2107,7 @@ function raiseAlarm(x, y, reason){
       if(en.state === 'search' || en.state === 'investigate' || en.state === 'return') continue;
       en.state = 'caution';
       en.cautionTimer = 50;
-      en.angle = Math.atan2(y - en.y, x - en.x);
+      en.wantAngle = Math.atan2(y - en.y, x - en.x);   // 즉시 돌지 않고 서서히
     }
   }
 
@@ -2179,6 +2668,8 @@ function loadFloor(floor, forcedSeed, variant){
   pickObjective(floor);
   applyPerks();
   applyLoadout();
+  applyWeapon();
+  grenades.length=0;
   updateAdaptation(floor);
 
   clearReinforcements();
@@ -2322,7 +2813,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'4.3.0.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'4.5.0.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -2622,7 +3113,12 @@ function navNextStep(en, goal){
     }
   }
   // 3) 새로 계산 (프레임 예산 안에서만)
-  if(navBudget <= 0) return goal;           // 예산 초과 시엔 일단 직진
+  // 예산이 없으면 '먼 목표'로 바꾸지 말고 기존 경로 노드를 그대로 쓴다.
+  // (프레임마다 목표가 왕복하면 적이 제자리에서 회전한다)
+  if(navBudget <= 0){
+    if(en.navPath && en.navPath.length) return en.navPath[0];
+    return goal;
+  }
   navBudget--;
   const path = findPath(en.x, en.y, goal.x, goal.y);
   if(!path || !path.length){ en.navPath=null; return goal; }
@@ -2799,6 +3295,31 @@ function playScream(volScale){
   osc.start(); osc.stop(now+0.42);
   playNoise(0.22, 0.14*volScale, 900, 'bandpass');
 }
+/* 무기별 사격음 */
+function playWeaponShot(WP, pan){
+  if(!audioCtx) return;
+  if(WP.id==='minigun'){
+    playNoise(0.010, 0.42, 5200, 'highpass', pan);
+    playNoise(0.026, 0.34, 1400, 'bandpass', pan);
+    playTone(180, 0.045, 0.28, 'square', pan);
+    playTone(70,  0.05,  0.20, 'sine', pan);
+    return;
+  }
+  if(WP.id==='shotgun'){
+    playNoise(0.016, 1.0, 5600, 'highpass', pan);
+    playNoise(0.075, 0.9, 900,  'bandpass', pan);
+    playTone(150, 0.11, 0.62, 'triangle', pan);
+    playTone(72,  0.14, 0.44, 'sine', pan);
+    setTimeout(()=>playNoise(0.16, 0.24, 700, 'lowpass', pan), 55);
+    setTimeout(()=>{ // 펌프 장전
+      playTone(320, 0.04, 0.18, 'square', pan);
+      playNoise(0.05, 0.16, 4200, 'highpass', pan);
+    }, 320);
+    return;
+  }
+  playSuppressedShot(0.9, pan);
+}
+
 function playSuppressedShot(volScale, pan){
   /* 실탄 총성 "탕".
      이전 버전은 78Hz 서브베이스가 중심이라 "두웅"에 가까웠다.
@@ -2916,6 +3437,18 @@ function updateBGM(){
 /* ===================== 시작 화면 / 모달 ===================== */
 let gameStarted=false;
 const startOverlay=document.getElementById('startOverlay');
+(function addStoreButton(){
+  const el=document.getElementById('btnStart');
+  if(!el || !el.parentNode) return;
+  const btn=document.createElement('div');
+  btn.className='closeBtn';
+  btn.style.cssText='background:linear-gradient(180deg,#c79a2e,#a17a1c);'+
+    'border:1px solid #e8c060;color:#1a1408;font-weight:bold;margin-top:10px;';
+  btn.textContent = BETA_FREE ? '🔫 무기 상점 (베타 무료)' : '🔫 무기 상점';
+  btn.addEventListener('click', openWeaponStore);
+  el.parentNode.insertBefore(btn, el.nextSibling);
+})();
+
 (function showResumeButton(){
   const r = loadSavedRun();
   if(!r) return;
@@ -2958,7 +3491,10 @@ const startOverlay=document.getElementById('startOverlay');
 document.getElementById('btnStart').addEventListener('click',()=>{
   layoutButtons();
   loadMeta();
+  loadWeaponsOwned();
+  loadWeaponChoice();
   applyLoadout();
+  applyWeapon();
   pickObjective(runFloor);
   setTimeout(()=>showMsg(runFloor+'층 — '+objective.name+': '+objective.desc), 900);
   loadAnalytics();
@@ -3019,6 +3555,11 @@ document.getElementById('closeSettings').addEventListener('click',()=>{document.
     try{ localStorage.setItem('stealthOps_lang', LANG); }catch(e){}
     showMsg('다음 새로고침부터 적용됩니다');
     return LANG==='en'?'English':'한국어';
+  });
+  mkRow('무기 상점', W().name, ()=>{
+    document.getElementById('settingsModal').style.display='none';
+    openWeaponStore();
+    return W().name;
   });
   mkRow('색약 모드', settings.cbMode?'ON':'OFF', ()=>{
     settings.cbMode = !settings.cbMode;
@@ -3244,6 +3785,9 @@ function bindHold(id,type){
   window.addEventListener('mousemove',e=>{ if(aimLock===type) move(e.clientX); });
   el.addEventListener('mouseup',end);
 }
+document.getElementById('wsClose').addEventListener('click',()=>{
+  document.getElementById('wstoreModal').style.display='none';
+});
 document.getElementById('shopClose').addEventListener('click',()=>{
   document.getElementById('shopModal').style.display='none';
 });
@@ -3320,7 +3864,7 @@ function checkNoiseHearing(x,y,baseRadius){
       en.investigateTimer=2.5;
     } else if(en.state==='idle'){
       // 앉아있는 인원은 자리를 뜨지 않고 소리 쪽으로 고개만 돌림
-      en.angle = Math.atan2(y-en.y, x-en.x);
+      turnToward(en, Math.atan2(y-en.y, x-en.x), 4.0);
       en.detect = Math.min(100, en.detect + 12);
       if(d < radius*0.45){
         en.state='investigate';
@@ -3332,6 +3876,16 @@ function checkNoiseHearing(x,y,baseRadius){
 }
 
 /* 목격 정보 공유: 근처 동료에게 마지막 목격 지점 전파 */
+/* 각도를 최대 회전 속도 안에서만 바꾼다.
+   즉시 스냅하면 목표가 한 프레임 바뀔 때 제자리에서 빙그르르 돈다. */
+function turnToward(en, want, ratePerSec, dt){
+  let diff = want - en.angle;
+  while(diff >  Math.PI) diff -= Math.PI*2;
+  while(diff < -Math.PI) diff += Math.PI*2;
+  const m = (ratePerSec===undefined?3.4:ratePerSec) * (dt===undefined?0.0167:dt);
+  en.angle += Math.max(-m, Math.min(m, diff));
+}
+
 /* [학습] 수색 중인 경비가 근처 은신처를 먼저 확인한다 */
 function searchHidingSpots(en){
   if(!adapt.checkHides) return false;
@@ -3441,6 +3995,7 @@ function updatePlayer(dt){
   if(carryingLoot) spd *= 0.72;          // 물건을 들면 느려진다
   if(blackout>0) spd *= perkMods.blackoutSpeed;   // [야행성]
   if(carriedCorpse) spd *= 0.60;         // 시체를 메면 더 느려진다
+  if(W().spinUp>0 && spinUpT>0.05) spd *= 0.28;   // 미니건 예열/사격 중에는 거의 못 움직인다
   let moved=0;
   if(mag>0.15){
     player.angle=Math.atan2(my,mx);
@@ -3631,7 +4186,8 @@ function updateEnemy(en,dt){
   if(en.escortIdx!==undefined){
     const w = enemies[en.escortIdx];
     if(w && w.kind==='warden' && w.state!=='dying'){
-      const a2 = (en._id*1.7) + performance.now()/2600;
+      // 시간에 따라 돌면 대장 주위를 계속 회전한다 → 각 호위마다 고정 위치
+      const a2 = (en._id % 4) * (Math.PI/2) + 0.4;
       const tx2 = Math.max(30, Math.min(WORLD_W-30, w.x + Math.cos(a2)*58));
       const ty2 = Math.max(30, Math.min(WORLD_H-30, w.y + Math.sin(a2)*58));
       if(!en.path || !en.path.length) en.path=[{x:tx2,y:ty2}];
@@ -3680,7 +4236,7 @@ function updateEnemy(en,dt){
       if(goal && Math.hypot(goal.x-en.x,goal.y-en.y)<8){en.wp=(en.wp+1)%en.path.length;}
     } else if(en.state==='patrol'){
       en.state = en.homeState;
-      en.angle = en.homeAngle;
+      en.wantAngle = en.homeAngle;
     }
   } else if(en.state==='search'){
     // 타이머는 목표 도달 여부와 관계없이 항상 흘러야 한다.
@@ -3719,7 +4275,16 @@ function updateEnemy(en,dt){
   if(goal){
     const dx=goal.x-en.x, dy=goal.y-en.y, d=Math.hypot(dx,dy);
     if(d>1){
-      en.angle=Math.atan2(dy,dx);
+      /* 각도를 즉시 맞추면 목표가 한 프레임만 바뀌어도 제자리에서 회전한다.
+         최대 회전 속도를 두면 어떤 원인이든 '빙그르르' 도는 현상이 사라진다. */
+      {
+        const want = Math.atan2(dy,dx);
+        let diff = want - en.angle;
+        while(diff >  Math.PI) diff -= Math.PI*2;
+        while(diff < -Math.PI) diff += Math.PI*2;
+        const maxTurn = (en.kind==='drone' ? 5.0 : 3.4) * dt;   // rad/s
+        en.angle += Math.max(-maxTurn, Math.min(maxTurn, diff));
+      }
       let mvSpd = en.speed * (en.state==='search'?1.18:(en.state==='caution'?1.12:1));
       if(alarmRaised) mvSpd *= 1.15;     // 비상 상황에선 조금 빨라진다
       const ux=dx/d, uy=dy/d;
@@ -3759,6 +4324,14 @@ function updateEnemy(en,dt){
 
   if(en.barkCd>0) en.barkCd-=dt;
   if(en.hideCheckCd>0) en.hideCheckCd-=dt;
+  // 예약된 방향(소리·경보)으로 서서히 돌아본다
+  if(en.wantAngle!==undefined){
+    turnToward(en, en.wantAngle, 3.0, dt);
+    let d=en.wantAngle-en.angle;
+    while(d> Math.PI) d-=Math.PI*2;
+    while(d<-Math.PI) d+=Math.PI*2;
+    if(Math.abs(d)<0.05) en.wantAngle=undefined;
+  }
   if(en.kind==='dog' && en.state==='search') dogBark(en);
   en.walkPhase += moved*(en.kind==='dog'?0.55:0.34);
   en.breathPhase += dt*1.8;
@@ -4016,8 +4589,8 @@ function resolveStuck(){
 /* 버튼을 누르고 있으면 일정 간격으로 계속 발사한다.
    단, 적에게 붙어 있을 때(처치)는 연사하지 않는다 — 한 번만 실행. */
 function startReload(){
-  if(reloadTimer>0 || magAmmo>=MAG_SIZE) return;
-  reloadTimer = RELOAD_TIME * perkMods.reloadMul;
+  if(reloadTimer>0 || magAmmo>=MAG_SIZE_CUR) return;
+  reloadTimer = W().reload * perkMods.reloadMul;
   playReloadSound();
   showMsg('재장전...');
 }
@@ -4034,21 +4607,30 @@ function updateReload(dt){
   if(reloadTimer<=0) return;
   reloadTimer -= dt;
   if(reloadTimer<=0){
-    magAmmo = MAG_SIZE + perkMods.magBonus;
+    magAmmo = MAG_SIZE_CUR;
     reloadTimer = 0;
+    spinUpT = 0;
     showMsg('재장전 완료');
   }
 }
 
 function updateAutoFire(dt){
   if(fireCooldown>0) fireCooldown-=dt;
+  // 미니건 예열 — 버튼을 누르고 있는 동안 차오르고, 떼면 식는다
+  const WPa = W();
+  if(WPa.spinUp>0){
+    if(fireHeld && !caught && !actionLock && !puzzleActive && reloadTimer<=0)
+      spinUpT = Math.min(WPa.spinUp, spinUpT + dt);
+    else
+      spinUpT = Math.max(0, spinUpT - dt*1.6);
+  }
   if(!fireHeld || fireCooldown>0) return;
   if(caught||actionLock||puzzleActive||player.hiddenIn||aimLock) return;
   if(takedownTarget()) return;
   if(reloadTimer>0) return;
   if(magAmmo<=0){ startReload(); return; }
   firePressed = true;
-  fireCooldown = FIRE_INTERVAL;
+  fireCooldown = W().interval;
 }
 
 function updateFirePose(dt){
@@ -4080,7 +4662,7 @@ function updateSniper(en,dt){
     en.camT = (en.camT||0) + dt*0.35;
     en.angle = (en.camBase||0) + Math.sin(en.camT)*0.9;
   } else if(!player.hiddenIn){
-    en.angle = Math.atan2(player.y-en.y, player.x-en.x);
+    turnToward(en, Math.atan2(player.y-en.y, player.x-en.x), 2.2);
   }
   en.walkPhase = 0;
 }
@@ -4208,7 +4790,7 @@ function respawn(){
   aimTargetCache=null;
   carriedCorpse=null;
   player.hp=player.maxHp; player.hurtTimer=0; player.regenDelay=0; player.stunTimer=0;
-  magAmmo=MAG_SIZE; reloadTimer=0;
+  magAmmo=MAG_SIZE_CUR; reloadTimer=0; spinUpT=0; grenades.length=0;
   bloodDecals.length=0;
   player.firePose=0; player.recoil=0; player.under=null;
   player.crouch=false; crouchHeld=false;
@@ -4566,30 +5148,60 @@ function handleFire(){
   if(carriedCorpse){ showMsg('시체를 메고는 사격할 수 없습니다'); return; }
   if(reloadTimer>0){ return; }
   if(magAmmo<=0){ startReload(); return; }
+
+  const WP = W();
+  // 미니건은 예열이 끝나야 발사된다
+  if(WP.spinUp>0 && spinUpT < WP.spinUp){
+    if(audioCtx && spinUpT<0.02){
+      playTone(90, 0.5, 0.18, 'sawtooth');
+      setTimeout(()=>playTone(150, 0.4, 0.16, 'sawtooth'), 180);
+    }
+    return;
+  }
+
   magAmmo--;
   habits.gun++;
   if(magAmmo===0) startReload();          // 마지막 탄 발사 후 자동 재장전
   guardsArmed = true;                     // 총성을 들은 순간 경비도 무장한다
   tutFlags.shot = true;
 
-  fireCooldown = Math.max(fireCooldown, FIRE_INTERVAL);
+  fireCooldown = Math.max(fireCooldown, WP.interval);
   const m=muzzle();
   const ox=m.x, oy=m.y;
-  const {x:tx,y:ty} = rayMarchLanding(ox,oy,player.angle,FIRE_RANGE);
-  const shot = {x:ox,y:oy,tx,ty,t:0,dur:0.1};
-  bullets.push(shot);
-  playSuppressedShot(0.9, panOf(ox));
-  // 소음기가 없으므로 총성이 멀리까지 퍼진다
+  player.firePose = 1;
+  player.recoil   = 1;
   checkNoiseHearing(ox, oy, NOISE.gunshot);
-  player.firePose = 1;          // 팔 뻗기
-  player.recoil   = 1;          // 반동
-  shakeAmt = Math.max(shakeAmt, 4);
+
+  // --- 유탄발사기 ---
+  if(WP.kind==='grenade'){
+    fireGrenade(ox, oy, player.angle);
+    shakeAmt = Math.max(shakeAmt, 8);
+    return;
+  }
+
+  // --- 탄자 발사 (권총 1발 / 샷건 6갈래 / 미니건 약간의 산포) ---
+  playWeaponShot(WP, panOf(ox));
+  shakeAmt = Math.max(shakeAmt, WP.id==='shotgun' ? 9 : (WP.id==='minigun' ? 2.5 : 4));
+  for(let pi=0; pi<WP.pellets; pi++){
+    const off = WP.pellets>1
+      ? (pi/(WP.pellets-1) - 0.5) * WP.spread * 2 + (Math.random()-0.5)*WP.spread*0.4
+      : (Math.random()-0.5)*WP.spread;
+    firePellet(ox, oy, player.angle + off, WP);
+  }
+  return;
+}
+
+/* 탄자 1발 — 명중 판정과 궤적을 담당한다 */
+function firePellet(ox, oy, ang, WP){
+  const {x:tx,y:ty} = rayMarchLanding(ox,oy,ang,WP.range);
+  const shot = {x:ox,y:oy,tx,ty,t:0,dur:WP.id==='minigun'?0.07:0.1};
+  bullets.push(shot);
 
   let best=null, bestDist=Infinity;
   for(const en of enemies){
     if(en.state==='dying')continue;
     const dist=Math.hypot(en.x-ox, en.y-oy);
-    if(dist>FIRE_RANGE)continue;
+    if(dist>WP.range)continue;
     // 탄도선과의 수직 거리로 판정 — 거리와 무관하게 일정한 관용도를 준다
     const {dist:perp, t} = pointSegDist(en.x,en.y, ox,oy, tx,ty);
     if(t<0) continue;                       // 등 뒤는 제외
@@ -4604,7 +5216,7 @@ function handleFire(){
     for(const en of enemies){
       if(en===best || en.state==='dying') continue;
       const dist2=Math.hypot(en.x-ox, en.y-oy);
-      if(dist2>FIRE_RANGE || dist2 < Math.hypot(best.x-ox,best.y-oy)) continue;
+      if(dist2>WP.range || dist2 < Math.hypot(best.x-ox,best.y-oy)) continue;
       const {dist:perp, t:tt} = pointSegDist(en.x,en.y, ox,oy, tx,ty);
       if(tt<0 || perp > hitRadiusAt(dist2)) continue;
       if(dist2<sd){ sd=dist2; second=en; }
@@ -6294,6 +6906,7 @@ function drawWorld(camX,camY){
 
   drawClouds(camX,camY);
   drawBullets(camX,camY);
+  drawGrenades(camX,camY);
 
   for(const en of enemies){
     // 화면 밖 적은 스프라이트·링·레티클을 전부 건너뛴다
@@ -6875,6 +7488,7 @@ function loop(now){
       updateEscape(dt);
       updateEnvironment(dt);
       updatePickups(dt);
+      updateGrenades(dt);
       updateNotes();
       updateCarriedCorpse();
       updateSave(dt);
@@ -6961,10 +7575,15 @@ function loop(now){
     if(blackout>0) bo.textContent = L('⚡ 정전 '+Math.ceil(blackout)+'s');
 
     const at=document.getElementById('ammoTag');
+    const wp=W();
     if(reloadTimer>0){
       at.innerHTML='<span class="low">재장전 '+reloadTimer.toFixed(1)+'s</span>';
+    } else if(wp.spinUp>0 && spinUpT>0 && spinUpT<wp.spinUp){
+      at.innerHTML='<span class="low">예열 '+Math.round(spinUpT/wp.spinUp*100)+'%</span>';
     } else {
-      at.innerHTML = (magAmmo<=6 ? '<span class="low">'+magAmmo+'</span>' : magAmmo) + ' / ' + MAG_SIZE;
+      at.innerHTML = wp.name+' · ' +
+        (magAmmo<=Math.max(4,Math.round(MAG_SIZE_CUR*0.15)) ? '<span class="low">'+magAmmo+'</span>' : magAmmo) +
+        ' / ' + MAG_SIZE_CUR;
     }
 
     const stam=document.getElementById('stamBar');
