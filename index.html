@@ -509,7 +509,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 5.0.0.0</div>
+  <div id="verText">Ver 5.1.0.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -893,24 +893,25 @@ var btnLayoutReady = false;   // var: 호이스팅되어 resize()보다 먼저 �
    극좌표 배치는 두 조이스틱과 겹치기 쉬워서 폐기했다.
    패드 사각형을 기준으로 '빈 영역'에 명시적으로 놓는다. */
 const PAD_SPEC = {
-  fire:  { size:160, edge:14, bottom:140 },   // 사격 (오른쪽)
-  throw: { size:104, edge:24, bottom:316 },   // 투척 (사격 위, 작게)
+  fire:  { size:152, edge:14, bottom:128 },   // 사격 (오른쪽)
+  throw: { size: 92, edge:30, bottom:412 },   // 투척 (오른쪽 최상단, 작게)
   move:  { size:150, edge:18, bottom:112 }    // 이동 (왼쪽)
 };
 
 /* 배치 슬롯
-   조이스틱이 3개(이동·사격·투척)가 되면서 오른쪽 위 공간을 투척 패드가 차지한다.
-   따라서 보조 버튼 6개는 모두 '이동 패드 위' 2열 3행에 배치한다.
+   이동 패드 위 : 웅크리기 · 달리기
+   사격 패드 위 : 상호작용 · 유인 · 아이템 · 기절탄, 그 위에 투척 조이스틱
      zone: 'moveL'/'moveR' = 이동 패드 위 좌/우 열
+           'fireL'/'fireR' = 사격 패드 위 좌/우 열
    bottom: 화면 아래에서의 거리(px) */
 const BTN_SLOTS = [
   // id,          크기, zone,     bottom, 글자크기
-  ['btnAction',    62, 'moveL',    278,  10  ],   // 가장 자주 쓰므로 가장 낮게
-  ['btnItem',      56, 'moveR',    278,   9  ],
-  ['btnCrouch',    58, 'moveL',    346,  10  ],
-  ['btnSprint',    56, 'moveR',    346,   9.5],
-  ['btnDecoy',     52, 'moveL',    412,   9  ],
-  ['btnStun',      52, 'moveR',    412,   9  ]
+  ['btnAction',    60, 'fireL',    290,  10  ],   // 가장 자주 쓰므로 패드 바로 위
+  ['btnDecoy',     54, 'fireR',    290,   9  ],
+  ['btnItem',      54, 'fireL',    354,   9  ],
+  ['btnStun',      54, 'fireR',    354,   9  ],
+  ['btnCrouch',    60, 'moveL',    278,  10  ],
+  ['btnSprint',    58, 'moveR',    278,   9.5]
 ];
 /* ===== 버튼 배치 계산 (DOM과 분리) =====
    DOM에 쓰기 전에 좌표를 계산해 두면 겹침을 실제로 검증할 수 있다.
@@ -935,14 +936,16 @@ function padRects(W, H, lh){
    (좌상단 좌표를 넣어 버튼이 절반씩 밀리고 화면 밖으로 잘리는 버그가 있었다) */
 function computeButtonLayout(W, H, lh){
   const pads = padRects(W, H, lh);
-  // 이동 패드 위 2열 — 잘리지 않도록 안쪽으로 당긴다
+  // 각 패드 위 2열 — 잘리지 않도록 안쪽으로 당긴다
   const mL = pads.move.x + pads.move.w*0.30;
   const mR = pads.move.x + pads.move.w*0.90;
-  const MIN_TOP = 176;
+  const fL = pads.fire.x + pads.fire.w*0.14;
+  const fR = pads.fire.x + pads.fire.w*0.82;
+  const MIN_TOP = 136;   // 미니맵(하단 96) + 알약(100~128) 아래부터 쓴다
 
   const buttons=[];
   for(const [id,size,zone,bottom,fs] of BTN_SLOTS){
-    const raw = (zone==='moveL') ? mL : mR;
+    const raw = zone==='moveL' ? mL : (zone==='moveR' ? mR : (zone==='fireL' ? fL : fR));
     // 중심 좌표를 화면 안에 유지 (반지름만큼 여유)
     const cx = Math.round(Math.max(size/2 + 4, Math.min(W - size/2 - 4, raw)));
     const cy = Math.round(Math.max(MIN_TOP + size/2, H - bottom - size/2));
@@ -981,12 +984,21 @@ function layoutButtons(){
     cb.style.top  = plan.cancel.cy + 'px';
   }
 
-  // 토글 알약: 우상단 세로 스택 (미니맵 아래)
+  /* 토글 알약: 미니맵 바로 아래에 가로 한 줄.
+     좌상단은 HUD 텍스트(상태·HP·탄약·타이머)가 쓰고,
+     오른쪽 세로는 사격 패드 + 버튼 4개 + 투척 패드가 쌓여서 자리가 없다. */
   const nvg=document.getElementById('btnNVG'), th=document.getElementById('btnThermal');
   if(nvg&&th){
-    nvg.style.top='104px'; th.style.top='140px';
-    if(settings.leftHanded){ nvg.style.right='auto'; nvg.style.left='8px'; th.style.right='auto'; th.style.left='8px'; }
-    else { nvg.style.left='auto'; nvg.style.right='8px'; th.style.left='auto'; th.style.right='8px'; }
+    for(const el of [nvg,th]){
+      el.style.top='100px'; el.style.width='88px'; el.style.height='28px'; el.style.fontSize='10.5px';
+    }
+    if(settings.leftHanded){
+      nvg.style.right='auto'; nvg.style.left='8px';
+      th.style.right='auto';  th.style.left='104px';
+    } else {
+      nvg.style.left='auto'; nvg.style.right='104px';
+      th.style.left='auto';  th.style.right='8px';
+    }
   }
 }
 resize(); window.addEventListener('resize',resize);
@@ -3131,7 +3143,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'5.0.0.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'5.1.0.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -9186,12 +9198,13 @@ function loop(now){
     // 토글이 켜져 있으면 항상 표시하되, 실제로 달리는 중과 지친 상태를 구분
     {
       const ib=document.getElementById('btnItem');
-      const cur=ITEM_DEFS[selectedItem];
-      ib.textContent = L(cur.name)+'\n'+itemCount(selectedItem);
-      ib.style.opacity = itemCount(selectedItem)>0 ? '1' : '0.45';
+      if(ib){
+        const cur=ITEM_DEFS[selectedItem];
+        ib.textContent = L(cur.name)+'\n'+itemCount(selectedItem);
+        ib.style.opacity = itemCount(selectedItem)>0 ? '1' : '0.45';
+      }
     }
     document.getElementById('btnStun').textContent  = L('기절탄')+'\n'+ammo.stun;
-    document.getElementById('btnSmoke').style.opacity = ammo.smoke>0 ? '1' : '0.42';
     document.getElementById('btnStun').style.opacity  = ammo.stun >0 ? '1' : '0.42';
 
     const spBtn = document.getElementById('btnSprint');
