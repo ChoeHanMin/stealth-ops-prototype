@@ -445,7 +445,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.7.2.0</div>
+  <div id="verText">Ver 4.7.3.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -857,29 +857,33 @@ function padRects(W, H, lh){
             y: H - MP.bottom - MP.size }
   };
 }
+/* 반환값의 cx/cy는 '중심' 좌표다.
+   .btn 과 #aimCancelBtn 은 transform:translate(-50%,-50%)를 쓰므로
+   left/top 에 중심을 넣어야 의도한 위치에 놓인다.
+   (좌상단 좌표를 넣어 버튼이 절반씩 밀리고 화면 밖으로 잘리는 버그가 있었다) */
 function computeButtonLayout(W, H, lh){
   const pads = padRects(W, H, lh);
-  // 각 패드 위쪽 2열 — 패드 폭 안에서 좌우로 나눈다
-  const fL = pads.fire.x + pads.fire.w*0.24;
+  // 사격 패드 위 2열
+  const fL = pads.fire.x + pads.fire.w*0.26;
   const fR = pads.fire.x + pads.fire.w*0.76;
-  const mL = pads.move.x + pads.move.w*0.26;
-  const mR = pads.move.x + pads.move.w*0.74;
-  // 미니맵·알약(우상단)과 겹치지 않도록 최소 y 확보
+  // 이동 패드 위 2열 — 왼쪽이 잘리지 않도록 안쪽으로 당긴다
+  const mL = pads.move.x + pads.move.w*0.34;
+  const mR = pads.move.x + pads.move.w*0.86;
   const MIN_TOP = 180;
 
   const buttons=[];
   for(const [id,size,zone,bottom,fs] of BTN_SLOTS){
-    const cxp = zone==='fireL' ? fL : (zone==='fireR' ? fR : (zone==='moveL' ? mL : mR));
-    const x = Math.round(Math.max(4, Math.min(W - size - 4, cxp - size/2)));
-    const y = Math.round(Math.max(MIN_TOP, H - bottom - size));
-    buttons.push({id, x, y, w:size, h:size, fs});
+    const raw = zone==='fireL' ? fL : (zone==='fireR' ? fR : (zone==='moveL' ? mL : mR));
+    // 중심 좌표를 화면 안에 유지 (반지름만큼 여유)
+    const cx = Math.round(Math.max(size/2 + 4, Math.min(W - size/2 - 4, raw)));
+    const cy = Math.round(Math.max(MIN_TOP + size/2, H - bottom - size/2));
+    buttons.push({id, cx, cy, w:size, h:size, fs});
   }
-  /* 취소 버튼 — 왼쪽 열 최상단.
-     사격 패드 쪽에 두면 좁은 화면(360x640)에서 야투/열화상 알약과 겹친다. */
-  const cs=54;
+  /* 취소 버튼 — 이동 패드 열 위쪽 (사격 패드 쪽은 좁은 화면에서 알약과 겹친다) */
+  const cw=104, ch=38;
   const cancel = {
-    x: Math.round(Math.max(4, Math.min(W - cs - 4, mL - cs/2))),
-    y: Math.round(Math.max(MIN_TOP - 60, H - 404 - cs)), w:cs, h:cs
+    cx: Math.round(Math.max(cw/2 + 4, Math.min(W - cw/2 - 4, mL + 18))),
+    cy: Math.round(Math.max(MIN_TOP + ch/2, H - 400 - ch/2)), w:cw, h:ch
   };
   return {buttons, cancel, pads};
 }
@@ -896,13 +900,14 @@ function layoutButtons(){
     if(!el)continue;
     el.style.width=b.w+'px'; el.style.height=b.h+'px';
     el.style.fontSize=b.fs+'px';
-    el.style.left=b.x+'px';
-    el.style.top =b.y+'px';
+    // transform:translate(-50%,-50%) 때문에 left/top은 중심이다
+    el.style.left=b.cx+'px';
+    el.style.top =b.cy+'px';
   }
   const cb=document.getElementById('aimCancelBtn');
   if(cb && plan.cancel){
-    cb.style.left = plan.cancel.x + 'px';
-    cb.style.top  = plan.cancel.y + 'px';
+    cb.style.left = plan.cancel.cx + 'px';
+    cb.style.top  = plan.cancel.cy + 'px';
   }
 
   // 토글 알약: 우상단 세로 스택 (미니맵 아래)
@@ -2935,7 +2940,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'4.7.2.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'4.7.3.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
