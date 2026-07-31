@@ -20,37 +20,58 @@
   #msg{position:fixed;top:56px;left:50%;transform:translateX(-50%);color:#fff;font-size:15px;
        background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:6px;display:none;z-index:10;}
   #joyZone{position:fixed;left:0;bottom:0;width:45%;height:45%;display:none;}
-  #joyBase{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.12);
-       border:2px solid rgba(255,255,255,0.3);display:none;}
-  #joyStick{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.5);display:none;}
+  #joyBase{position:absolute;width:110px;height:110px;border-radius:50%;
+       background:repeating-conic-gradient(rgba(255,255,255,0.55) 0deg 1.6deg, transparent 1.6deg 30deg),
+                  radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.1) 60%, transparent 61%);
+       -webkit-mask-image:radial-gradient(circle,black 0%,black 58%,transparent 58.5%,transparent 62%,black 62.5%,black 100%);
+       mask-image:radial-gradient(circle,black 0%,black 58%,transparent 58.5%,transparent 62%,black 62.5%,black 100%);
+       display:none;}
+  #joyStick{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.5);
+       border:2px solid rgba(255,255,255,0.7);display:none;}
+  #joyGuide{position:fixed;left:21px;bottom:21px;width:110px;height:110px;border-radius:50%;
+       background:repeating-conic-gradient(rgba(255,255,255,0.4) 0deg 1.6deg, transparent 1.6deg 30deg),
+                  radial-gradient(circle, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.07) 60%, transparent 61%);
+       -webkit-mask-image:radial-gradient(circle,black 0%,black 58%,transparent 58.5%,transparent 62%,black 62.5%,black 100%);
+       mask-image:radial-gradient(circle,black 0%,black 58%,transparent 58.5%,transparent 62%,black 62.5%,black 100%);
+       display:none;pointer-events:none;z-index:5;}
 
   #fireZone{position:fixed;right:0;bottom:0;width:45%;height:45%;display:none;}
   #fireBase{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,120,80,0.12);
        border:2px solid rgba(255,140,100,0.35);display:none;}
   #fireStick{position:absolute;width:46px;height:46px;border-radius:50%;background:rgba(255,140,100,0.55);display:none;
        align-items:center;justify-content:center;font-size:18px;}
+  #fireGuide{position:fixed;right:26px;bottom:26px;width:90px;height:90px;border-radius:50%;
+       background:rgba(255,140,100,0.07);border:2px dashed rgba(255,160,120,0.28);display:none;
+       align-items:center;justify-content:center;font-size:20px;pointer-events:none;z-index:5;}
+
+  #interactBtn{position:fixed;right:22px;bottom:130px;width:66px;height:66px;border-radius:50%;
+       background:rgba(255,205,110,0.22);border:2px solid rgba(255,220,150,0.55);color:#fff;font-size:11px;
+       display:none;align-items:center;justify-content:center;text-align:center;z-index:44;user-select:none;}
 
   #btns{position:fixed;right:8px;bottom:10px;display:none;flex-direction:column;gap:8px;align-items:flex-end;z-index:43;}
   .btn{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
        color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.15;}
   .btn:active{background:rgba(255,255,255,0.35);}
-  #btnNVG{background:rgba(120,220,140,0.2);}
-  #btnThermal{background:rgba(230,140,80,0.2);}
+  #miniAbilityBtns{position:fixed;right:20px;bottom:208px;display:none;flex-direction:row;gap:6px;z-index:43;}
+  .miniBtn2{width:38px;height:38px;border-radius:50%;font-size:7.5px;border:1.5px solid rgba(255,255,255,0.45);
+       color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.1;}
+  #btnNVG{background:rgba(120,220,140,0.28);}
+  #btnThermal{background:rgba(230,140,80,0.28);}
 
-  #throwBtn{position:fixed;right:16px;top:44%;width:60px;height:60px;border-radius:50%;
+  #throwBtn{position:fixed;right:26px;bottom:258px;width:60px;height:60px;border-radius:50%;
        background:rgba(230,220,120,0.22);border:2px solid rgba(255,220,140,0.5);color:#fff;font-size:11px;
        display:none;align-items:center;justify-content:center;text-align:center;z-index:42;user-select:none;}
-  #throwWheel{position:fixed;right:16px;top:44%;width:1px;height:1px;display:none;z-index:41;}
+  #throwWheel{position:fixed;right:26px;bottom:258px;width:1px;height:1px;display:none;z-index:41;}
   .throwOpt{position:absolute;width:64px;height:64px;margin-left:-32px;margin-top:-32px;border-radius:50%;
        background:rgba(20,20,24,0.85);border:2px solid rgba(255,255,255,0.35);color:#ddd;font-size:10.5px;
        display:flex;align-items:center;justify-content:center;text-align:center;transition:transform 0.1s,background 0.1s;}
   .throwOpt.sel{background:rgba(255,205,110,0.85);color:#111;border-color:#fff;transform:scale(1.18);font-weight:bold;}
   #slowMoVignette{position:fixed;inset:0;pointer-events:none;display:none;z-index:39;
        box-shadow:inset 0 0 80px 30px rgba(80,60,20,0.55);}
-  #gearBtn{position:fixed;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);
-       border:1px solid rgba(255,255,255,0.4);color:#fff;display:none;align-items:center;justify-content:center;font-size:16px;cursor:pointer;z-index:40;}
-  #pauseBtn{position:fixed;top:8px;right:48px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);
-       border:1px solid rgba(255,255,255,0.4);color:#fff;display:none;align-items:center;justify-content:center;font-size:14px;cursor:pointer;z-index:40;}
+  #gearBtn{position:fixed;top:10px;right:180px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.18);
+       border:1px solid rgba(255,255,255,0.45);color:#fff;display:none;align-items:center;justify-content:center;font-size:17px;cursor:pointer;z-index:60;}
+  #pauseBtn{position:fixed;top:10px;right:224px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.18);
+       border:1px solid rgba(255,255,255,0.45);color:#fff;display:none;align-items:center;justify-content:center;font-size:15px;cursor:pointer;z-index:60;}
 
   #loadingOverlay{position:fixed;inset:0;background:#0a0a0f;display:flex;flex-direction:column;align-items:center;
        justify-content:center;z-index:300;}
@@ -134,6 +155,17 @@
   .key{padding:12px 0;background:rgba(255,255,255,0.1);border:1px solid #555;border-radius:6px;text-align:center;
        color:#fff;font-size:16px;cursor:pointer;}
   .puzzleErr{color:#ff6a6a;font-size:12.5px;text-align:center;min-height:16px;margin-top:6px;}
+
+  .shopCard{border:1px solid #4a4536;border-radius:8px;padding:12px;margin:10px 0;background:rgba(255,255,255,0.03);}
+  .shopCardHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .shopCardHead b{font-size:14px;color:#f4eddc;}
+  .shopFreeTag{font-size:10.5px;background:rgba(120,220,140,0.25);color:#8fe0a0;border:1px solid rgba(140,230,160,0.5);
+       padding:2px 7px;border-radius:10px;white-space:nowrap;}
+  .shopDesc{font-size:12px;color:#bbb;margin-bottom:8px;}
+  .gaugeRow{display:flex;align-items:center;gap:8px;margin:4px 0;}
+  .gaugeLabel{font-size:11px;color:#999;width:44px;flex-shrink:0;}
+  .gaugeTrack{flex:1;height:8px;background:#2a2a24;border-radius:4px;overflow:hidden;}
+  .gaugeFill{height:100%;border-radius:4px;}
 </style>
 </head>
 <body>
@@ -154,13 +186,16 @@
 <div id="gearBtn">⚙</div>
 <div id="pauseBtn">⏸</div>
 
+<div id="joyGuide"></div>
 <div id="joyZone">
   <div id="joyBase"></div>
   <div id="joyStick"></div>
 </div>
+<div id="miniAbilityBtns">
+  <div class="miniBtn2" id="btnNVG">야간투시</div>
+  <div class="miniBtn2" id="btnThermal">열화상</div>
+</div>
 <div id="btns">
-  <div class="btn" id="btnNVG">야간투시</div>
-  <div class="btn" id="btnThermal">열화상</div>
   <div class="btn" id="btnCrouch">웅크리기</div>
 </div>
 
@@ -173,6 +208,8 @@
   <div class="throwOpt" id="opt-stun" data-type="stun">기절탄</div>
 </div>
 
+<div id="interactBtn">상호<br>작용</div>
+<div id="fireGuide">🔫</div>
 <div id="fireZone">
   <div id="fireBase"></div>
   <div id="fireStick">🔫</div>
@@ -193,7 +230,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.8.0.0</div>
+  <div id="verText">Ver 1.11.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -207,6 +244,7 @@
 
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
+  <div class="menuBtn" id="btnShop">상점</div>
   <div class="menuBtn" id="btnAch">업적</div>
   <div class="menuBtn" id="btnHistory">기록</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -218,7 +256,7 @@
     <ul>
       <li>좌측 하단 원형 조이스틱: 이동. 살짝 당기면 걷기(조용), 끝까지 당기면 뛰기(빠르지만 발소리 큼)</li>
       <li>우측 하단 원형 조이스틱(총 아이콘): 조준+사격. 이동 조이스틱과 완전히 독립적이라, 걸어가는 방향과 다른 방향으로 조준/사격 가능. 손을 떼는 순간 그 방향으로 발사됨</li>
-      <li>단, 조준 방향 근처에 적/미션 단말기/시체/은신 가구가 있으면 사격 대신 그것과 상호작용(처치·상호작용·은닉)이 우선 처리됨</li>
+      <li>상호작용 버튼(사격 조이스틱 위): 근접한 적 처치, 미션 단말기 상호작용, 시체 은닉, 은신처 진입/탈출</li>
       <li>기본 시야는 조준 방향 기준 손전등 형태 - 정면은 넓고 밝게, 후방은 좁고 어둡게, 멀수록 점점 어두워짐</li>
       <li>웅크리기: 이동이 느려지지만 은신에 유리. 좁은 환기구는 웅크려야 통과. 책상/식탁 등 앞에서 웅크린 채 조준-상호작용하면 안에 숨을 수 있음</li>
       <li>초록 레이저(플레이어만 보임)가 조준 방향을 알려줌. 못 맞혀도 총알이 근처를 스치면 높은 확률로 적이 눈치챔</li>
@@ -227,7 +265,10 @@
       <li>정면 기습(칼) 처치는 비명을 질러 근처 적이 조사하러 옴 - 후방 조르기는 완전히 조용함</li>
       <li>야간투시경: 10초간 화면 전체가 또렷하게 보임(녹색 톤), 이후 재사용 대기시간 필요</li>
       <li>열화상: 10초간 적의 위치가 벽 너머에서도 빛나 보임. 야간투시경과 동시 사용 가능</li>
-      <li>경비견은 벽/각도 상관없이 냄새로 근접한 플레이어를 감지함 - 조심할 것</li>
+      <li>경비견은 벽/각도 상관없이 냄새로 근접한 플레이어를 감지함, 발소리도 훨씬 잘 들음 - 조심할 것</li>
+      <li>발각된 경비 중 일부는 원거리 무기 소지 - 테이저는 맞으면 잠시 마비, 총은 맞으면 그 자리에서 체크포인트로 되돌아감. 삼단봉 경비는 원거리 공격은 없지만 발각 시 훨씬 빠르게 쫓아옴</li>
+      <li>시작화면 '상점'에서 무기를 장착할 수 있음(전부 베타 무료) - 무기마다 사거리·정확도·연사력·소리가 다름</li>
+      <li>난이도(쉬움/보통/어려움)에 따라 등장하는 경비 수가 달라짐</li>
       <li>침대/책상 위에 놓인 쪽지에 암호가 적혀있음(매 판마다 랜덤) - 해당 단말기 미션에서 그 숫자를 입력</li>
       <li>시체를 다른 적이 발견하면 알람. 발각되면 수색 시작, 잡히면 체크포인트에서 재시작</li>
       <li>일시정지 버튼(⏸)으로 언제든 멈출 수 있음</li>
@@ -289,6 +330,15 @@
     <div class="menuBtn" id="btnRestartCheckpoint" style="width:100%;">체크포인트에서 재시작</div>
     <div class="menuBtn" id="btnPauseSettings" style="width:100%;">설정</div>
     <div class="menuBtn" id="btnPauseHow" style="width:100%;">플레이 방법</div>
+    <div class="menuBtn" id="btnGoHome" style="width:100%;border-color:rgba(255,110,110,0.6);">홈 화면으로 나가기</div>
+  </div>
+</div>
+<div class="modal" id="shopModal">
+  <div class="modalBox">
+    <h2>상점</h2>
+    <p style="text-align:center;color:#999;font-size:12px;">정식 출시 이후 유료 예정 - 지금은 모두 무료(베타 테스트)로 미리보기만 가능해요</p>
+    <div id="shopList"></div>
+    <div class="closeBtn" id="closeShop">닫기</div>
   </div>
 </div>
 <div class="modal" id="achModal">
@@ -307,13 +357,16 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 1.8.0.0)</h2>
+    <h2>업데이트 안내 (Ver 1.11.0.0)</h2>
     <ul>
-      <li>조작 체계 전면 개편: 이동/사격이 완전히 독립된 트윈스틱 방식으로 변경</li>
-      <li>처치/상호작용 버튼 삭제 - 조준 방향에 있는 대상과 자동으로 상호작용</li>
-      <li>유인/연막탄/기절탄 버튼을 '투척물' 버튼 하나로 통합, 꾹 눌러 슬로우모션 휠에서 선택</li>
-      <li>신규 투척물: 수류탄(즉사+광역알람), 크레모아(근접감지 폭발), 끈끈이(이동봉쇄)</li>
-      <li>이동 조이스틱을 당긴 정도에 따라 걷기/뛰기 속도 차등 적용</li>
+      <li>상호작용을 사격과 다시 분리 - 전용 버튼 신설 (사격 조이스틱 위)</li>
+      <li>사격 조이스틱은 순수 사격 전용으로 - 짧게 탭해도 한 발 발사됨</li>
+      <li>이동 조이스틱을 나침반 스타일(방위 눈금)로 변경</li>
+      <li>처치 연출 대폭 강화 - 팔다리·피웅덩이·떨어뜨린 무기까지 디테일한 시체, 핏방울도 더 크고 많이 튐</li>
+      <li>일시정지·설정 버튼을 미니맵 왼쪽으로 이동 (눌리지 않던 문제 수정)</li>
+      <li>시체 은닉 판정 버그 수정 - 이제 확실하게 발각 안 됨</li>
+      <li>상점 무기 실제 장착 가능 - 무기마다 사거리/정확도/연사력/발사음이 실제로 다름 (미니건 "타다닷", 샷건 "퍼엉", 석궁 "픅")</li>
+      <li>삼단봉을 든 경비 추가 - 원거리 공격은 없지만 발각 시 훨씬 빠르게 추격</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -371,13 +424,10 @@ function resize(){
   fogCanvas.width=canvas.width; fogCanvas.height=canvas.height;
 }
 resize(); window.addEventListener('resize',resize);
+document.addEventListener('fullscreenchange', resize);
+document.addEventListener('orientationchange', ()=>setTimeout(resize,150));
 
 function tryLockLandscape(){
-  try{
-    if(document.documentElement.requestFullscreen){
-      document.documentElement.requestFullscreen().catch(()=>{});
-    }
-  }catch(e){}
   try{
     if(screen.orientation && screen.orientation.lock){
       screen.orientation.lock('landscape').catch(()=>{});
@@ -414,14 +464,14 @@ const walls = [
 
 const decor = [
   {type:'bookshelf',x:35,y:35,w:50,h:100},
-  {type:'bed',x:30,y:380,w:90,h:150,solid:true},
+  {type:'bed',x:30,y:380,w:90,h:150,solid:true,hideable:true},
   {type:'nightstand',x:135,y:390,w:26,h:30},
   {type:'note',x:132,y:378,w:22,h:14,text:'472',rot:-0.18},
   {type:'rug',x:45,y:160,w:120,h:80,color:'#7a5a4a'},
   {type:'plant',x:170,y:555,r:16},
   {type:'closet',x:150,y:40,w:40,h:70,solid:true,isHidingSpot:true},
 
-  {type:'sofa',x:40,y:650,w:150,h:55,solid:true},
+  {type:'sofa',x:40,y:650,w:150,h:55,solid:true,hideable:true},
   {type:'coffeeTable',x:230,y:672,w:64,h:40},
   {type:'tv',x:340,y:625,w:70,h:14},
   {type:'rug',x:40,y:730,w:170,h:100,color:'#5a6a56'},
@@ -452,12 +502,12 @@ const decor = [
 
   // 동쪽 확장동 - 라운지(TV룸)
   {type:'tv',x:1600,y:35,w:160,h:16},
-  {type:'sofa',x:1440,y:120,w:180,h:55,solid:true},
-  {type:'sofa',x:1700,y:120,w:180,h:55,solid:true},
+  {type:'sofa',x:1440,y:120,w:180,h:55,solid:true,hideable:true},
+  {type:'sofa',x:1700,y:120,w:180,h:55,solid:true,hideable:true},
   {type:'lamp',x:1960,y:60,r:8},
 
   // 동쪽 확장동 - 침실2
-  {type:'bed',x:1580,y:680,w:90,h:150,solid:true},
+  {type:'bed',x:1580,y:680,w:90,h:150,solid:true,hideable:true},
   {type:'nightstand',x:1685,y:690,w:26,h:30},
   {type:'bookshelf',x:1900,y:560,w:60,h:90},
   {type:'lamp',x:1450,y:900,r:8},
@@ -483,11 +533,45 @@ const decor = [
   {type:'clock',x:300,y:20,r:11},
   {type:'shoeRack',x:60,y:230,w:50,h:20},
   {type:'clock',x:1950,y:40,r:11},
-  {type:'mirror',x:1960,y:700,w:8,h:56}
+  {type:'mirror',x:1960,y:700,w:8,h:56},
+
+  // 추가 채움 - 침실
+  {type:'wardrobe',x:150,y:460,w:44,h:70,solid:true},
+
+  // 추가 채움 - 거실
+  {type:'floorLamp',x:380,y:640,r:9},
+  {type:'plant',x:250,y:960,r:16},
+  {type:'bookshelf',x:270,y:630,w:50,h:80},
+
+  // 추가 채움 - 주방/식당
+  {type:'floorLamp',x:560,y:400,r:9},
+  {type:'wardrobe',x:220,y:900,w:44,h:70,solid:true},
+
+  // 추가 채움 - 서재
+  {type:'rug',x:660,y:610,w:180,h:120,color:'#5a5040'},
+  {type:'wardrobe',x:870,y:200,w:44,h:70,solid:true},
+  {type:'floorLamp',x:900,y:900,r:9},
+
+  // 추가 채움 - Room D
+  {type:'bookshelf',x:960,y:750,w:60,h:90},
+  {type:'floorLamp',x:1340,y:700,r:9},
+
+  // 추가 채움 - 동쪽 확장동 라운지/침실2
+  {type:'coffeeTable',x:1620,y:220,w:70,h:40},
+  {type:'rug',x:1440,y:190,w:440,h:130,color:'#4a5648'},
+  {type:'mirror',x:1420,y:820,w:8,h:56},
+  {type:'rug',x:1560,y:660,w:200,h:170,color:'#5a4a3a'},
+
+  // 추가 채움 - 남쪽 연회장/파티오
+  {type:'wardrobe',x:800,y:1050,w:44,h:70,solid:true},
+  {type:'bookshelf',x:250,y:1420,w:60,h:90},
+  {type:'bench',x:1650,y:1400,w:80,h:20},
+  {type:'floorLamp',x:1550,y:1150,r:9},
+  {type:'plant',x:1700,y:1300,r:16}
 ];
 const furnitureSolids = decor.filter(d=>d.solid).map(d=>({x:d.x,y:d.y,w:d.w,h:d.h}));
 const solidRects = walls.concat(furnitureSolids);
-const lamps = decor.filter(d=>d.type==='lamp');
+const lamps = decor.filter(d=>d.type==='lamp' || d.type==='floorLamp');
 const hidingSpots = decor.filter(d=>d.isHidingSpot);
 const hideableFurn = decor.filter(d=>d.hideable);
 
@@ -500,7 +584,15 @@ const missions = [
 let missionsComplete=false;
 let puzzleActive=null;
 
-let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,aimAngle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0};
+let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,aimAngle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0,stunnedTimer:0,weapon:'pistol'};
+
+const WEAPON_DEFS = {
+  pistol:   {name:'소음기 권총', sound:'playSuppressedShot', range:420, tolerance:4,  autoRate:0.22, nonLethal:false},
+  minigun:  {name:'미니건',      sound:'playMinigunShot',    range:380, tolerance:8,  autoRate:0.08, nonLethal:false},
+  taserGun: {name:'테이져건',    sound:'playTaserZap',       range:260, tolerance:5,  autoRate:0.5,  nonLethal:true},
+  crossbow: {name:'석궁',        sound:'playCrossbowShot',   range:460, tolerance:3,  autoRate:0.9,  nonLethal:false},
+  shotgun:  {name:'샷건',        sound:'playShotgunShot',    range:190, tolerance:11, autoRate:0.5,  nonLethal:false}
+};
 
 function makeGuard(opts){
   const rank = opts.rank || 'rookie';
@@ -517,27 +609,32 @@ function makeGuard(opts){
     hair: opts.hair || '#3a2a1e', bandana: !!opts.bandana,
     dieTimer:0, dieType:null, stepAccum:0,
     idleSoundTimer:6+Math.random()*8,
-    rank, hearMul: rank==='veteran'?1.25:0.75,
+    rank, hearMul: opts.isDog ? 2.4 : (rank==='veteran'?1.25:0.75),
     stunned:false, stunTimer:0,
     activity: opts.activity || null,
     buddyId: opts.buddyId,
     buddyAlertDone:false, buddyMissTimer:0,
     isDog: !!opts.isDog,
-    stuck:false, stuckTimer:0
+    stuck:false, stuckTimer:0,
+    weapon: opts.weapon || null,
+    shootCooldown: 0.6+Math.random()*0.6,
+    shootRange: opts.shootRange || 260,
+    essential: !!opts.essential
   };
 }
 
-const enemies = [
-  // ---- 순찰 경비 5명 ----
-  makeGuard({x:350,y:440,state:'patrol',rank:'rookie',hair:'#3a2a1e',
+function buildEnemyRoster(){
+return [
+  // ---- 순찰 경비 5명 (무기: 총/테이저 배정) ----
+  makeGuard({x:350,y:440,state:'patrol',rank:'rookie',hair:'#3a2a1e',weapon:'taser',essential:true,
     path:[{x:250,y:440},{x:250,y:560},{x:560,y:560},{x:560,y:440}], buddyId:1}),
-  makeGuard({x:1050,y:300,state:'patrol',rank:'veteran',bandana:true,hair:'#555',
+  makeGuard({x:1050,y:300,state:'patrol',rank:'veteran',bandana:true,hair:'#555',weapon:'gun',essential:true,
     path:[{x:1050,y:120},{x:1300,y:120},{x:1300,y:600},{x:1050,y:600}], buddyId:0}),
-  makeGuard({x:1450,y:60,state:'patrol',rank:'rookie',hair:'#4a3a28',
+  makeGuard({x:1450,y:60,state:'patrol',rank:'rookie',hair:'#4a3a28',weapon:'gun',
     path:[{x:1450,y:60},{x:1450,y:450},{x:1950,y:450},{x:1950,y:60}]}),
-  makeGuard({x:60,y:1050,state:'patrol',rank:'veteran',bandana:true,hair:'#333',
+  makeGuard({x:60,y:1050,state:'patrol',rank:'veteran',bandana:true,hair:'#333',weapon:'taser',
     path:[{x:60,y:1050},{x:60,y:1450},{x:850,y:1450},{x:850,y:1050}]}),
-  makeGuard({x:950,y:1050,state:'patrol',rank:'rookie',hair:'#2a2015',
+  makeGuard({x:950,y:1050,state:'patrol',rank:'rookie',hair:'#2a2015',weapon:'baton',
     path:[{x:950,y:1050},{x:950,y:1450},{x:1950,y:1450},{x:1950,y:1050}]}),
 
   // ---- 라운지에서 TV 보는 4명 ----
@@ -566,11 +663,38 @@ const enemies = [
   makeGuard({x:1450,y:1200,angle:-2.6,state:'idle',activity:'chat',visionRange:75,visionAngle:90,hair:'#555'}),
 
   // ---- 경비견 2마리 (후각 탐지, 근접 반경 안이면 벽/각도 무관하게 눈치챔) ----
-  makeGuard({x:500,y:900,state:'patrol',isDog:true,
+  makeGuard({x:500,y:900,state:'patrol',isDog:true,essential:true,
     path:[{x:500,y:900},{x:500,y:1050},{x:750,y:1050},{x:750,y:900}]}),
   makeGuard({x:1250,y:250,state:'patrol',isDog:true,
-    path:[{x:1250,y:250},{x:1250,y:420},{x:1950,y:420},{x:1950,y:250}]})
+    path:[{x:1250,y:250},{x:1250,y:420},{x:1950,y:420},{x:1950,y:250}]}),
+
+  // ---- 어려움 난이도 전용 추가 인원 (hardOnly) ----
+  Object.assign(makeGuard({x:260,y:700,state:'patrol',rank:'rookie',hair:'#4a3a28',weapon:'gun',
+    path:[{x:260,y:700},{x:260,y:950},{x:560,y:950},{x:560,y:700}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1100,y:700,state:'patrol',rank:'veteran',bandana:true,hair:'#333',weapon:'baton',
+    path:[{x:1100,y:700},{x:1100,y:900},{x:1300,y:900},{x:1300,y:700}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1100,y:1150,state:'patrol',isDog:true,
+    path:[{x:1100,y:1150},{x:1100,y:1350},{x:1400,y:1350},{x:1400,y:1150}]}), {hardOnly:true})
 ];
+}
+
+/* 난이도에 따라 적 구성을 다르게 필터링/구성 */
+function applyDifficulty(roster, diff){
+  let list = roster.filter(en => !en.hardOnly);
+  if(diff==='easy'){
+    // 필수 인원(원년 버디 2명 + 경비견 1마리)은 남기고, 정지 NPC와 나머지 순찰 일부를 솎아냄
+    const idleList = list.filter(en=>en.state==='idle');
+    const otherList = list.filter(en=>en.state!=='idle');
+    const keepIdle = idleList.filter((en,i)=> en.essential || i%2===0); // 정지 NPC 절반만
+    const keepOther = otherList.filter(en=> en.essential || en.isDog || Math.random()<0.6);
+    list = [...keepOther, ...keepIdle];
+  } else if(diff==='hard'){
+    list = roster.slice(); // hardOnly 포함 전체 로스터 유지
+  }
+  return list;
+}
+
+let enemies = buildEnemyRoster();
 
 let corpses = [];
 let clouds = [];
@@ -601,7 +725,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko'};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '1.8.0.0';
+const GAME_VERSION = '1.11.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 let pauseActive=false;
@@ -749,6 +873,25 @@ function playSuppressedShot(volScale){
   playNoise(0.05, 0.10*volScale, 3200, 'highpass');
   playNoise(0.09, 0.06*volScale, 260, 'lowpass');
 }
+function playMinigunShot(volScale){
+  playNoise(0.07, 0.30*volScale, 1800, 'bandpass');
+  playNoise(0.05, 0.22*volScale, 400, 'lowpass');
+}
+function playShotgunShot(volScale){
+  playNoise(0.22, 0.42*volScale, 220, 'lowpass');
+  playNoise(0.1, 0.24*volScale, 1600, 'bandpass');
+}
+function playCrossbowShot(volScale){
+  playNoise(0.045, 0.08*volScale, 2200, 'bandpass');
+}
+function playEnemyGunshot(volScale){
+  playNoise(0.18, 0.32*volScale, 200, 'lowpass');
+  playNoise(0.08, 0.22*volScale, 2800, 'highpass');
+}
+function playTaserZap(volScale){
+  playNoise(0.22, 0.24*volScale, 1400, 'bandpass');
+  playTone(90, 0.2, 0.12*volScale, 'sawtooth');
+}
 function vibrate(pattern){
   if(!navigator.vibrate) return;
   if(settings.vibeLevel==='off') return;
@@ -818,7 +961,8 @@ document.querySelectorAll('.diffBtn').forEach(btn=>{
 const TUTORIAL_STEPS = [
   '좌측 조이스틱으로 이동해요. 살짝 당기면 걷고, 끝까지 당기면 뛰어요.',
   '우측 조이스틱(총 모양)을 드래그해서 조준하고 손을 떼면 그 방향으로 발사돼요. 이동과 완전히 독립적이라 걸으면서 다른 방향도 조준할 수 있어요.',
-  '조준 방향 근처에 적/미션/시체/은신 가구가 있으면 사격 대신 자동으로 상호작용해요.',
+  '조준 방향으로 사격해요. 짧게 탭하면 한 발, 드래그한 채 있으면 연발돼요.',
+  '상호작용 버튼(사격 조이스틱 위 노란 버튼)으로 근접한 적 처치, 미션, 시체 은닉, 은신처 진입/탈출을 해요.',
   '우측의 "투척물" 버튼을 꾹 누르면 시간이 느려지며 5가지 투척물 휠이 떠요. 손가락을 원하는 방향으로 움직여 선택하세요.',
   '화면 오른쪽 위 미니맵으로 적과 미션 위치를 확인하세요. ⏸ 버튼으로 언제든 일시정지할 수 있어요.'
 ];
@@ -857,10 +1001,21 @@ document.getElementById('btnStart').addEventListener('click',()=>{
   stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
   THROW_TYPES.forEach(t=>{ charges[t] = maxChargesFor(t); });
   randomizeMissionCodes();
+  enemies = applyDifficulty(buildEnemyRoster(), difficulty);
+  enemies.forEach((e,i)=>e._id=i);
+  player.x=checkpoint.x; player.y=checkpoint.y; player.angle=0; player.aimAngle=0;
+  player.crouch=false; player.hiddenIn=null; player.stunnedTimer=0;
+  corpses=[]; clouds=[]; bullets=[]; traps=[]; particles=[]; textParticles=[]; decoys=[];
+  alarmRaised=false; actionLock=null; caught=false; missionsComplete=false;
+  missions.forEach(m=>m.done=false);
   startOverlay.style.display='none';
   document.getElementById('hud').style.display='block';
   document.getElementById('joyZone').style.display='block';
+  document.getElementById('joyGuide').style.display='block';
   document.getElementById('fireZone').style.display='block';
+  document.getElementById('fireGuide').style.display='flex';
+  document.getElementById('miniAbilityBtns').style.display='flex';
+  document.getElementById('interactBtn').style.display='flex';
   document.getElementById('throwBtn').style.display='flex';
   document.getElementById('btns').style.display='flex';
   document.getElementById('gearBtn').style.display='flex';
@@ -901,19 +1056,29 @@ document.getElementById('handToggle').addEventListener('click',()=>{
   settings.leftHanded=!settings.leftHanded;
   document.getElementById('handToggle').textContent = settings.leftHanded?'ON':'OFF';
   const jz=document.getElementById('joyZone'), fz=document.getElementById('fireZone'), bt=document.getElementById('btns'),
-        tb=document.getElementById('throwBtn'), tw=document.getElementById('throwWheel');
+        tb=document.getElementById('throwBtn'), tw=document.getElementById('throwWheel'),
+        jg=document.getElementById('joyGuide'), fg=document.getElementById('fireGuide'),
+        mb=document.getElementById('miniAbilityBtns'), ib=document.getElementById('interactBtn');
   if(settings.leftHanded){
     jz.style.left='auto'; jz.style.right='0';
     fz.style.left='0'; fz.style.right='auto';
+    jg.style.left='auto'; jg.style.right='21px';
+    fg.style.left='26px'; fg.style.right='auto';
     bt.style.right='auto'; bt.style.left='8px';
-    tb.style.right='auto'; tb.style.left='16px';
-    tw.style.right='auto'; tw.style.left='16px';
+    tb.style.right='auto'; tb.style.left='26px';
+    tw.style.right='auto'; tw.style.left='26px';
+    mb.style.right='auto'; mb.style.left='20px';
+    ib.style.right='auto'; ib.style.left='22px';
   } else {
     jz.style.right='auto'; jz.style.left='0';
     fz.style.right='0'; fz.style.left='auto';
+    jg.style.right='auto'; jg.style.left='21px';
+    fg.style.right='26px'; fg.style.left='auto';
     bt.style.left='auto'; bt.style.right='8px';
-    tb.style.left='auto'; tb.style.right='16px';
-    tw.style.left='auto'; tw.style.right='16px';
+    tb.style.left='auto'; tb.style.right='26px';
+    tw.style.left='auto'; tw.style.right='26px';
+    mb.style.left='auto'; mb.style.right='20px';
+    ib.style.left='auto'; ib.style.right='22px';
   }
 });
 
@@ -934,8 +1099,51 @@ document.getElementById('btnRestartCheckpoint').addEventListener('click',()=>{
 });
 document.getElementById('btnPauseSettings').addEventListener('click',()=>{document.getElementById('settingsModal').style.display='flex';});
 document.getElementById('btnPauseHow').addEventListener('click',()=>{document.getElementById('howModal').style.display='flex';});
+document.getElementById('btnGoHome').addEventListener('click',()=>{
+  location.reload();
+});
 
 /* ===================== 업적 / 기록 ===================== */
+/* ===================== 상점 (실제 장착 가능, 사운드/사거리/정확도 반영) ===================== */
+const SHOP_WEAPONS = [
+  {key:'pistol', name:'소음기 권총 (기본)', desc:'가장 조용하고 균형 잡힌 기본 화기. 항상 무료', dmg:45, acc:75, rate:50},
+  {key:'minigun', name:'미니건', desc:'초당 발사속도가 압도적인 연사형 화기. 대신 정확도가 낮아 근~중거리에서 유리함', dmg:60, acc:35, rate:95},
+  {key:'taserGun', name:'테이저건', desc:'비살상 무기. 명중 시 적을 잠시 마비시킴(처치 대신 기절). 위력은 약하지만 소음이 거의 없음', dmg:20, acc:70, rate:40},
+  {key:'crossbow', name:'석궁', desc:'매우 조용하고 정확하지만 발사 속도가 느림. 원거리 저격에 특화', dmg:90, acc:85, rate:20},
+  {key:'shotgun', name:'샷건', desc:'근거리에서 압도적인 화력, 원거리에서는 명중률이 급격히 떨어짐', dmg:85, acc:45, rate:55}
+];
+function gaugeBar(label,val,color){
+  return '<div class="gaugeRow"><div class="gaugeLabel">'+label+'</div><div class="gaugeTrack">'+
+    '<div class="gaugeFill" style="width:'+val+'%;background:'+color+';"></div></div></div>';
+}
+function renderShop(){
+  const list=document.getElementById('shopList');
+  list.innerHTML = SHOP_WEAPONS.map(w=>
+    '<div class="shopCard">'+
+      '<div class="shopCardHead"><b>'+w.name+'</b><span class="shopFreeTag">무료 (베타 테스트)</span></div>'+
+      '<div class="shopDesc">'+w.desc+'</div>'+
+      gaugeBar('피해량',w.dmg,'#e05050')+
+      gaugeBar('정확도',w.acc,'#5ecbe8')+
+      gaugeBar('연사력',w.rate,'#e8d060')+
+      '<div class="closeBtn" data-weapon="'+w.key+'" style="margin-top:10px;'+
+        (player.weapon===w.key?'background:rgba(255,205,110,0.3);border-color:#ffcf6e;':'')+'">'+
+        (player.weapon===w.key?'장착됨':'장착하기')+'</div>'+
+    '</div>'
+  ).join('');
+  list.querySelectorAll('[data-weapon]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      player.weapon = btn.dataset.weapon;
+      showMsg((WEAPON_DEFS[player.weapon]||WEAPON_DEFS.pistol).name+' 장착');
+      renderShop();
+    });
+  });
+}
+document.getElementById('btnShop').addEventListener('click',()=>{
+  renderShop();
+  document.getElementById('shopModal').style.display='flex';
+});
+document.getElementById('closeShop').addEventListener('click',()=>{document.getElementById('shopModal').style.display='none';});
+
 document.getElementById('btnAch').addEventListener('click',()=>{
   const unlocked = JSON.parse(localStorage.getItem('stealthOpsAch')||'[]');
   const list = document.getElementById('achList');
@@ -991,7 +1199,7 @@ function applyLanguage(){
 /* ===================== 가상 조이스틱 (이동) ===================== */
 const joyZone=document.getElementById('joyZone'),joyBase=document.getElementById('joyBase'),joyStick=document.getElementById('joyStick');
 let joy = {active:false,dx:0,dy:0,startX:0,startY:0};
-function joyStart(x,y){joy.active=true;joy.startX=x;joy.startY=y;joyBase.style.left=(x-50)+'px';joyBase.style.top=(y-50)+'px';
+function joyStart(x,y){joy.active=true;joy.startX=x;joy.startY=y;joyBase.style.left=(x-55)+'px';joyBase.style.top=(y-55)+'px';
   joyStick.style.left=(x-22)+'px';joyStick.style.top=(y-22)+'px';joyBase.style.display='block';joyStick.style.display='block';}
 function joyMove(x,y){if(!joy.active)return;let dx=x-joy.startX,dy=y-joy.startY;const max=50;
   const dist=Math.hypot(dx,dy);if(dist>max){dx=dx/dist*max;dy=dy/dist*max;}
@@ -1008,6 +1216,8 @@ window.addEventListener('mouseup',()=>{mouseDown=false;joyEnd();});
 let crouchHeld=false;
 document.getElementById('btnCrouch').addEventListener('touchstart',e=>{e.preventDefault();crouchHeld=!crouchHeld;});
 document.getElementById('btnCrouch').addEventListener('click',()=>{crouchHeld=!crouchHeld;});
+document.getElementById('interactBtn').addEventListener('touchstart',e=>{e.preventDefault();tryInteract();});
+document.getElementById('interactBtn').addEventListener('click',()=>{tryInteract();});
 
 document.getElementById('btnNVG').addEventListener('click',()=>{
   if(!nvgActive && nvgCooldown<=0){ nvgActive=true; nvgTimer=10; playNVGSound(); }
@@ -1018,10 +1228,11 @@ document.getElementById('btnThermal').addEventListener('click',()=>{
 
 /* ===================== 사격 조이스틱 (조준+발사, 이동과 독립) ===================== */
 const fireZone=document.getElementById('fireZone'),fireBase=document.getElementById('fireBase'),fireStick=document.getElementById('fireStick');
-let fireJoy = {active:false,startX:0,startY:0};
+const FIRE_AUTO_RATE = 0.22;
+let fireJoy = {active:false,startX:0,startY:0,dragged:false,fireAccum:0};
 function fireStart(x,y){
   if(!gameStarted || caught || puzzleActive || pauseActive) return;
-  fireJoy.active=true; fireJoy.startX=x; fireJoy.startY=y;
+  fireJoy.active=true; fireJoy.startX=x; fireJoy.startY=y; fireJoy.dragged=false; fireJoy.fireAccum=0;
   fireBase.style.left=(x-50)+'px'; fireBase.style.top=(y-50)+'px';
   fireStick.style.left=(x-23)+'px'; fireStick.style.top=(y-23)+'px';
   fireBase.style.display='flex'; fireStick.style.display='flex';
@@ -1030,15 +1241,18 @@ function fireMove(x,y){
   if(!fireJoy.active)return;
   let dx=x-fireJoy.startX, dy=y-fireJoy.startY; const max=50;
   const dist=Math.hypot(dx,dy);
-  if(dist>6){ player.aimAngle = Math.atan2(dy,dx); }
+  if(dist>12){ player.aimAngle = Math.atan2(dy,dx); fireJoy.dragged=true; }
   const cdx = dist>max ? dx/dist*max : dx, cdy = dist>max ? dy/dist*max : dy;
   fireStick.style.left=(fireJoy.startX+cdx-23)+'px'; fireStick.style.top=(fireJoy.startY+cdy-23)+'px';
 }
 function fireEnd(){
   if(!fireJoy.active)return;
-  fireJoy.active=false;
+  const wasDragged = fireJoy.dragged;
+  fireJoy.active=false; fireJoy.dragged=false; fireJoy.fireAccum=0;
   fireBase.style.display='none'; fireStick.style.display='none';
-  performActionOrFire(player.aimAngle);
+  if(!wasDragged){
+    handleFire(player.aimAngle); // 짧게 탭해도 현재 조준 방향으로 한 발 발사
+  }
 }
 fireZone.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];fireStart(t.clientX,t.clientY);});
 fireZone.addEventListener('touchmove',e=>{const t=e.touches[0];fireMove(t.clientX,t.clientY);e.preventDefault();},{passive:false});
@@ -1263,6 +1477,10 @@ function updateTraps(dt){
 let caught=false, execTimer=0;
 function updatePlayer(dt){
   if(caught)return;
+  if(player.stunnedTimer>0){
+    player.stunnedTimer -= dt;
+    return;
+  }
   if(actionLock){
     const en=actionLock.enemy;
     if(actionLock.type==='choke'){
@@ -1359,10 +1577,12 @@ function updateEnemy(en,dt){
     const dx=goal.x-en.x, dy=goal.y-en.y, d=Math.hypot(dx,dy);
     if(d>1){
       en.angle=Math.atan2(dy,dx);
-      const nx=en.x+(dx/d)*en.speed, ny=en.y+(dy/d)*en.speed;
+      const spdMul = (en.weapon==='baton' && en.state==='search') ? 1.35 : 1;
+      const curSpeed = en.speed*spdMul;
+      const nx=en.x+(dx/d)*curSpeed, ny=en.y+(dy/d)*curSpeed;
       let blocked=false;
       for(const w of solidRects){if(circleRectCollide(nx,ny,en.r,w)){blocked=true;break;}}
-      if(!blocked){en.x=nx;en.y=ny;moved=en.speed;}
+      if(!blocked){en.x=nx;en.y=ny;moved=curSpeed;}
     }
   } else if(en.state==='search'){
     en.searchTimer-=dt;
@@ -1452,6 +1672,26 @@ function updateEnemy(en,dt){
     }
     if(en.state==='search'){
       if(seen){en.target={x:player.x,y:player.y};en.searchTimer=6*DIFF_MUL[difficulty].alarm;}
+    }
+
+    if(en.state==='search' && (en.weapon==='gun'||en.weapon==='taser') && seen && dist>70 && dist<en.shootRange){
+      en.shootCooldown -= dt;
+      if(en.shootCooldown<=0){
+        en.shootCooldown = en.weapon==='taser' ? 2.2 : 1.5;
+        const acc = clamp(1 - dist/en.shootRange, 0.25, 0.85);
+        bullets.push({x:en.x,y:en.y,tx:player.x,ty:player.y,t:0,dur:0.12});
+        if(en.weapon==='gun'){
+          playEnemyGunshot(clamp(1-dist/500,0.2,1));
+          if(Math.random()<acc){ triggerCaught(); }
+        } else {
+          playTaserZap(clamp(1-dist/500,0.2,1));
+          if(Math.random()<acc && player.stunnedTimer<=0){
+            player.stunnedTimer = 2.2;
+            spawnText(player.x,player.y-24,'감전!','#8fd0ff');
+            vibrate([60,40,60,40,60]);
+          }
+        }
+      }
     }
 
     if(en.state==='search' && dist < en.r+player.r+6){
@@ -1572,32 +1812,48 @@ function pointSegDist(px,py,x1,y1,x2,y2){
   return {dist:Math.hypot(px-cx,py-cy), t};
 }
 
+const SOUND_FN = {
+  playSuppressedShot, playMinigunShot, playTaserZap, playCrossbowShot, playShotgunShot
+};
+
 function handleFire(angle){
+  const wdef = WEAPON_DEFS[player.weapon] || WEAPON_DEFS.pistol;
+  const range = wdef.range;
+  const tolerance = wdef.tolerance*Math.PI/180;
   const ox=player.x, oy=player.y;
-  const {x:tx,y:ty} = rayMarchLanding(ox,oy,angle,FIRE_RANGE);
+  const {x:tx,y:ty} = rayMarchLanding(ox,oy,angle,range);
   bullets.push({x:ox,y:oy,tx,ty,t:0,dur:0.1});
-  playSuppressedShot(0.4);
+  (SOUND_FN[wdef.sound]||playSuppressedShot)(0.4);
 
   let best=null, bestDist=Infinity;
   for(const en of enemies){
     if(en.state==='dying')continue;
     const dx=en.x-ox, dy=en.y-oy;
     const dist=Math.hypot(dx,dy);
-    if(dist>FIRE_RANGE)continue;
+    if(dist>range)continue;
     const ang=Math.atan2(dy,dx);
-    if(angleDiff(ang,angle) > FIRE_TOLERANCE)continue;
+    if(angleDiff(ang,angle) > tolerance)continue;
     if(!hasLineOfSight(ox,oy,en.x,en.y))continue;
     if(dist<bestDist){bestDist=dist;best=en;}
   }
 
   if(best){
+    if(wdef.nonLethal){
+      best.stunned=true; best.stunTimer=5;
+      spawnText(best.x,best.y-24,'마비!','#8fd0ff');
+      showMsg(wdef.name+' 명중 (비살상)');
+      vibrate(20);
+      return;
+    }
     best.state='dying';
     best.dieType='shot';
-    best.dieTimer=0.3; best.dieTotal=0.3;
-    for(let i=0;i<10;i++){
-      particles.push({x:best.x,y:best.y,vx:(Math.random()-0.5)*3,vy:(Math.random()-0.5)*3,life:30,color:'#d43030'});
+    best.dieTimer=0.35; best.dieTotal=0.35;
+    for(let i=0;i<18;i++){
+      const big = i<4;
+      particles.push({x:best.x,y:best.y,vx:(Math.random()-0.5)*(big?5:3.2),vy:(Math.random()-0.5)*(big?5:3.2),
+        life: big?42:30, r: big?5:3, color: i%3===0?'#a01818':'#d43030'});
     }
-    showMsg('원거리 저격 성공 (소음기)');
+    showMsg(wdef.name+' 명중');
     stats.gunKills++;
     vibrate(30);
     return;
@@ -1608,7 +1864,7 @@ function handleFire(angle){
   for(const en of enemies){
     if(en.state==='dying')continue;
     const dist=Math.hypot(en.x-ox,en.y-oy);
-    if(dist>FIRE_RANGE)continue;
+    if(dist>range)continue;
     const {dist:perp,t} = pointSegDist(en.x,en.y,ox,oy,tx,ty);
     if(perp<NEAR_MISS_DIST && t>0 && t<=1 && hasLineOfSight(ox,oy,en.x,en.y)){
       if(Math.random()<NEAR_MISS_ALERT_CHANCE){
@@ -2026,17 +2282,47 @@ function drawCorpse(c,camX,camY){
   ctx.save();
   ctx.translate(c.x-camX,c.y-camY);
   ctx.rotate(c.angle||0);
-  if(c.dieType==='knife'){
-    ctx.fillStyle='rgba(150,30,30,0.35)';
-    ctx.beginPath();ctx.ellipse(0,0,16,10,0,0,7);ctx.fill();
+
+  const bloody = (c.dieType==='knife' || c.dieType==='shot');
+  if(bloody){
+    ctx.fillStyle='rgba(140,20,20,0.4)';
+    ctx.beginPath();
+    ctx.ellipse(2,1,20,13,0.15,0,7);ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(-10,6,7,5,0.4,0,7);ctx.fill();
+    ctx.fillStyle='rgba(170,25,25,0.55)';
+    ctx.beginPath();ctx.ellipse(4,-1,10,6,0.1,0,7);ctx.fill();
   }
+
+  // 팔다리 (늘어진 형태)
+  ctx.fillStyle='#4a4034';
+  ctx.beginPath();ctx.ellipse(-11,-7,7,3,0.5,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(-12,8,7,3,-0.4,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(10,-9,8,3,-0.3,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(9,10,8,3,0.35,0,7);ctx.fill();
+
+  // 몸통
   ctx.fillStyle='#5a4d3e';
-  ctx.beginPath();ctx.ellipse(0,0,13,8,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(0,0,14,9,0,0,7);ctx.fill();
+  ctx.strokeStyle='#2c2418';ctx.lineWidth=1;ctx.stroke();
+
+  // 머리(정수리)
   ctx.fillStyle='#7d6e58';
-  ctx.beginPath();ctx.arc(9,0,6,0,7);ctx.fill();
+  ctx.beginPath();ctx.arc(11,0,6.5,0,7);ctx.fill();
+  ctx.strokeStyle='#2c2418';ctx.lineWidth=1;ctx.stroke();
+
+  // 떨어뜨린 무기
+  ctx.fillStyle='#222';
+  ctx.fillRect(-4,13,20,3);
+
+  if(c.dieType==='knife'){
+    ctx.strokeStyle='rgba(220,220,220,0.7)';ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(-6,-14);ctx.lineTo(2,-18);ctx.stroke();
+  }
+
   if(c.discovered){
-    ctx.strokeStyle='rgba(255,60,60,0.8)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.ellipse(0,0,17,12,0,0,7);ctx.stroke();
+    ctx.strokeStyle='rgba(255,60,60,0.85)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.ellipse(0,0,19,14,0,0,7);ctx.stroke();
   }
   ctx.restore();
 }
@@ -2198,6 +2484,21 @@ function drawDecorItem(d,camX,camY){
       ctx.strokeStyle='#3d2f20';ctx.lineWidth=1.2;ctx.strokeRect(x,y,d.w,d.h);
       ctx.fillStyle='#333';
       ctx.fillRect(x+4,y+4,10,d.h-8);ctx.fillRect(x+d.w-14,y+4,10,d.h-8);
+      break;
+    case 'wardrobe':
+      ctx.fillStyle='#4a3a28';ctx.fillRect(x,y,d.w,d.h);
+      ctx.strokeStyle='#2a2015';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(x+d.w/2,y+3);ctx.lineTo(x+d.w/2,y+d.h-3);ctx.stroke();
+      ctx.strokeRect(x,y,d.w,d.h);
+      ctx.fillStyle='#6b5236';
+      ctx.beginPath();ctx.arc(x+d.w*0.42,y+d.h*0.5,1.8,0,7);ctx.fill();
+      ctx.beginPath();ctx.arc(x+d.w*0.58,y+d.h*0.5,1.8,0,7);ctx.fill();
+      break;
+    case 'floorLamp':
+      ctx.fillStyle='#3a3428';ctx.fillRect(x-1.5,y,3,d.r*1.6);
+      ctx.fillStyle='#e8c878';
+      ctx.beginPath();ctx.moveTo(x-d.r,y);ctx.lineTo(x+d.r,y);ctx.lineTo(x+d.r*0.6,y-d.r*1.3);ctx.lineTo(x-d.r*0.6,y-d.r*1.3);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='#8a6a30';ctx.lineWidth=1;ctx.stroke();
       break;
   }
 }
@@ -2369,16 +2670,24 @@ function drawWorld(camX,camY){
 
   if(!player.hiddenIn){
     if(!settings.lowSpec) drawGroundShadow(camX,camY,player.x,player.y,player.r*0.9,player.r*0.5);
+    const crouchScale = player.crouch ? 0.82 : 1;
     ctx.save();
     ctx.translate(player.x-camX,player.y-camY);
     ctx.rotate(player.angle);
+    ctx.scale(crouchScale,crouchScale);
     drawPlayerSprite(player.crouch);
     ctx.restore();
     ctx.save();
     ctx.translate(player.x-camX,player.y-camY);
     ctx.rotate(player.aimAngle);
+    ctx.scale(crouchScale,crouchScale);
     drawPlayerGun();
     ctx.restore();
+    if(player.stunnedTimer>0){
+      ctx.font='bold 16px sans-serif';ctx.textAlign='center';
+      ctx.fillStyle='#8fd0ff';
+      ctx.fillText('⚡', player.x-camX, player.y-camY-24);
+    }
   } else {
     ctx.save();
     ctx.globalAlpha=0.4;
@@ -2421,7 +2730,7 @@ function drawWorld(camX,camY){
   for(const p of particles){
     ctx.fillStyle=p.color;
     ctx.globalAlpha=Math.max(0,p.life/35);
-    ctx.beginPath();ctx.arc(p.x-camX,p.y-camY,3,0,7);ctx.fill();
+    ctx.beginPath();ctx.arc(p.x-camX,p.y-camY,p.r||3,0,7);ctx.fill();
     ctx.globalAlpha=1;
   }
 
@@ -2627,6 +2936,15 @@ function loop(now){
       updateClouds(dt);
       updateBullets(dt);
       updateTraps(dt);
+
+      if(fireJoy.active && fireJoy.dragged && !actionLock){
+        fireJoy.fireAccum += dt;
+        const wRate = (WEAPON_DEFS[player.weapon]||WEAPON_DEFS.pistol).autoRate;
+        if(fireJoy.fireAccum >= wRate){
+          fireJoy.fireAccum -= wRate;
+          handleFire(player.aimAngle);
+        }
+      }
       if(missionPunchTimer>0) missionPunchTimer=Math.max(0,missionPunchTimer-dt);
 
       for(let i=enemies.length-1;i>=0;i--){
@@ -2636,8 +2954,11 @@ function loop(now){
 
         if(en.dieType==='knife' && !en.screamed){
           en.screamed=true;
-          for(let k=0;k<(settings.lowSpec?7:14);k++){
-            particles.push({x:en.x,y:en.y,vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,life:34,color:'#d43030'});
+          const cnt = settings.lowSpec?9:20;
+          for(let k=0;k<cnt;k++){
+            const big = k<5;
+            particles.push({x:en.x,y:en.y,vx:(Math.random()-0.5)*(big?6:4),vy:(Math.random()-0.5)*(big?6:4),
+              life: big?46:34, r: big?5.5:3, color: k%3===0?'#a01818':'#d43030'});
           }
           const vol=clamp(1-Math.hypot(player.x-en.x,player.y-en.y)/650,0.15,1);
           playScream(vol);
