@@ -28,14 +28,14 @@
        font-family:monospace;padding:8px;white-space:pre-wrap;word-break:break-all;display:none;z-index:500;
        max-height:40vh;overflow-y:auto;}
   #joyZone{position:fixed;left:0;bottom:0;width:45%;height:45%;display:none;}
-  #joyBase{position:absolute;width:140px;height:140px;border-radius:50%;
+  #joyBase{position:fixed;width:140px;height:140px;border-radius:50%;
        background:radial-gradient(circle,rgba(255,255,255,0.05) 60%,rgba(255,255,255,0.1) 61%,rgba(255,255,255,0.1) 100%);
        border:2.5px solid rgba(255,255,255,0.4);display:none;}
-  #joyStick{position:absolute;width:34px;height:34px;border-radius:50%;
+  #joyStick{position:fixed;width:34px;height:34px;border-radius:50%;
        background:radial-gradient(circle at 35% 30%,rgba(255,255,255,0.95),rgba(215,215,215,0.65));
        border:1.5px solid rgba(255,255,255,0.6);
        box-shadow:0 2px 6px rgba(0,0,0,0.5);display:none;}
-  #joyArrow{position:absolute;width:0;height:0;display:none;pointer-events:none;
+  #joyArrow{position:fixed;width:0;height:0;display:none;pointer-events:none;
        border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid rgba(255,230,120,0.9);
        filter:drop-shadow(0 0 3px rgba(0,0,0,0.6));}
   #joyGuide{position:fixed;left:60px;bottom:70px;width:140px;height:140px;border-radius:50%;
@@ -43,9 +43,9 @@
        border:2.5px dashed rgba(255,255,255,0.28);display:none;pointer-events:none;z-index:5;}
 
   #fireZone{position:fixed;right:0;bottom:0;width:50%;height:55%;display:none;}
-  #fireBase{position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(255,120,80,0.12);
+  #fireBase{position:fixed;width:130px;height:130px;border-radius:50%;background:rgba(255,120,80,0.12);
        border:2px solid rgba(255,140,100,0.35);display:none;}
-  #fireStick{position:absolute;width:58px;height:58px;border-radius:50%;background:rgba(255,140,100,0.55);display:none;
+  #fireStick{position:fixed;width:58px;height:58px;border-radius:50%;background:rgba(255,140,100,0.55);display:none;
        align-items:center;justify-content:center;font-size:19px;color:#fff;font-weight:bold;}
   #fireGuide{position:fixed;right:14px;bottom:14px;width:130px;height:130px;border-radius:50%;
        background:rgba(255,140,100,0.07);border:2px dashed rgba(255,160,120,0.28);display:none;
@@ -268,7 +268,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.26.0.0</div>
+  <div id="verText">Ver 1.27.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -407,10 +407,11 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 1.26.0.0)</h2>
+    <h2>업데이트 안내 (Ver 1.27.0.0)</h2>
     <ul>
-      <li>사격 조이스틱이 안 보이던 버그 수정 - 게임 시작 시 안내 위치를 표시하는 호출이 빠져있었음</li>
-      <li>연막탄만 계속 나가던 버그의 진짜 원인 발견 - 0.7초를 다 못 채우고 손을 떼는 "빠른 스와이프"는 방향과 무관하게 무조건 "마지막 사용 투척물"(기본값 연막탄)만 던지고 있었음. 이제 빠른 스와이프도 방향에 따라 종류가 정해짐</li>
+      <li>투척물 종류가 스와이프 도중 계속 바뀌던 버그 수정 - 이제 한 번 확실히 선택(커밋)되면 그 종류로 고정되고, 이후엔 방향만 자유롭게 바꿔서 조준할 수 있음</li>
+      <li>조이스틱 안내 위치가 화면 밖(아래)에 그려지던 버그 수정 - 위치 계산 기준이 잘못되어 있었음. 모서리에서 더 멀리(위로) 옮김</li>
+      <li>앱을 백그라운드로 보내면 경보 사이렌 등 모든 소리가 완전히 멈추도록 수정 (예전엔 오디오 자체가 안 멈춰서 계속 들렸음)</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -789,6 +790,7 @@ let actionLock = null;
 let throwActive = false;
 let throwSelected = null;
 let throwCommitted = false;
+let throwTypeLocked = false;
 let slowMoActive = false;
 const THROW_TYPES = ['smoke','grenade','claymore','glue','stun','decoy'];
 const THROW_LABELS = {smoke:'연막탄',grenade:'수류탄',claymore:'크레모아',glue:'끈끈이',stun:'기절탄',decoy:'유인물'};
@@ -807,7 +809,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '1.26.0.0';
+const GAME_VERSION = '1.27.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 const DAMAGE_MUL = { easy:0.6, normal:1, hard:1.4 };
@@ -1224,6 +1226,11 @@ document.getElementById('pauseBtn').addEventListener('click',()=>{
 
 /* ===================== 포커스 상실(다른 앱 전환 등) 자동 일시정지 ===================== */
 document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    if(audioCtx && audioCtx.state==='running') audioCtx.suspend(); // 백그라운드로 가면 모든 소리(경보 사이렌 포함) 완전히 정지
+  } else {
+    if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+  }
   if(document.hidden && gameStarted && !caught && !puzzleActive){
     pauseActive = true;
     resetTouchStates();
@@ -1391,7 +1398,7 @@ function showJoyHint(){
   // 별도의 "안내용" DOM을 안 만들고, 실제 조이스틱(joyBase/joyStick)을 살짝 흐리게 미리 놔둔다.
   // 터치하면 이 "같은" 요소가 터치 위치로 옮겨갈 뿐이라 절대 2개로 보일 수 없음.
   // 화면 좌하단 "모서리"에서 우상단으로 떨어뜨려서 가로모드에서 손가락이 폰 모서리에 안 닿게 함.
-  const hintOffset = 150, hintYFromBottom = 150;
+  const hintOffset = 160, hintYFromBottom = 190;
   const hintX = settings.leftHanded ? (window.innerWidth - hintOffset) : hintOffset;
   const hintY = window.innerHeight - hintYFromBottom;
   joyBase.style.left=(hintX-70)+'px'; joyBase.style.top=(hintY-70)+'px';
@@ -1468,7 +1475,7 @@ const fireZone=document.getElementById('fireZone'),fireBase=document.getElementB
 const FIRE_AUTO_RATE = 0.22;
 let fireJoy = {active:false,startX:0,startY:0,dragged:false,fireAccum:0,touchId:null};
 function showFireHint(){
-  const hintOffset = 150, hintYFromBottom = 150;
+  const hintOffset = 160, hintYFromBottom = 190;
   const hintX = settings.leftHanded ? hintOffset : (window.innerWidth - hintOffset);
   const hintY = window.innerHeight - hintYFromBottom;
   fireBase.style.left=(hintX-65)+'px'; fireBase.style.top=(hintY-65)+'px';
@@ -1567,7 +1574,7 @@ const THROW_LOCK_RADIUS=42;
 const THROW_HOLD_MS=700;
 function throwBegin(x,y){
   if(!gameStarted || caught || puzzleActive || pauseActive || actionLock) return;
-  throwActive=true; throwWheelShown=false; throwSelected=null; throwCommitted=false;
+  throwActive=true; throwWheelShown=false; throwSelected=null; throwCommitted=false; throwTypeLocked=false;
   throwStart={x,y}; throwLastPos={x,y}; throwAngle=player.aimAngle;
   throwStickEl.style.left=(x-15)+'px'; throwStickEl.style.top=(y-15)+'px';
   throwStickEl.style.display='block';
@@ -1595,18 +1602,34 @@ function updateWheelHighlight(x,y){
   const dx=x-throwStart.x, dy=y-throwStart.y;
   const dist=Math.hypot(dx,dy);
   const rawAngle = Math.atan2(dy,dx);
-  throwAngle = rawAngle;
+  throwAngle = rawAngle; // 조준 방향은 항상 현재 위치 기준으로 계속 갱신됨 (자유 조준)
 
   if(dist<THROW_SELECT_RADIUS){
-    throwSelected=null; throwCommitted=false;
-    document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel','commit'));
+    if(!throwTypeLocked){
+      throwSelected=null;
+      document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel','commit'));
+    }
+    throwCommitted = throwTypeLocked && dist>=THROW_COMMIT_RADIUS;
     return;
   }
-  throwSelected = pickTypeByAngle(rawAngle);
-  throwCommitted = dist>=THROW_COMMIT_RADIUS; // 확실히 더 움직여야만 "커밋"(실제 투척 예정) 상태가 됨
-  document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel','commit'));
-  const selEl=document.getElementById('opt-'+throwSelected);
-  if(selEl) selEl.classList.add(throwCommitted ? 'commit' : 'sel');
+
+  if(!throwTypeLocked){
+    // 아직 종류가 고정 안 됨 - 방향에 따라 계속 하이라이트가 바뀜(둘러보기)
+    throwSelected = pickTypeByAngle(rawAngle);
+    document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel','commit'));
+    const selEl=document.getElementById('opt-'+throwSelected);
+    if(selEl) selEl.classList.add('sel');
+  }
+  // 그 종류로 확실히 더 나아가면(커밋 반경) 그 순간의 종류로 "고정"됨 - 이후 방향을 바꿔도 종류는 안 변함
+  if(dist>=THROW_COMMIT_RADIUS){
+    if(!throwTypeLocked){
+      throwTypeLocked = true;
+      document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel'));
+      const selEl=document.getElementById('opt-'+throwSelected);
+      if(selEl) selEl.classList.add('commit');
+    }
+    throwCommitted = true;
+  }
 }
 function throwMove(x,y){
   throwLastPos={x,y};
@@ -2158,7 +2181,7 @@ function resetTouchStates(){
   // 진행 중인 터치는 계속 정상 추적되게 둔다.
   joy.dx=0; joy.dy=0;
   fireJoy.dragged=false; fireJoy.fireAccum=0;
-  throwActive=false; throwSelected=null; slowMoActive=false; throwLocked=false;
+  throwActive=false; throwSelected=null; slowMoActive=false; throwLocked=false; throwTypeLocked=false;
   throwWheelShown=false; clearTimeout(throwHoldTimer);
   if(!fireJoy.active) showFireHint(); // 진행 중인 터치가 없으면 안내 위치로, 있으면 지금 위치 그대로 둠
   document.getElementById('throwWheel').style.display='none';
