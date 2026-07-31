@@ -23,20 +23,30 @@
   #joyBase{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.12);
        border:2px solid rgba(255,255,255,0.3);display:none;}
   #joyStick{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.5);display:none;}
-  #btns{position:fixed;right:8px;bottom:10px;display:none;flex-direction:row;flex-wrap:wrap;width:198px;
-       justify-content:flex-end;align-content:flex-end;gap:6px;}
-  .btn{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
-       color:#fff;font-size:9.5px;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.15;}
+
+  #fireZone{position:fixed;right:0;bottom:0;width:45%;height:45%;display:none;}
+  #fireBase{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,120,80,0.12);
+       border:2px solid rgba(255,140,100,0.35);display:none;}
+  #fireStick{position:absolute;width:46px;height:46px;border-radius:50%;background:rgba(255,140,100,0.55);display:none;
+       align-items:center;justify-content:center;font-size:18px;}
+
+  #btns{position:fixed;right:8px;bottom:10px;display:none;flex-direction:column;gap:8px;align-items:flex-end;z-index:43;}
+  .btn{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
+       color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.15;}
   .btn:active{background:rgba(255,255,255,0.35);}
-  #btnAction{width:66px;height:66px;font-size:11px;}
-  #btnSmoke{background:rgba(230,230,230,0.2);}
-  #btnStun{background:rgba(230,220,120,0.2);}
   #btnNVG{background:rgba(120,220,140,0.2);}
   #btnThermal{background:rgba(230,140,80,0.2);}
-  #btnFire{background:rgba(120,255,120,0.18);}
-  #aimCancelBtn{position:fixed;right:8px;bottom:225px;display:none;align-items:center;justify-content:center;
-       width:110px;height:40px;background:rgba(200,40,40,0.55);border:1px solid rgba(255,255,255,0.5);
-       border-radius:8px;color:#fff;font-size:11px;text-align:center;z-index:45;}
+
+  #throwBtn{position:fixed;right:16px;top:44%;width:60px;height:60px;border-radius:50%;
+       background:rgba(230,220,120,0.22);border:2px solid rgba(255,220,140,0.5);color:#fff;font-size:11px;
+       display:none;align-items:center;justify-content:center;text-align:center;z-index:42;user-select:none;}
+  #throwWheel{position:fixed;right:16px;top:44%;width:1px;height:1px;display:none;z-index:41;}
+  .throwOpt{position:absolute;width:64px;height:64px;margin-left:-32px;margin-top:-32px;border-radius:50%;
+       background:rgba(20,20,24,0.85);border:2px solid rgba(255,255,255,0.35);color:#ddd;font-size:10.5px;
+       display:flex;align-items:center;justify-content:center;text-align:center;transition:transform 0.1s,background 0.1s;}
+  .throwOpt.sel{background:rgba(255,205,110,0.85);color:#111;border-color:#fff;transform:scale(1.18);font-weight:bold;}
+  #slowMoVignette{position:fixed;inset:0;pointer-events:none;display:none;z-index:39;
+       box-shadow:inset 0 0 80px 30px rgba(80,60,20,0.55);}
   #gearBtn{position:fixed;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);
        border:1px solid rgba(255,255,255,0.4);color:#fff;display:none;align-items:center;justify-content:center;font-size:16px;cursor:pointer;z-index:40;}
   #pauseBtn{position:fixed;top:8px;right:48px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);
@@ -143,22 +153,31 @@
 <div id="msg"></div>
 <div id="gearBtn">⚙</div>
 <div id="pauseBtn">⏸</div>
-<div id="aimCancelBtn">✕ 취소 (←스와이프)</div>
 
 <div id="joyZone">
   <div id="joyBase"></div>
   <div id="joyStick"></div>
 </div>
 <div id="btns">
-  <div class="btn" id="btnDecoy">유인</div>
-  <div class="btn" id="btnFire">사격</div>
-  <div class="btn" id="btnSmoke">연막탄</div>
-  <div class="btn" id="btnStun">기절탄</div>
   <div class="btn" id="btnNVG">야간투시</div>
   <div class="btn" id="btnThermal">열화상</div>
   <div class="btn" id="btnCrouch">웅크리기</div>
-  <div class="btn" id="btnAction">처치/상호작용</div>
 </div>
+
+<div id="throwBtn">투척물</div>
+<div id="throwWheel">
+  <div class="throwOpt" id="opt-smoke" data-type="smoke">연막탄</div>
+  <div class="throwOpt" id="opt-grenade" data-type="grenade">수류탄</div>
+  <div class="throwOpt" id="opt-claymore" data-type="claymore">크레모아</div>
+  <div class="throwOpt" id="opt-glue" data-type="glue">끈끈이</div>
+  <div class="throwOpt" id="opt-stun" data-type="stun">기절탄</div>
+</div>
+
+<div id="fireZone">
+  <div id="fireBase"></div>
+  <div id="fireStick">🔫</div>
+</div>
+
 <div id="execOverlay">
   <div id="execSkull">☠</div>
   <div id="execTitle">처형됨</div>
@@ -174,7 +193,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.7.1.0</div>
+  <div id="verText">Ver 1.8.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -197,13 +216,14 @@
   <div class="modalBox">
     <h2>플레이 방법</h2>
     <ul>
-      <li>좌측 하단 조이스틱으로 이동</li>
-      <li>기본 시야는 항상 켜져있는 손전등 형태 - 정면은 넓고 밝게, 후방은 좁고 어둡게, 멀수록 점점 어두워짐</li>
-      <li>웅크리기: 이동이 느려지지만 은신에 유리. 좁은 환기구는 웅크려야 통과. 책상/식탁 등 앞에서 웅크린 채 상호작용하면 안에 숨을 수 있음</li>
-      <li>처치/상호작용: 적 처치, 미션 단말기 상호작용, 시체 은닉, 은신처 진입/탈출</li>
-      <li>유인: 동전 소리 나는 미끼를 던져 순찰병 유인</li>
-      <li>사격: 항상 켜진 초록 레이저(플레이어만 보임)가 가리키는 방향의 적을 원거리에서 소음기 권총으로 저격. 못 맞혀도 근처를 스치면 높은 확률로 눈치챔</li>
-      <li>연막탄/기절탄: 버튼을 누르면 흰 점선 궤적이 보이고(이동하면서도 조준 가능), 떼면 투척. 왼쪽으로 스와이프하거나 취소 버튼으로 던지기 취소 가능. 연막은 뭉게구름처럼 넓게 퍼져 시야 차단, 기절탄은 범위 내 적을 5초간 무력화. 개수 제한 있음(버튼에 남은 개수 표시)</li>
+      <li>좌측 하단 원형 조이스틱: 이동. 살짝 당기면 걷기(조용), 끝까지 당기면 뛰기(빠르지만 발소리 큼)</li>
+      <li>우측 하단 원형 조이스틱(총 아이콘): 조준+사격. 이동 조이스틱과 완전히 독립적이라, 걸어가는 방향과 다른 방향으로 조준/사격 가능. 손을 떼는 순간 그 방향으로 발사됨</li>
+      <li>단, 조준 방향 근처에 적/미션 단말기/시체/은신 가구가 있으면 사격 대신 그것과 상호작용(처치·상호작용·은닉)이 우선 처리됨</li>
+      <li>기본 시야는 조준 방향 기준 손전등 형태 - 정면은 넓고 밝게, 후방은 좁고 어둡게, 멀수록 점점 어두워짐</li>
+      <li>웅크리기: 이동이 느려지지만 은신에 유리. 좁은 환기구는 웅크려야 통과. 책상/식탁 등 앞에서 웅크린 채 조준-상호작용하면 안에 숨을 수 있음</li>
+      <li>초록 레이저(플레이어만 보임)가 조준 방향을 알려줌. 못 맞혀도 총알이 근처를 스치면 높은 확률로 적이 눈치챔</li>
+      <li>투척물 버튼을 꾹 누르면 시간이 느려지며 5방향 휠(연막탄/수류탄/크레모아/끈끈이/기절탄)이 나타남 - 손가락을 원하는 방향으로 움직여 선택 후 손을 떼면 조준 방향으로 투척</li>
+      <li>연막탄: 뭉게구름처럼 넓게 퍼져 시야 차단 · 기절탄: 범위 내 적 5초 무력화 · 수류탄: 명중 시 즉사하지만 폭발음으로 전역 알람 발생 · 크레모아: 설치 후 근처에 적이 오면 자동 폭발 · 끈끈이: 밟은 적을 한동안 못 움직이게 함(감지는 계속함)</li>
       <li>정면 기습(칼) 처치는 비명을 질러 근처 적이 조사하러 옴 - 후방 조르기는 완전히 조용함</li>
       <li>야간투시경: 10초간 화면 전체가 또렷하게 보임(녹색 톤), 이후 재사용 대기시간 필요</li>
       <li>열화상: 10초간 적의 위치가 벽 너머에서도 빛나 보임. 야간투시경과 동시 사용 가능</li>
@@ -287,14 +307,13 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 1.7.1.0)</h2>
+    <h2>업데이트 안내 (Ver 1.8.0.0)</h2>
     <ul>
-      <li>난이도 선택 (쉬움/보통/어려움)</li>
-      <li>업적 시스템 + 최근 플레이 기록</li>
-      <li>미션 암호가 매 판마다 랜덤 생성</li>
-      <li>경비견 등장 (냄새로 탐지)</li>
-      <li>연막탄/기절탄 개수 제한 및 클리어 시 최대치 증가</li>
-      <li>일시정지 메뉴, 고대비 모드, 저사양 모드, 진동 세기 조절 추가</li>
+      <li>조작 체계 전면 개편: 이동/사격이 완전히 독립된 트윈스틱 방식으로 변경</li>
+      <li>처치/상호작용 버튼 삭제 - 조준 방향에 있는 대상과 자동으로 상호작용</li>
+      <li>유인/연막탄/기절탄 버튼을 '투척물' 버튼 하나로 통합, 꾹 눌러 슬로우모션 휠에서 선택</li>
+      <li>신규 투척물: 수류탄(즉사+광역알람), 크레모아(근접감지 폭발), 끈끈이(이동봉쇄)</li>
+      <li>이동 조이스틱을 당긴 정도에 따라 걷기/뛰기 속도 차등 적용</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -354,6 +373,11 @@ function resize(){
 resize(); window.addEventListener('resize',resize);
 
 function tryLockLandscape(){
+  try{
+    if(document.documentElement.requestFullscreen){
+      document.documentElement.requestFullscreen().catch(()=>{});
+    }
+  }catch(e){}
   try{
     if(screen.orientation && screen.orientation.lock){
       screen.orientation.lock('landscape').catch(()=>{});
@@ -476,7 +500,7 @@ const missions = [
 let missionsComplete=false;
 let puzzleActive=null;
 
-let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0};
+let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,aimAngle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0};
 
 function makeGuard(opts){
   const rank = opts.rank || 'rookie';
@@ -498,7 +522,8 @@ function makeGuard(opts){
     activity: opts.activity || null,
     buddyId: opts.buddyId,
     buddyAlertDone:false, buddyMissTimer:0,
-    isDog: !!opts.isDog
+    isDog: !!opts.isDog,
+    stuck:false, stuckTimer:0
   };
 }
 
@@ -550,12 +575,21 @@ const enemies = [
 let corpses = [];
 let clouds = [];
 let bullets = [];
+let traps = [];
 let alarmRaised = false;
 let particles = [];
 let textParticles = [];
 let decoys = [];
 let actionLock = null;
-let aimLock = null;
+let throwActive = false;
+let throwSelected = null;
+let slowMoActive = false;
+const THROW_TYPES = ['smoke','grenade','claymore','glue','stun'];
+const THROW_LABELS = {smoke:'연막탄',grenade:'수류탄',claymore:'크레모아',glue:'끈끈이',stun:'기절탄'};
+const THROW_COLORS = {
+  smoke:'rgba(230,230,230,0.9)', grenade:'rgba(255,120,60,0.9)', claymore:'rgba(255,60,60,0.9)',
+  glue:'rgba(120,220,120,0.9)', stun:'rgba(230,220,90,0.9)'
+};
 const keys = {};
 window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
@@ -567,14 +601,15 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko'};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '1.7.1.0';
+const GAME_VERSION = '1.8.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 let pauseActive=false;
 let missionPunchTimer=0;
-let charges = {smoke:2, stun:2};
-function maxCharges(){
+let charges = {smoke:2, stun:2, grenade:1, claymore:1, glue:2};
+function maxChargesFor(type){
   const clears = parseInt(localStorage.getItem('stealthOpsClears')||'0');
+  if(type==='grenade' || type==='claymore') return Math.min(3, 1 + Math.floor(clears/4));
   return Math.min(5, 2 + Math.floor(clears/3));
 }
 const ACHIEVEMENTS = [
@@ -781,9 +816,10 @@ document.querySelectorAll('.diffBtn').forEach(btn=>{
 
 /* ===================== 튜토리얼 ===================== */
 const TUTORIAL_STEPS = [
-  '좌측 하단 조이스틱으로 이동해요. 손을 떼면 멈춰요.',
-  '우측 하단 버튼들로 유인/사격/연막탄/기절탄/야간투시/열화상/웅크리기/처치·상호작용을 사용해요.',
-  '적 뒤에서 처치/상호작용을 누르면 조용히, 정면에서 누르면 칼로 빠르게 처치돼요.',
+  '좌측 조이스틱으로 이동해요. 살짝 당기면 걷고, 끝까지 당기면 뛰어요.',
+  '우측 조이스틱(총 모양)을 드래그해서 조준하고 손을 떼면 그 방향으로 발사돼요. 이동과 완전히 독립적이라 걸으면서 다른 방향도 조준할 수 있어요.',
+  '조준 방향 근처에 적/미션/시체/은신 가구가 있으면 사격 대신 자동으로 상호작용해요.',
+  '우측의 "투척물" 버튼을 꾹 누르면 시간이 느려지며 5가지 투척물 휠이 떠요. 손가락을 원하는 방향으로 움직여 선택하세요.',
   '화면 오른쪽 위 미니맵으로 적과 미션 위치를 확인하세요. ⏸ 버튼으로 언제든 일시정지할 수 있어요.'
 ];
 let tutorialStep=0;
@@ -819,11 +855,13 @@ document.getElementById('btnStart').addEventListener('click',()=>{
   initAudio();
   gameStarted=true;
   stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-  charges.smoke = maxCharges(); charges.stun = maxCharges();
+  THROW_TYPES.forEach(t=>{ charges[t] = maxChargesFor(t); });
   randomizeMissionCodes();
   startOverlay.style.display='none';
   document.getElementById('hud').style.display='block';
   document.getElementById('joyZone').style.display='block';
+  document.getElementById('fireZone').style.display='block';
+  document.getElementById('throwBtn').style.display='flex';
   document.getElementById('btns').style.display='flex';
   document.getElementById('gearBtn').style.display='flex';
   document.getElementById('pauseBtn').style.display='flex';
@@ -862,9 +900,21 @@ document.getElementById('lowSpecToggle').addEventListener('click',()=>{
 document.getElementById('handToggle').addEventListener('click',()=>{
   settings.leftHanded=!settings.leftHanded;
   document.getElementById('handToggle').textContent = settings.leftHanded?'ON':'OFF';
-  const jz=document.getElementById('joyZone'), bt=document.getElementById('btns'), cb=document.getElementById('aimCancelBtn');
-  if(settings.leftHanded){ jz.style.left='auto'; jz.style.right='0'; bt.style.right='auto'; bt.style.left='8px'; cb.style.right='auto'; cb.style.left='8px'; }
-  else { jz.style.right='auto'; jz.style.left='0'; bt.style.left='auto'; bt.style.right='8px'; cb.style.left='auto'; cb.style.right='8px'; }
+  const jz=document.getElementById('joyZone'), fz=document.getElementById('fireZone'), bt=document.getElementById('btns'),
+        tb=document.getElementById('throwBtn'), tw=document.getElementById('throwWheel');
+  if(settings.leftHanded){
+    jz.style.left='auto'; jz.style.right='0';
+    fz.style.left='0'; fz.style.right='auto';
+    bt.style.right='auto'; bt.style.left='8px';
+    tb.style.right='auto'; tb.style.left='16px';
+    tw.style.right='auto'; tw.style.left='16px';
+  } else {
+    jz.style.right='auto'; jz.style.left='0';
+    fz.style.right='0'; fz.style.left='auto';
+    bt.style.left='auto'; bt.style.right='8px';
+    tb.style.left='auto'; tb.style.right='16px';
+    tw.style.left='auto'; tw.style.right='16px';
+  }
 });
 
 /* ===================== 일시정지 ===================== */
@@ -938,7 +988,7 @@ function applyLanguage(){
   document.getElementById('btnDev').textContent = t.btnDev;
 }
 
-/* ===================== 가상 조이스틱 ===================== */
+/* ===================== 가상 조이스틱 (이동) ===================== */
 const joyZone=document.getElementById('joyZone'),joyBase=document.getElementById('joyBase'),joyStick=document.getElementById('joyStick');
 let joy = {active:false,dx:0,dy:0,startX:0,startY:0};
 function joyStart(x,y){joy.active=true;joy.startX=x;joy.startY=y;joyBase.style.left=(x-50)+'px';joyBase.style.top=(y-50)+'px';
@@ -955,15 +1005,9 @@ joyZone.addEventListener('mousedown',e=>{mouseDown=true;joyStart(e.clientX,e.cli
 window.addEventListener('mousemove',e=>{if(mouseDown)joyMove(e.clientX,e.clientY);});
 window.addEventListener('mouseup',()=>{mouseDown=false;joyEnd();});
 
-let crouchHeld=false, actionPressed=false, decoyPressed=false, firePressed=false;
+let crouchHeld=false;
 document.getElementById('btnCrouch').addEventListener('touchstart',e=>{e.preventDefault();crouchHeld=!crouchHeld;});
 document.getElementById('btnCrouch').addEventListener('click',()=>{crouchHeld=!crouchHeld;});
-document.getElementById('btnAction').addEventListener('touchstart',e=>{e.preventDefault();actionPressed=true;});
-document.getElementById('btnAction').addEventListener('click',()=>{actionPressed=true;});
-document.getElementById('btnDecoy').addEventListener('touchstart',e=>{e.preventDefault();decoyPressed=true;});
-document.getElementById('btnDecoy').addEventListener('click',()=>{decoyPressed=true;});
-document.getElementById('btnFire').addEventListener('touchstart',e=>{e.preventDefault();firePressed=true;});
-document.getElementById('btnFire').addEventListener('click',()=>{firePressed=true;});
 
 document.getElementById('btnNVG').addEventListener('click',()=>{
   if(!nvgActive && nvgCooldown<=0){ nvgActive=true; nvgTimer=10; playNVGSound(); }
@@ -972,32 +1016,90 @@ document.getElementById('btnThermal').addEventListener('click',()=>{
   if(!thermalActive && thermalCooldown<=0){ thermalActive=true; thermalTimer=10; playThermalSound(); }
 });
 
-function cancelAim(){ if(!aimLock)return; aimLock=null; hideCancelBtn(); showMsg('투척 취소'); }
-function showCancelBtn(){ document.getElementById('aimCancelBtn').style.display='flex'; }
-function hideCancelBtn(){ document.getElementById('aimCancelBtn').style.display='none'; }
-document.getElementById('aimCancelBtn').addEventListener('click', cancelAim);
-document.getElementById('aimCancelBtn').addEventListener('touchstart', e=>{e.preventDefault();cancelAim();});
-
-function bindHold(id,type){
-  const el=document.getElementById(id);
-  let startX=0;
-  function start(x){
-    if(!puzzleActive && !caught && !actionLock && !aimLock && !pauseActive){
-      if(charges[type]<=0){ showMsg(type==='smoke'?'연막탄 없음':'기절탄 없음'); return; }
-      aimLock=type; startX=x; showCancelBtn();
-    }
-  }
-  function move(x){ if(aimLock===type && (x-startX) < -45){ cancelAim(); } }
-  function end(){ if(aimLock===type) releaseThrow(type); hideCancelBtn(); }
-  el.addEventListener('touchstart',e=>{e.preventDefault();start(e.touches[0].clientX);});
-  el.addEventListener('touchmove',e=>{move(e.touches[0].clientX);},{passive:true});
-  el.addEventListener('touchend',end);
-  el.addEventListener('mousedown',e=>start(e.clientX));
-  window.addEventListener('mousemove',e=>{ if(aimLock===type) move(e.clientX); });
-  el.addEventListener('mouseup',end);
+/* ===================== 사격 조이스틱 (조준+발사, 이동과 독립) ===================== */
+const fireZone=document.getElementById('fireZone'),fireBase=document.getElementById('fireBase'),fireStick=document.getElementById('fireStick');
+let fireJoy = {active:false,startX:0,startY:0};
+function fireStart(x,y){
+  if(!gameStarted || caught || puzzleActive || pauseActive) return;
+  fireJoy.active=true; fireJoy.startX=x; fireJoy.startY=y;
+  fireBase.style.left=(x-50)+'px'; fireBase.style.top=(y-50)+'px';
+  fireStick.style.left=(x-23)+'px'; fireStick.style.top=(y-23)+'px';
+  fireBase.style.display='flex'; fireStick.style.display='flex';
 }
-bindHold('btnSmoke','smoke');
-bindHold('btnStun','stun');
+function fireMove(x,y){
+  if(!fireJoy.active)return;
+  let dx=x-fireJoy.startX, dy=y-fireJoy.startY; const max=50;
+  const dist=Math.hypot(dx,dy);
+  if(dist>6){ player.aimAngle = Math.atan2(dy,dx); }
+  const cdx = dist>max ? dx/dist*max : dx, cdy = dist>max ? dy/dist*max : dy;
+  fireStick.style.left=(fireJoy.startX+cdx-23)+'px'; fireStick.style.top=(fireJoy.startY+cdy-23)+'px';
+}
+function fireEnd(){
+  if(!fireJoy.active)return;
+  fireJoy.active=false;
+  fireBase.style.display='none'; fireStick.style.display='none';
+  performActionOrFire(player.aimAngle);
+}
+fireZone.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];fireStart(t.clientX,t.clientY);});
+fireZone.addEventListener('touchmove',e=>{const t=e.touches[0];fireMove(t.clientX,t.clientY);e.preventDefault();},{passive:false});
+fireZone.addEventListener('touchend',e=>{e.preventDefault();fireEnd();});
+let fireMouseDown=false;
+fireZone.addEventListener('mousedown',e=>{fireMouseDown=true;fireStart(e.clientX,e.clientY);});
+window.addEventListener('mousemove',e=>{if(fireMouseDown)fireMove(e.clientX,e.clientY);});
+window.addEventListener('mouseup',()=>{if(fireMouseDown){fireMouseDown=false;fireEnd();}});
+
+/* ===================== 투척물 휠 (꾹 누르면 슬로우모션 + 5방향 선택) ===================== */
+const throwBtnEl=document.getElementById('throwBtn'), throwWheelEl=document.getElementById('throwWheel');
+(function layoutWheel(){
+  const R=82;
+  THROW_TYPES.forEach((t,i)=>{
+    const a = (-90 + i*72) * Math.PI/180;
+    const el=document.getElementById('opt-'+t);
+    el.style.left=(R*Math.cos(a))+'px';
+    el.style.top=(R*Math.sin(a))+'px';
+  });
+})();
+let throwStart={x:0,y:0};
+function throwBegin(x,y){
+  if(!gameStarted || caught || puzzleActive || pauseActive || actionLock) return;
+  throwActive=true; slowMoActive=true; throwSelected=null; throwStart={x,y};
+  throwWheelEl.style.left=x+'px'; throwWheelEl.style.top=y+'px';
+  throwWheelEl.style.display='block';
+  updateWheelHighlight(x,y);
+}
+function updateWheelHighlight(x,y){
+  const dx=x-throwStart.x, dy=y-throwStart.y;
+  const dist=Math.hypot(dx,dy);
+  document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel'));
+  if(dist<18){ throwSelected=null; return; }
+  let ang = Math.atan2(dy,dx)*180/Math.PI;
+  let best=0, bestDiff=999;
+  THROW_TYPES.forEach((t,i)=>{
+    const optAng = -90+i*72;
+    let diff = Math.abs(((ang-optAng+540)%360)-180);
+    if(diff<bestDiff){bestDiff=diff; best=i;}
+  });
+  throwSelected = THROW_TYPES[best];
+  document.getElementById('opt-'+throwSelected).classList.add('sel');
+}
+function throwMove(x,y){ if(throwActive) updateWheelHighlight(x,y); }
+function throwEndGesture(){
+  if(!throwActive)return;
+  throwActive=false; slowMoActive=false;
+  throwWheelEl.style.display='none';
+  document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel'));
+  if(throwSelected){
+    if(charges[throwSelected]<=0){ showMsg(THROW_LABELS[throwSelected]+' 없음'); }
+    else { throwItem(throwSelected, player.aimAngle); }
+  }
+  throwSelected=null;
+}
+throwBtnEl.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];throwBegin(t.clientX,t.clientY);});
+throwBtnEl.addEventListener('touchmove',e=>{const t=e.touches[0];throwMove(t.clientX,t.clientY);e.preventDefault();},{passive:false});
+throwBtnEl.addEventListener('touchend',e=>{e.preventDefault();throwEndGesture();});
+throwBtnEl.addEventListener('mousedown',e=>throwBegin(e.clientX,e.clientY));
+window.addEventListener('mousemove',e=>{if(throwActive)throwMove(e.clientX,e.clientY);});
+window.addEventListener('mouseup',()=>{if(throwActive)throwEndGesture();});
 
 /* ===================== 유틸 ===================== */
 function circleRectCollide(cx,cy,cr,rect){
@@ -1076,25 +1178,85 @@ function getTakedownType(en){
   return facingDiff < 65*Math.PI/180 ? 'knife' : 'choke';
 }
 
-/* ===================== 그레네이드(연막/기절) ===================== */
-function releaseThrow(type){
-  if(aimLock!==type){aimLock=null;return;}
-  aimLock=null;
+/* ===================== 투척물 5종 (연막/기절/수류탄/크레모아/끈끈이) ===================== */
+function detonateGrenade(x,y){
+  const blastRadius=78;
+  for(let i=0;i<24;i++){
+    particles.push({x,y,vx:(Math.random()-0.5)*7,vy:(Math.random()-0.5)*7,life:36,color: i%2? '#ff9040':'#d43030'});
+  }
+  playNoise(0.35,0.35,150,'lowpass');
+  for(const en of enemies){
+    if(en.state==='dying')continue;
+    if(Math.hypot(en.x-x,en.y-y)<blastRadius){
+      en.state='dying'; en.dieType='shot'; en.dieTimer=0.3; en.dieTotal=0.3; en.screamed=true;
+      stats.gunKills++;
+    }
+  }
+  alarmRaised=true; stats.detections++;
+  for(const en of enemies){
+    if(en.state==='dying' || en.stunned)continue;
+    if(Math.hypot(en.x-x,en.y-y)<650){ en.state='search'; en.target={x,y}; en.searchTimer=8; }
+  }
+  vibrate([80,40,80]);
+  missionPunchTimer=Math.max(missionPunchTimer,0.25);
+}
+
+function throwItem(type, angle){
   charges[type] = Math.max(0, charges[type]-1);
-  const range=210;
-  const {x:hx,y:hy} = rayMarchLanding(player.x,player.y,player.angle,range);
+  const range = type==='grenade' ? 260 : (type==='claymore'||type==='glue' ? 180 : 210);
+  const {x:hx,y:hy} = rayMarchLanding(player.x,player.y,angle,range);
   playRoll();
-  showMsg(type==='smoke' ? '연막탄 투척' : '기절탄 투척');
+  showMsg(THROW_LABELS[type]+' 투척');
   setTimeout(()=>{
-    playHiss();
-    const maxR = type==='smoke' ? 190 : 88;
-    const life = type==='smoke' ? 11 : 8.5;
-    const puffs = type==='smoke' ? Array.from({length:6},()=>({
-      ox:(Math.random()-0.5)*2, oy:(Math.random()-0.5)*2,
-      rScale:0.5+Math.random()*0.4
-    })) : null;
-    clouds.push({x:hx,y:hy,type,radius:8,maxRadius:maxR,age:0,life,puffs});
+    if(type==='smoke' || type==='stun'){
+      playHiss();
+      const maxR = type==='smoke' ? 190 : 88;
+      const life = type==='smoke' ? 11 : 8.5;
+      const puffs = type==='smoke' ? Array.from({length:6},()=>({
+        ox:(Math.random()-0.5)*2, oy:(Math.random()-0.5)*2,
+        rScale:0.5+Math.random()*0.4
+      })) : null;
+      clouds.push({x:hx,y:hy,type,radius:8,maxRadius:maxR,age:0,life,puffs});
+    } else if(type==='grenade'){
+      detonateGrenade(hx,hy);
+    } else if(type==='claymore'){
+      playHiss();
+      traps.push({x:hx,y:hy,type:'claymore',armTimer:0.6,triggerRadius:44,armed:false,dead:false});
+    } else if(type==='glue'){
+      playHiss();
+      traps.push({x:hx,y:hy,type:'glue',radius:52,life:15,dead:false});
+    }
   }, 430);
+}
+
+function updateTraps(dt){
+  for(const tr of traps){
+    if(tr.type==='claymore'){
+      if(!tr.armed){
+        tr.armTimer -= dt;
+        if(tr.armTimer<=0) tr.armed=true;
+        continue;
+      }
+      for(const en of enemies){
+        if(en.state==='dying')continue;
+        if(Math.hypot(en.x-tr.x,en.y-tr.y)<tr.triggerRadius){
+          detonateGrenade(tr.x,tr.y);
+          tr.dead=true;
+          break;
+        }
+      }
+    } else if(tr.type==='glue'){
+      tr.life -= dt;
+      for(const en of enemies){
+        if(en.state==='dying')continue;
+        if(Math.hypot(en.x-tr.x,en.y-tr.y)<tr.radius){
+          en.stuck=true; en.stuckTimer=4;
+        }
+      }
+      if(tr.life<=0) tr.dead=true;
+    }
+  }
+  traps = traps.filter(t=>!t.dead);
 }
 
 /* ===================== 플레이어 이동 ===================== */
@@ -1112,6 +1274,7 @@ function updatePlayer(dt){
       player.y = en.y - Math.sin(actionLock.hitAngle)*22;
       player.angle = actionLock.hitAngle;
     }
+    player.aimAngle = player.angle;
     return;
   }
   if(player.hiddenIn){ return; }
@@ -1119,8 +1282,12 @@ function updatePlayer(dt){
   let mx=joy.dx*settings.joySens, my=joy.dy*settings.joySens;
   if(keys['w'])my=-1; if(keys['s'])my=1; if(keys['a'])mx=-1; if(keys['d'])mx=1;
   const mag=Math.hypot(mx,my);
+  const clampedMag = Math.min(1,mag);
+  const running = clampedMag>0.7 && !crouchHeld;
 
-  const spd = player.speed * (crouchHeld?0.55:1);
+  // 짧게 당기면 걷기(느림/조용), 길게 당기면 뛰기(빠름/시끄러움)
+  const pullSpeedMul = 0.5 + 0.5*clampedMag;
+  const spd = player.speed * pullSpeedMul * (crouchHeld?0.55:1);
   let moved=0;
   if(mag>0.15){
     player.angle=Math.atan2(my,mx);
@@ -1136,13 +1303,16 @@ function updatePlayer(dt){
   }
   player.crouch=crouchHeld;
 
+  // 사격 조이스틱을 조작 중이 아니면 조준 방향은 이동 방향을 따라감
+  if(!fireJoy.active){ player.aimAngle = player.angle; }
+
   if(moved>0){
     player.stepAccum += moved;
-    const stepDist = player.crouch ? 46 : 26;
+    const stepDist = player.crouch ? 46 : (running?20:26);
     if(player.stepAccum >= stepDist){
       player.stepAccum = 0;
       playerFootstep(player.crouch);
-      const noiseRadius = player.crouch ? 38 : 145;
+      const noiseRadius = player.crouch ? 38 : (running?190:145);
       checkNoiseHearing(player.x,player.y,noiseRadius);
     }
   }
@@ -1158,8 +1328,15 @@ function updateEnemy(en,dt){
     return;
   }
 
+  if(en.stuck){
+    en.stuckTimer -= dt;
+    if(en.stuckTimer<=0) en.stuck=false;
+  }
+
   let goal=null;
-  if(en.state==='patrol'){
+  if(en.stuck){
+    // 이동 불가, 감지 로직은 아래에서 계속 진행됨
+  } else if(en.state==='patrol'){
     goal=en.path[en.wp];
     if(Math.hypot(goal.x-en.x,goal.y-en.y)<8){en.wp=(en.wp+1)%en.path.length;}
   } else if(en.state==='search'){
@@ -1381,19 +1558,6 @@ function showResultScreen(){
   document.getElementById('resultModal').style.display='flex';
 }
 
-function handleDecoy(){
-  if(!decoyPressed)return;
-  decoyPressed=false;
-  if(caught||actionLock||player.hiddenIn||aimLock)return;
-  const range=220;
-  const {x:hx,y:hy} = rayMarchLanding(player.x,player.y,player.angle,range);
-  decoys.push({x:hx,y:hy,life:40});
-  for(let i=0;i<8;i++)particles.push({x:hx,y:hy,vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,life:24,color:'#e8d060'});
-  playCoin();
-  checkNoiseHearing(hx,hy,170);
-  showMsg('유인용 소음 발생 (동전 짤랑)');
-}
-
 const FIRE_RANGE = 420;
 const FIRE_TOLERANCE = 4*Math.PI/180;
 const NEAR_MISS_DIST = 46;
@@ -1408,13 +1572,9 @@ function pointSegDist(px,py,x1,y1,x2,y2){
   return {dist:Math.hypot(px-cx,py-cy), t};
 }
 
-function handleFire(){
-  if(!firePressed)return;
-  firePressed=false;
-  if(caught||actionLock||puzzleActive||player.hiddenIn||aimLock)return;
-
+function handleFire(angle){
   const ox=player.x, oy=player.y;
-  const {x:tx,y:ty} = rayMarchLanding(ox,oy,player.angle,FIRE_RANGE);
+  const {x:tx,y:ty} = rayMarchLanding(ox,oy,angle,FIRE_RANGE);
   bullets.push({x:ox,y:oy,tx,ty,t:0,dur:0.1});
   playSuppressedShot(0.4);
 
@@ -1425,7 +1585,7 @@ function handleFire(){
     const dist=Math.hypot(dx,dy);
     if(dist>FIRE_RANGE)continue;
     const ang=Math.atan2(dy,dx);
-    if(angleDiff(ang,player.angle) > FIRE_TOLERANCE)continue;
+    if(angleDiff(ang,angle) > FIRE_TOLERANCE)continue;
     if(!hasLineOfSight(ox,oy,en.x,en.y))continue;
     if(dist<bestDist){bestDist=dist;best=en;}
   }
@@ -1498,24 +1658,22 @@ function tryToggleHideFurniture(){
   return false;
 }
 
-function handleAction(){
-  if(!actionPressed)return;
-  actionPressed=false;
-  if(caught || actionLock || puzzleActive || aimLock)return;
+function tryInteract(){
+  if(caught || actionLock || puzzleActive) return false;
 
-  if(player.hiddenIn){ tryToggleHideFurniture(); return; }
+  if(player.hiddenIn){ tryToggleHideFurniture(); return true; }
 
   for(const m of missions){
     if(m.done)continue;
     const dMis=Math.hypot(player.x-m.x,player.y-m.y);
     if(dMis<40){
       openPuzzle(m);
-      return;
+      return true;
     }
   }
 
-  if(tryHideCorpse())return;
-  if(tryToggleHideFurniture())return;
+  if(tryHideCorpse())return true;
+  if(tryToggleHideFurniture())return true;
 
   for(const en of enemies){
     if(en.state==='dying')continue;
@@ -1537,9 +1695,16 @@ function handleAction(){
         stats.chokeKills++;
       }
       vibrate(30);
-      return;
+      return true;
     }
   }
+  return false;
+}
+
+function performActionOrFire(angle){
+  if(!gameStarted || caught || puzzleActive || pauseActive) return;
+  if(tryInteract()) return;
+  handleFire(angle);
 }
 
 let msgTimer=0;
@@ -1704,11 +1869,7 @@ function rimLight(radius,alpha){
   ctx.restore();
 }
 
-function drawPlayerSprite(crouch){
-  const bob = crouch ? -2 : 0;
-  ctx.save();
-  ctx.translate(0,bob);
-
+function drawPlayerGun(){
   ctx.fillStyle='#1b1b1b';
   ctx.fillRect(9,-2,10,4);
   ctx.fillStyle='#3a3a3a';
@@ -1721,6 +1882,19 @@ function drawPlayerSprite(crouch){
   ctx.shadowBlur=9;
   ctx.beginPath();ctx.arc(LIGHT_OFFSET,0,3,0,7);ctx.fill();
   ctx.shadowBlur=0;
+
+  ctx.fillStyle='#111';
+  ctx.beginPath();ctx.ellipse(7,-4,3.4,2.6,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(7,4,3.4,2.6,0,0,7);ctx.fill();
+  ctx.fillStyle='#7CFC00';
+  ctx.beginPath();ctx.ellipse(8.3,-4,1.6,1.3,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(8.3,4,1.6,1.3,0,0,7);ctx.fill();
+}
+
+function drawPlayerSprite(crouch){
+  const bob = crouch ? -2 : 0;
+  ctx.save();
+  ctx.translate(0,bob);
 
   if(crouch){
     ctx.fillStyle='#33403a';
@@ -1738,13 +1912,6 @@ function drawPlayerSprite(crouch){
   ctx.lineTo(-9,3);ctx.lineTo(-4,9);ctx.lineTo(5,8);
   ctx.closePath();ctx.fill();
   ctx.strokeStyle='#181c14';ctx.lineWidth=1;ctx.stroke();
-
-  ctx.fillStyle='#111';
-  ctx.beginPath();ctx.ellipse(7,-4,3.4,2.6,0,0,7);ctx.fill();
-  ctx.beginPath();ctx.ellipse(7,4,3.4,2.6,0,0,7);ctx.fill();
-  ctx.fillStyle='#7CFC00';
-  ctx.beginPath();ctx.ellipse(8.3,-4,1.6,1.3,0,0,7);ctx.fill();
-  ctx.beginPath();ctx.ellipse(8.3,4,1.6,1.3,0,0,7);ctx.fill();
 
   ctx.restore();
 }
@@ -1801,6 +1968,10 @@ function drawEnemySprite(en, alpha){
   if(en.stunned){
     ctx.font='bold 12px sans-serif';ctx.textAlign='center';
     ctx.fillText('💫', 0, -18);
+  }
+  if(en.stuck){
+    ctx.font='bold 12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('🍯', 0, -18);
   }
 
   ctx.restore();
@@ -2063,6 +2234,28 @@ function drawClouds(camX,camY){
   }
 }
 
+function drawTraps(camX,camY){
+  for(const tr of traps){
+    if(tr.type==='claymore'){
+      ctx.save();
+      const blink = tr.armed ? (Math.sin(simTime*8)>0 ? '#ff3030' : '#801010') : '#666';
+      ctx.fillStyle='#2a2a2a';
+      ctx.beginPath();ctx.arc(tr.x-camX,tr.y-camY,10,0,7);ctx.fill();
+      ctx.fillStyle=blink;
+      ctx.beginPath();ctx.arc(tr.x-camX,tr.y-camY,4,0,7);ctx.fill();
+      ctx.restore();
+    } else if(tr.type==='glue'){
+      ctx.save();
+      const g=ctx.createRadialGradient(tr.x-camX,tr.y-camY,4,tr.x-camX,tr.y-camY,tr.radius);
+      g.addColorStop(0,'rgba(140,220,140,0.55)');
+      g.addColorStop(1,'rgba(120,200,120,0.1)');
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.arc(tr.x-camX,tr.y-camY,tr.radius,0,7);ctx.fill();
+      ctx.restore();
+    }
+  }
+}
+
 function drawBullets(camX,camY){
   for(const b of bullets){
     const frac = Math.min(1,b.t/b.dur);
@@ -2111,6 +2304,7 @@ function drawWorld(camX,camY){
   }
 
   drawClouds(camX,camY);
+  drawTraps(camX,camY);
   drawBullets(camX,camY);
 
   for(const en of enemies){
@@ -2180,6 +2374,11 @@ function drawWorld(camX,camY){
     ctx.rotate(player.angle);
     drawPlayerSprite(player.crouch);
     ctx.restore();
+    ctx.save();
+    ctx.translate(player.x-camX,player.y-camY);
+    ctx.rotate(player.aimAngle);
+    drawPlayerGun();
+    ctx.restore();
   } else {
     ctx.save();
     ctx.globalAlpha=0.4;
@@ -2202,10 +2401,11 @@ function drawWorld(camX,camY){
     ctx.stroke();
   }
 
-  if(aimLock){
-    const {x:tx,y:ty} = rayMarchLanding(player.x,player.y,player.angle,210);
+  if(throwActive){
+    const {x:tx,y:ty} = rayMarchLanding(player.x,player.y,player.aimAngle,220);
+    const col = THROW_COLORS[throwSelected] || 'rgba(255,255,255,0.85)';
     ctx.save();
-    ctx.strokeStyle='rgba(255,255,255,0.85)';
+    ctx.strokeStyle=col;
     ctx.lineWidth=2;
     ctx.setLineDash([7,7]);
     ctx.beginPath();
@@ -2213,7 +2413,7 @@ function drawWorld(camX,camY){
     ctx.lineTo(tx-camX,ty-camY);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle= aimLock==='smoke' ? 'rgba(255,255,255,0.9)':'rgba(230,220,90,0.9)';
+    ctx.fillStyle=col;
     ctx.beginPath();ctx.arc(tx-camX,ty-camY,5,0,7);ctx.fill();
     ctx.restore();
   }
@@ -2277,7 +2477,7 @@ function render(){
 
     // 2. 롤 스타일 시야원(전방 넓고 밝게, 후방 좁고 어둡게) - fog 캔버스에서 구멍 뚫기
     const backR=150, frontR=310;
-    const poly = castOmniVisionPolygon(player.x,player.y,player.angle,backR,frontR, settings.lowSpec?24:44);
+    const poly = castOmniVisionPolygon(player.x,player.y,player.aimAngle,backR,frontR, settings.lowSpec?24:44);
     fogCtx.save();
     fogCtx.beginPath();
     fogCtx.moveTo(poly[0].x-camX,poly[0].y-camY);
@@ -2321,10 +2521,10 @@ function render(){
   }
 
   if(!caught && !player.hiddenIn && !puzzleActive){
-    const originX = player.x + Math.cos(player.angle)*LIGHT_OFFSET;
-    const originY = player.y + Math.sin(player.angle)*LIGHT_OFFSET;
+    const originX = player.x + Math.cos(player.aimAngle)*LIGHT_OFFSET;
+    const originY = player.y + Math.sin(player.aimAngle)*LIGHT_OFFSET;
     const laserRange = 430;
-    const landing = rayMarchLanding(originX, originY, player.angle, laserRange);
+    const landing = rayMarchLanding(originX, originY, player.aimAngle, laserRange);
     ctx.save();
     ctx.globalCompositeOperation='lighter';
     ctx.strokeStyle='rgba(70,255,110,0.5)';
@@ -2422,13 +2622,12 @@ function loop(now){
       if(execTimer<=0){ respawn(); afterRespawnHideExec(); }
     } else {
       updatePlayer(dt);
-      for(const en of enemies)updateEnemy(en,dt);
+      const enemyDt = slowMoActive ? dt*0.32 : dt;
+      for(const en of enemies)updateEnemy(en,enemyDt);
       updateClouds(dt);
       updateBullets(dt);
+      updateTraps(dt);
       if(missionPunchTimer>0) missionPunchTimer=Math.max(0,missionPunchTimer-dt);
-      handleDecoy();
-      handleFire();
-      handleAction();
 
       for(let i=enemies.length-1;i>=0;i--){
         const en=enemies[i];
@@ -2482,8 +2681,10 @@ function loop(now){
       const mm=String(Math.floor(elapsed/60)).padStart(2,'0'), ss=String(elapsed%60).padStart(2,'0');
       document.getElementById('timerText').textContent = mm+':'+ss+' | 미션 '+missions.filter(m=>m.done).length+'/'+missions.length;
     }
-    document.getElementById('btnSmoke').textContent = '연막탄 '+charges.smoke;
-    document.getElementById('btnStun').textContent = '기절탄 '+charges.stun;
+    THROW_TYPES.forEach(t=>{
+      const el=document.getElementById('opt-'+t);
+      if(el) el.textContent = THROW_LABELS[t]+' '+charges[t];
+    });
     if(msgTimer>0){msgTimer--;if(msgTimer<=0)document.getElementById('msg').style.display='none';}
   }
 
