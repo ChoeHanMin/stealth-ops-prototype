@@ -35,7 +35,7 @@
   #joyArrow{position:absolute;width:0;height:0;display:none;pointer-events:none;
        border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid rgba(255,230,120,0.9);
        filter:drop-shadow(0 0 3px rgba(0,0,0,0.6));}
-  #joyGuide{position:fixed;left:16px;bottom:16px;width:140px;height:140px;border-radius:50%;
+  #joyGuide{position:fixed;left:60px;bottom:70px;width:140px;height:140px;border-radius:50%;
        background:radial-gradient(circle,rgba(255,255,255,0.04) 60%,rgba(255,255,255,0.07) 61%,rgba(255,255,255,0.07) 100%);
        border:2.5px dashed rgba(255,255,255,0.28);display:none;pointer-events:none;z-index:5;}
 
@@ -262,7 +262,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.19.0.0</div>
+  <div id="verText">Ver 1.20.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -289,6 +289,7 @@
       <li>좌측 하단 원형 조이스틱: 이동. 살짝 당기면 걷기(조용), 끝까지 당기면 뛰기(빠르지만 발소리 큼)</li>
       <li>우측 하단 원형 조이스틱(총 아이콘): 조준+사격. 이동 조이스틱과 완전히 독립적이라, 걸어가는 방향과 다른 방향으로 조준/사격 가능. 손을 떼는 순간 그 방향으로 발사됨</li>
       <li>상호작용 버튼(사격 조이스틱 위): 근접한 적 처치, 미션 단말기 상호작용, 시체 은닉, 은신처 진입/탈출</li>
+      <li>적이 아주 가까이 오면 사격 조이스틱이 "격투"로 바뀜 - 그 자리에서 3번 짧게 탭하면(연타) 적을 제압함</li>
       <li>기본 시야는 조준 방향 기준 손전등 형태 - 정면은 넓고 밝게, 후방은 좁고 어둡게, 멀수록 점점 어두워짐</li>
       <li>웅크리기: 이동이 느려지지만 은신에 유리. 좁은 환기구는 웅크려야 통과. 책상/식탁 등 앞에서 웅크린 채 조준-상호작용하면 안에 숨을 수 있음</li>
       <li>초록 레이저(플레이어만 보임)가 조준 방향을 알려줌. 못 맞혀도 총알이 근처를 스치면 높은 확률로 적이 눈치챔</li>
@@ -400,14 +401,13 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 1.19.0.0)</h2>
+    <h2>업데이트 안내 (Ver 1.20.0.0)</h2>
     <ul>
-      <li>슬로우모션이 안 걸리던 진짜 원인 발견 - 적 이동거리가 경과시간과 무관하게 프레임당 고정값이었음. 이제 슬로우모션이 실제로 적용됨</li>
-      <li>재시작 멈춤 버그 추가 원인 발견 - 처형 화면을 막는 진짜 변수(caught)가 오류 발생 시 안 풀리고 있었음. 무조건 강제로 풀리도록 수정</li>
-      <li>투척휠에서 방향을 살짝 움직여 "선택"만 한 경우엔 손을 떼도 안 던져짐 - 확실히 스와이프해서 잠긴 경우에만 투척됨</li>
-      <li>이동 조이스틱을 배틀그라운드 모바일 스타일(큰 외곽 링 + 작고 또렷한 손잡이)로 재설계</li>
+      <li>재시작 시 화면이 멈추던 버그 - 진짜 원인은 조이스틱을 누른 채로 재시작하면 그 터치가 "고아" 상태가 되어 다시는 인식이 안 되던 것이었음. 완전히 수정</li>
+      <li>투척휠에서 연막탄만 선택되던 버그 수정 - 손 떨림 정도에도 롱프레스가 취소되어 매번 마지막 투척물로만 던져지던 게 원인. 홀드 시간도 0.7초로 단축</li>
+      <li>이동 조이스틱을 화면 우상단으로 이동 (모서리에 손 안 닿게), 더 또렷한 손잡이로 개선</li>
+      <li>적이 가까이 오면 사격 조이스틱이 "격투"로 바뀌고, 3번 연타하면 적을 제압함</li>
     </ul>
-    <div class="closeBtn" id="closeWhatsNew">확인</div>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
 </div>
@@ -801,7 +801,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '1.19.0.0';
+const GAME_VERSION = '1.20.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 const DAMAGE_MUL = { easy:0.6, normal:1, hard:1.4 };
@@ -1002,6 +1002,9 @@ function playTaserZap(volScale){
   playNoise(0.22, 0.24*volScale, 1400, 'bandpass');
   playTone(90, 0.2, 0.12*volScale, 'sawtooth');
 }
+function playPunchSound(){
+  playNoise(0.07, 0.28, 350, 'lowpass');
+}
 function vibrate(pattern){
   if(!navigator.vibrate) return;
   if(settings.vibeLevel==='off') return;
@@ -1185,7 +1188,7 @@ document.getElementById('handToggle').addEventListener('click',()=>{
   if(settings.leftHanded){
     jz.style.left='auto'; jz.style.right='0';
     fz.style.left='0'; fz.style.right='auto';
-    jg.style.left='auto'; jg.style.right='16px';
+    jg.style.left='auto'; jg.style.right='60px';
     fg.style.left='14px'; fg.style.right='auto';
     bt.style.right='auto'; bt.style.left='50px';
     tb.style.right='auto'; tb.style.left='238px';
@@ -1195,7 +1198,7 @@ document.getElementById('handToggle').addEventListener('click',()=>{
   } else {
     jz.style.right='auto'; jz.style.left='0';
     fz.style.right='0'; fz.style.left='auto';
-    jg.style.right='auto'; jg.style.left='16px';
+    jg.style.right='auto'; jg.style.left='60px';
     fg.style.right='14px'; fg.style.left='auto';
     bt.style.left='auto'; bt.style.right='50px';
     tb.style.left='auto'; tb.style.right='238px';
@@ -1380,6 +1383,8 @@ let joy = {active:false,dx:0,dy:0,startX:0,startY:0,touchId:null};
 function joyStart(x,y){joy.active=true;joy.startX=x;joy.startY=y;joyBase.style.left=(x-70)+'px';joyBase.style.top=(y-70)+'px';
   joyStick.style.left=(x-17)+'px';joyStick.style.top=(y-17)+'px';joyBase.style.display='block';joyStick.style.display='block';}
 function joyMove(x,y){if(!joy.active)return;let dx=x-joy.startX,dy=y-joy.startY;const max=66;
+  if(joyBase.style.display==='none'){joyBase.style.left=(joy.startX-70)+'px';joyBase.style.top=(joy.startY-70)+'px';joyBase.style.display='block';}
+  if(joyStick.style.display==='none') joyStick.style.display='block';
   const dist=Math.hypot(dx,dy);if(dist>max){dx=dx/dist*max;dy=dy/dist*max;}
   joy.dx=dx/max;joy.dy=dy/max;joyStick.style.left=(joy.startX+dx-17)+'px';joyStick.style.top=(joy.startY+dy-17)+'px';
   if(dist>10){
@@ -1450,19 +1455,39 @@ function fireStart(x,y){
 }
 function fireMove(x,y){
   if(!fireJoy.active)return;
+  if(fireBase.style.display==='none'){fireBase.style.left=(fireJoy.startX-65)+'px';fireBase.style.top=(fireJoy.startY-65)+'px';fireBase.style.display='flex';}
+  if(fireStick.style.display==='none') fireStick.style.display='flex';
   let dx=x-fireJoy.startX, dy=y-fireJoy.startY; const max=65;
   const dist=Math.hypot(dx,dy);
   if(dist>12){ player.aimAngle = Math.atan2(dy,dx); fireJoy.dragged=true; }
   const cdx = dist>max ? dx/dist*max : dx, cdy = dist>max ? dy/dist*max : dy;
   fireStick.style.left=(fireJoy.startX+cdx-29)+'px'; fireStick.style.top=(fireJoy.startY+cdy-29)+'px';
 }
+const PUNCH_RANGE = 70;
+const PUNCH_COMBO_WINDOW = 900;
+let punchCombo = {count:0, lastTime:0};
 function fireEnd(){
   if(!fireJoy.active)return;
   const wasDragged = fireJoy.dragged;
   fireJoy.active=false; fireJoy.touchId=null; fireJoy.dragged=false; fireJoy.fireAccum=0;
   fireBase.style.display='none'; fireStick.style.display='none';
   if(!wasDragged){
-    handleFire(player.aimAngle); // 짧게 탭해도 현재 조준 방향으로 한 발 발사
+    const nearEn = !caught && !puzzleActive && !actionLock ? findNearestMeleeEnemy(PUNCH_RANGE) : null;
+    if(nearEn){
+      const now = performance.now();
+      if(now - punchCombo.lastTime > PUNCH_COMBO_WINDOW) punchCombo.count = 0;
+      punchCombo.count++;
+      punchCombo.lastTime = now;
+      playPunchSound();
+      vibrate(25);
+      spawnText(nearEn.x, nearEn.y-20, punchCombo.count+'/3', '#ffcf6e');
+      if(punchCombo.count>=3){
+        performMeleeTakedown(nearEn);
+        punchCombo.count=0;
+      }
+    } else {
+      handleFire(player.aimAngle); // 짧게 탭해도 현재 조준 방향으로 한 발 발사
+    }
   }
 }
 fireZone.addEventListener('touchstart',e=>{
@@ -1508,7 +1533,7 @@ let throwWheelShown=false;
 let throwHoldTimer=null;
 let lastThrowType='smoke';
 const THROW_LOCK_RADIUS=42;
-const THROW_HOLD_MS=1200;
+const THROW_HOLD_MS=700;
 function throwBegin(x,y){
   if(!gameStarted || caught || puzzleActive || pauseActive || actionLock) return;
   throwActive=true; throwWheelShown=false; throwSelected=null; throwLocked=false;
@@ -1533,7 +1558,7 @@ function updateWheelHighlight(x,y){
   const rawAngle = Math.atan2(dy,dx);
 
   if(!throwWheelShown){
-    if(dist>16){ clearTimeout(throwHoldTimer); } // 너무 많이 움직이면 롱프레스 취소 (빠른 스와이프로 처리됨)
+    if(dist>50){ clearTimeout(throwHoldTimer); } // 확실히 멀리 움직였을 때만 롱프레스 취소 (빠른 스와이프로 처리됨). 이전엔 16px로 너무 민감해서 손이 살짝만 움직여도 취소되어 매번 마지막 투척물(연막탄)로만 던져지는 버그가 있었음
     return;
   }
 
@@ -2089,9 +2114,15 @@ function showExecButtons(){
   document.getElementById('execButtons').style.display='flex';
 }
 function resetTouchStates(){
-  joy.active=false; joy.dx=0; joy.dy=0; joy.touchId=null;
-  fireJoy.active=false; fireJoy.dragged=false; fireJoy.fireAccum=0; fireJoy.touchId=null;
-  throwActive=false; throwSelected=null; slowMoActive=false; throwTouchId=null; throwLocked=false;
+  // 주의: touchId와 active는 여기서 강제로 건드리지 않음! 재시작 시점에 손가락이 아직
+  // 화면(조이스틱 등)에서 떨어지지 않은 상태일 수 있는데, 여기서 touchId를 null로 만들거나
+  // active를 false로 만들어버리면 그 손가락이 나중에 움직여도(touchmove) 식별자가 안 맞거나
+  // "비활성" 상태로 처리되어 영원히 무시되어버림 -> "재시작 후 캐릭터가 안 움직이는" 버그의
+  // 실제 원인이었음. 대신 dx/dy만 즉시 0으로 초기화(그 순간 이동은 멈춤)하고,
+  // 진행 중인 터치는 계속 정상 추적되게 둔다.
+  joy.dx=0; joy.dy=0;
+  fireJoy.dragged=false; fireJoy.fireAccum=0;
+  throwActive=false; throwSelected=null; slowMoActive=false; throwLocked=false;
   throwWheelShown=false; clearTimeout(throwHoldTimer);
   document.getElementById('fireBase').style.display='none';
   document.getElementById('fireStick').style.display='none';
@@ -2335,26 +2366,40 @@ function tryInteract(){
     if(en.state==='dying')continue;
     const dist=Math.hypot(player.x-en.x,player.y-en.y);
     if(dist<48){
-      const type=getTakedownType(en);
-      en.state='dying';
-      en.screamed=false; en.dustAccum=0;
-      if(type==='knife'){
-        const toPlayerAngle=Math.atan2(player.y-en.y,player.x-en.x);
-        en.dieType='knife'; en.dieTimer=0.55; en.dieTotal=0.55;
-        actionLock={type:'knife',enemy:en,hitAngle:toPlayerAngle+Math.PI};
-        showMsg('정면 기습 처치!');
-        stats.knifeKills++;
-      } else {
-        en.dieType='choke'; en.dieTimer=0.6; en.dieTotal=0.6;
-        actionLock={type:'choke',enemy:en};
-        showMsg('은밀 조르기 처치');
-        stats.chokeKills++;
-      }
-      vibrate(30);
+      performMeleeTakedown(en);
       return true;
     }
   }
   return false;
+}
+
+function performMeleeTakedown(en){
+  const type=getTakedownType(en);
+  en.state='dying';
+  en.screamed=false; en.dustAccum=0;
+  if(type==='knife'){
+    const toPlayerAngle=Math.atan2(player.y-en.y,player.x-en.x);
+    en.dieType='knife'; en.dieTimer=0.55; en.dieTotal=0.55;
+    actionLock={type:'knife',enemy:en,hitAngle:toPlayerAngle+Math.PI};
+    showMsg('정면 기습 처치!');
+    stats.knifeKills++;
+  } else {
+    en.dieType='choke'; en.dieTimer=0.6; en.dieTotal=0.6;
+    actionLock={type:'choke',enemy:en};
+    showMsg('은밀 조르기 처치');
+    stats.chokeKills++;
+  }
+  vibrate(30);
+}
+
+function findNearestMeleeEnemy(range){
+  let best=null, bestDist=range;
+  for(const en of enemies){
+    if(en.state==='dying')continue;
+    const dist=Math.hypot(player.x-en.x,player.y-en.y);
+    if(dist<bestDist){bestDist=dist;best=en;}
+  }
+  return best;
 }
 
 function performActionOrFire(angle){
@@ -3735,6 +3780,12 @@ function loopBody(dt){
       const el=document.getElementById('opt-'+t);
       if(el) el.textContent = THROW_LABELS[t]+' '+charges[t];
     });
+    {
+      const isFightMode = !!findNearestMeleeEnemy(PUNCH_RANGE);
+      const label = isFightMode ? '격투' : '사격';
+      document.getElementById('fireGuide').textContent = label;
+      if(!fireJoy.active) document.getElementById('fireStick').textContent = label;
+    }
     if(msgTimer>0){msgTimer--;if(msgTimer<=0)document.getElementById('msg').style.display='none';}
   }
 }
