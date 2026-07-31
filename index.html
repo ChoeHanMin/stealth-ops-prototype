@@ -560,7 +560,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 5.8.0.0</div>
+  <div id="verText">Ver 5.8.1.0</div>
   <div class="menuBtn primary" id="btnStart">게임 시작</div>
   <div class="menuBtn" id="btnHow">플레이 방법</div>
   <div class="menuBtn" id="btnDev">개발자</div>
@@ -856,6 +856,7 @@ const EN = {
   '본인은 실수로 폭발에 휘말렸습니다.':'You were caught in your own blast.',
   '본인이 던진 것에 당했습니다':'Killed by your own throwable',
   '체크포인트에서 재시작...':'Restarting from checkpoint...',
+  '새 버전을 받았습니다 — 홈으로 나가면 적용됩니다':'New version downloaded — it will apply when you quit to the title',
   '작전 실패':'Operation Failed',
   '튜토리얼 다시 보기':'Replay tutorial', '처음부터 다시 시작':'Restart from the beginning',
   '처음부터 다시 시작합니다':'Restarting from the beginning',
@@ -3326,7 +3327,7 @@ function loadAnalytics(){
     analytics = JSON.parse(localStorage.getItem(ANALYTICS_KEY) || 'null');
   }catch(e){ analytics = null; }
   if(!analytics || typeof analytics!=='object'){
-    analytics = { version:'5.8.0.0', sessions:0, totalPlaySec:0,
+    analytics = { version:'5.8.1.0', sessions:0, totalPlaySec:0,
                   deaths:[], missionTimes:{}, runs:[], lastSeen:0 };
   }
   if(!analytics.deaths) analytics.deaths=[];
@@ -7249,6 +7250,8 @@ function closeAllOverlays(){
 function quitToHome(){
   closeAllOverlays();
   closePuzzle();
+  // 플레이 중에 받아둔 갱신이 있으면 여기서 적용한다
+  if(swUpdateReady){ applySwUpdate(); return; }
 
   // 나가기 전 마지막 저장 (사망 상태가 아니라면)
   if(!caught && !missionsComplete) saveRun();
@@ -10371,9 +10374,40 @@ function loop(now){
 }
 requestAnimationFrame(loop);
 
+/* ===================== 자동 갱신 =====================
+   예전에는 새 버전을 받으려면 앱을 두 번 실행해야 했다.
+   1회차에 새 서비스워커가 설치·활성화되지만, 그때 화면은 이미
+   옛 HTML로 그려진 뒤라 2회차에야 새 화면이 보였기 때문이다.
+
+   이제 새 서비스워커가 제어권을 잡으면 페이지를 한 번 새로고침한다.
+   다만 게임 중에 갑자기 새로고침되면 진행이 끊기므로,
+   시작 화면일 때만 즉시 적용하고 플레이 중이면 다음 실행으로 미룬다. */
+let swReloading = false;      // 무한 새로고침 방지
+let swUpdateReady = false;    // 플레이 중에 갱신이 준비된 상태
+/* 페이지가 시작될 때 이미 제어자가 있었는지 —
+   최초 설치 때는 controllerchange가 한 번 나는데 그때는 새로고침하면 안 된다 */
+const swHadController = !!(navigator.serviceWorker && navigator.serviceWorker.controller);
+
+function applySwUpdate(){
+  if(swReloading) return;
+  swReloading = true;
+  try{ window.location.reload(); }catch(e){}
+}
+
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    // 최초 설치(제어자가 없다가 생긴 경우)에는 새로고침할 필요가 없다
+    if(!swHadController) return;
+    if(!gameStarted){
+      applySwUpdate();
+    } else {
+      swUpdateReady = true;
+      showMsg('새 버전을 받았습니다 — 홈으로 나가면 적용됩니다');
+    }
   });
 }
 </script>
