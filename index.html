@@ -17,6 +17,7 @@
   #detBar.alert{background:#e03030;}
   #hpBarWrap{width:160px;height:8px;background:#2a1414;border:1px solid #5a2a2a;border-radius:4px;overflow:hidden;margin-top:3px;}
   #hpBar{height:100%;width:100%;background:#4ac96a;transition:width 0.15s;}
+  #codeHint{font-size:12.5px;font-weight:bold;color:#ffe27a;margin-top:3px;text-shadow:0 1px 3px rgba(0,0,0,0.8);display:none;}
   #hurtVignette{position:fixed;inset:0;pointer-events:none;display:none;z-index:38;
        box-shadow:inset 0 0 90px 26px rgba(220,20,20,0.55);}
   #stateText{font-weight:bold;margin-top:2px;}
@@ -24,10 +25,15 @@
   #msg{position:fixed;top:56px;left:50%;transform:translateX(-50%);color:#fff;font-size:15px;
        background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:6px;display:none;z-index:10;}
   #joyZone{position:fixed;left:0;bottom:0;width:45%;height:45%;display:none;}
-  #joyBase{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.12);
-       border:2px solid rgba(255,255,255,0.3);display:none;}
-  #joyStick{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.5);display:none;}
-  #joyGuide{position:fixed;left:26px;bottom:26px;width:90px;height:90px;border-radius:50%;
+  #joyBase{position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.12);
+       border:2px solid rgba(255,255,255,0.32);display:none;}
+  #joyStick{position:absolute;width:56px;height:56px;border-radius:50%;
+       background:radial-gradient(circle at 35% 30%,rgba(255,255,255,0.85),rgba(220,220,220,0.5));
+       box-shadow:0 2px 6px rgba(0,0,0,0.4);display:none;}
+  #joyArrow{position:absolute;width:0;height:0;display:none;pointer-events:none;
+       border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:16px solid rgba(255,230,120,0.9);
+       filter:drop-shadow(0 0 3px rgba(0,0,0,0.6));}
+  #joyGuide{position:fixed;left:21px;bottom:21px;width:130px;height:130px;border-radius:50%;
        background:rgba(255,255,255,0.06);border:2px dashed rgba(255,255,255,0.22);display:none;pointer-events:none;z-index:5;}
 
   #fireZone{position:fixed;right:0;bottom:0;width:50%;height:55%;display:none;}
@@ -48,11 +54,12 @@
        background:rgba(255,205,110,0.22);border:2px solid rgba(255,220,150,0.55);color:#fff;font-size:11px;
        display:none;align-items:center;justify-content:center;text-align:center;z-index:44;user-select:none;}
 
-  #miniAbilityBtns{position:fixed;right:158px;bottom:120px;display:none;flex-direction:row;gap:6px;z-index:43;}
-  .miniBtn2{width:38px;height:38px;border-radius:50%;font-size:7.5px;border:1.5px solid rgba(255,255,255,0.45);
-       color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.1;}
-  #btnNVG{background:rgba(120,220,140,0.28);}
-  #btnThermal{background:rgba(230,140,80,0.28);}
+  #miniAbilityBtns{position:fixed;right:158px;bottom:120px;display:none;flex-direction:column;gap:6px;z-index:43;}
+  .miniBtn2{width:58px;height:34px;border-radius:50%/50%;font-size:8px;border:1.5px solid rgba(255,255,255,0.5);
+       color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.1;
+       box-shadow:0 2px 4px rgba(0,0,0,0.3);}
+  #btnNVG{background:linear-gradient(160deg,rgba(120,220,140,0.5),rgba(60,150,90,0.35));border-color:rgba(160,255,180,0.7);}
+  #btnThermal{background:linear-gradient(160deg,rgba(255,150,80,0.5),rgba(200,90,30,0.35));border-color:rgba(255,180,120,0.7);}
 
   #throwBtn{position:fixed;right:238px;bottom:46px;width:66px;height:66px;border-radius:50%;
        background:rgba(230,220,120,0.22);border:2px solid rgba(255,220,140,0.5);color:#fff;font-size:11px;
@@ -189,6 +196,7 @@
   <div id="stateText">잠입중</div>
   <div id="detBarWrap"><div id="detBar"></div></div>
   <div id="hpBarWrap"><div id="hpBar"></div></div>
+  <div id="codeHint"></div>
   <div id="timerText">00:00</div>
 </div>
 <div id="hurtVignette"></div>
@@ -199,6 +207,7 @@
 <div id="joyGuide"></div>
 <div id="joyZone">
   <div id="joyBase"></div>
+  <div id="joyArrow"></div>
   <div id="joyStick"></div>
 </div>
 <div id="miniAbilityBtns">
@@ -246,7 +255,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.15.0.0</div>
+  <div id="verText">Ver 1.16.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -276,7 +285,8 @@
       <li>기본 시야는 조준 방향 기준 손전등 형태 - 정면은 넓고 밝게, 후방은 좁고 어둡게, 멀수록 점점 어두워짐</li>
       <li>웅크리기: 이동이 느려지지만 은신에 유리. 좁은 환기구는 웅크려야 통과. 책상/식탁 등 앞에서 웅크린 채 조준-상호작용하면 안에 숨을 수 있음</li>
       <li>초록 레이저(플레이어만 보임)가 조준 방향을 알려줌. 못 맞혀도 총알이 근처를 스치면 높은 확률로 적이 눈치챔</li>
-      <li>투척물 버튼을 꾹 누르면 시간이 느려지며 5방향 휠(연막탄/수류탄/크레모아/끈끈이/기절탄)이 나타남 - 손가락을 원하는 방향으로 움직여 선택 후 손을 떼면 조준 방향으로 투척</li>
+      <li>투척물 버튼을 짧게 스와이프하면 마지막으로 썼던 투척물이 스와이프한 방향(상하좌우/대각선)으로 즉시 던져짐. 1.2초 이상 제자리에서 누르고 있으면 시간이 느려지며 6방향 휠(연막탄/수류탄/크레모아/끈끈이/기절탄/유인물)이 나타남 - 방향으로 아이템을 고른 뒤(더 당기면 고정됨) 그 이후로는 자유로운 방향으로 조준해서 던질 수 있음</li>
+      <li>미션 암호가 적힌 쪽지(테이블 등) 근처에 가면 체력바 아래에 "코드: XXXX"로 미리 표시됨</li>
       <li>연막탄: 뭉게구름처럼 넓게 퍼져 시야 차단 · 기절탄: 범위 내 적 5초 무력화 · 수류탄: 명중 시 즉사하지만 폭발음으로 전역 알람 발생 · 크레모아: 설치 후 근처에 적이 오면 자동 폭발 · 끈끈이: 밟은 적을 한동안 못 움직이게 함(감지는 계속함)</li>
       <li>정면 기습(칼) 처치는 비명을 질러 근처 적이 조사하러 옴 - 후방 조르기는 완전히 조용함</li>
       <li>야간투시경: 10초간 화면 전체가 또렷하게 보임(녹색 톤), 이후 재사용 대기시간 필요</li>
@@ -383,14 +393,14 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 1.15.0.0)</h2>
+    <h2>업데이트 안내 (Ver 1.16.0.0)</h2>
     <ul>
-      <li>체력(HP) 시스템 도입 - 총에 맞거나 물려도 한 방에 죽지 않고 체력이 서서히 깎임. 난이도 낮을수록 피해 적음</li>
-      <li>처형 후 재시작 버튼을 눌러도 화면이 멈추던 버그 수정 (예기치 못한 오류가 있어도 게임이 멈추지 않도록 안전장치 추가)</li>
-      <li>가로모드 UI 전면 재배치 - 사격 조이스틱 확대, 웅크리기는 사격 위, 투척물은 상호작용 왼쪽으로</li>
-      <li>투척휠 조작 개선 - 방향으로 아이템 선택 후 고정되면, 이후 자유로운 360도 방향으로 던질 수 있음</li>
-      <li>크레모아 폭발범위를 실제처럼 전방 부채꼴(120도)로 표시 및 판정</li>
-      <li>사격 버튼 글자 흰색으로 변경</li>
+      <li>재시작 버튼 누르면 멈추던 버그 진짜 원인 발견 및 수정 - 터치 상태가 제대로 초기화 안 되던 문제였음</li>
+      <li>연막탄 속 적을 못 죽이던 버그 수정 - 근접 거리에서는 연막이 사격을 막지 않음</li>
+      <li>투척물 조작 재설계 - 짧게 스와이프하면 마지막 투척물이 8방향으로 즉시 투척, 1.2초 이상 누르면 6방향 선택 휠</li>
+      <li>야간투시/열화상 버튼을 타원형 디자인으로 변경</li>
+      <li>미션 암호 쪽지 근처에 가면 체력바 아래 "코드: XXXX"로 미리 표시</li>
+      <li>이동 조이스틱 확대 + 미는 방향을 알려주는 화살표 표시 추가</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -513,7 +523,7 @@ const decor = [
   {type:'bookshelf',x:35,y:35,w:50,h:100},
   {type:'bed',x:30,y:380,w:90,h:150,solid:true,hideable:true},
   {type:'nightstand',x:135,y:390,w:26,h:30},
-  {type:'note',x:132,y:378,w:22,h:14,text:'472',rot:-0.18},
+  {type:'note',x:132,y:378,w:22,h:14,text:'472',rot:-0.18,missionId:'card'},
   {type:'rug',x:45,y:160,w:120,h:80,color:'#7a5a4a'},
   {type:'plant',x:170,y:555,r:16},
   {type:'closet',x:150,y:40,w:40,h:70,solid:true,isHidingSpot:true},
@@ -535,7 +545,7 @@ const decor = [
   {type:'plant',x:500,y:250,r:18},
 
   {type:'desk',x:650,y:660,w:80,h:44,solid:true,hideable:true},
-  {type:'note',x:702,y:670,w:24,h:15,text:'1376',rot:0.14},
+  {type:'note',x:702,y:670,w:24,h:15,text:'1376',rot:0.14,missionId:'cctv'},
   {type:'deskChair',x:695,y:715,r:11},
   {type:'bookshelf',x:650,y:550,w:60,h:90},
   {type:'lamp',x:820,y:660,r:8},
@@ -787,7 +797,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '1.15.0.0';
+const GAME_VERSION = '1.16.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 const DAMAGE_MUL = { easy:0.6, normal:1, hard:1.4 };
@@ -1043,7 +1053,7 @@ const TUTORIAL_STEPS = [
   '우측 조이스틱(사격)을 드래그해서 조준하고 손을 떼면 그 방향으로 발사돼요. 이동과 완전히 독립적이라 걸으면서 다른 방향도 조준할 수 있어요. 짧게 탭하면 한 발, 드래그한 채 있으면 연발돼요.',
   '상호작용 버튼(사격 조이스틱 위 노란 버튼)으로 근접한 적 처치, 미션, 시체 은닉, 은신처 진입/탈출, 비상벨 끄기를 해요.',
   '적은 여러 종류예요 - 테이저를 든 경비(맞으면 잠시 마비), 총을 든 경비(맞으면 체크포인트로), 삼단봉 경비(원거리 공격은 없지만 매우 빠르게 추격), 경비견(냄새와 발소리로 감지). 정면에서 처치하면 빠르지만 비명이 나고, 뒤에서 처치하면 조용해요.',
-  '우측의 "투척물" 버튼을 꾹 누르면 시간이 느려지며 6가지 투척물 휠이 떠요. 손가락을 원하는 방향으로 움직이면 그 방향으로 아이템이 선택되고 그 방향으로 던져져요.',
+  '"투척물" 버튼을 짧게 스와이프하면 마지막에 쓴 투척물이 그 방향으로 바로 던져져요. 1.2초 이상 누르고 있으면 시간이 느려지며 6가지 투척물 휠이 떠요.',
   '화면 오른쪽 위 미니맵으로 최근에 본 적과 미션 위치를 확인하세요(안 본 지 오래되면 사라져요). ⏸ 버튼으로 언제든 일시정지할 수 있어요.'
 ];
 let tutorialStep=0;
@@ -1154,7 +1164,7 @@ document.getElementById('handToggle').addEventListener('click',()=>{
   if(settings.leftHanded){
     jz.style.left='auto'; jz.style.right='0';
     fz.style.left='0'; fz.style.right='auto';
-    jg.style.left='auto'; jg.style.right='14px';
+    jg.style.left='auto'; jg.style.right='21px';
     fg.style.left='14px'; fg.style.right='auto';
     bt.style.right='auto'; bt.style.left='50px';
     tb.style.right='auto'; tb.style.left='238px';
@@ -1164,7 +1174,7 @@ document.getElementById('handToggle').addEventListener('click',()=>{
   } else {
     jz.style.right='auto'; jz.style.left='0';
     fz.style.right='0'; fz.style.left='auto';
-    jg.style.right='auto'; jg.style.left='26px';
+    jg.style.right='auto'; jg.style.left='21px';
     fg.style.right='14px'; fg.style.left='auto';
     bt.style.left='auto'; bt.style.right='50px';
     tb.style.left='auto'; tb.style.right='238px';
@@ -1185,6 +1195,7 @@ document.getElementById('pauseBtn').addEventListener('click',()=>{
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden && gameStarted && !caught && !puzzleActive){
     pauseActive = true;
+    resetTouchStates();
     document.getElementById('pauseModal').style.display='none';
     document.getElementById('focusPauseModal').style.display='flex';
   }
@@ -1320,14 +1331,24 @@ function applyLanguage(){
 }
 
 /* ===================== 가상 조이스틱 (이동) ===================== */
-const joyZone=document.getElementById('joyZone'),joyBase=document.getElementById('joyBase'),joyStick=document.getElementById('joyStick');
+const joyZone=document.getElementById('joyZone'),joyBase=document.getElementById('joyBase'),joyStick=document.getElementById('joyStick'),joyArrow=document.getElementById('joyArrow');
 let joy = {active:false,dx:0,dy:0,startX:0,startY:0,touchId:null};
-function joyStart(x,y){joy.active=true;joy.startX=x;joy.startY=y;joyBase.style.left=(x-50)+'px';joyBase.style.top=(y-50)+'px';
-  joyStick.style.left=(x-22)+'px';joyStick.style.top=(y-22)+'px';joyBase.style.display='block';joyStick.style.display='block';}
-function joyMove(x,y){if(!joy.active)return;let dx=x-joy.startX,dy=y-joy.startY;const max=50;
+function joyStart(x,y){joy.active=true;joy.startX=x;joy.startY=y;joyBase.style.left=(x-65)+'px';joyBase.style.top=(y-65)+'px';
+  joyStick.style.left=(x-28)+'px';joyStick.style.top=(y-28)+'px';joyBase.style.display='block';joyStick.style.display='block';}
+function joyMove(x,y){if(!joy.active)return;let dx=x-joy.startX,dy=y-joy.startY;const max=62;
   const dist=Math.hypot(dx,dy);if(dist>max){dx=dx/dist*max;dy=dy/dist*max;}
-  joy.dx=dx/max;joy.dy=dy/max;joyStick.style.left=(joy.startX+dx-22)+'px';joyStick.style.top=(joy.startY+dy-22)+'px';}
-function joyEnd(){joy.active=false;joy.touchId=null;joy.dx=0;joy.dy=0;joyBase.style.display='none';joyStick.style.display='none';}
+  joy.dx=dx/max;joy.dy=dy/max;joyStick.style.left=(joy.startX+dx-28)+'px';joyStick.style.top=(joy.startY+dy-28)+'px';
+  if(dist>10){
+    const ang=Math.atan2(dy,dx);
+    const ax=joy.startX+Math.cos(ang)*74, ay=joy.startY+Math.sin(ang)*74;
+    joyArrow.style.left=(ax-9)+'px'; joyArrow.style.top=(ay-8)+'px';
+    joyArrow.style.transform='rotate('+(ang*180/Math.PI+90)+'deg)';
+    joyArrow.style.display='block';
+  } else {
+    joyArrow.style.display='none';
+  }
+}
+function joyEnd(){joy.active=false;joy.touchId=null;joy.dx=0;joy.dy=0;joyBase.style.display='none';joyStick.style.display='none';joyArrow.style.display='none';}
 joyZone.addEventListener('touchstart',e=>{
   if(joy.touchId!==null)return; // 이미 이 조이스틱을 조작 중인 손가락이 있으면 무시
   const t=e.changedTouches[0];
@@ -1427,22 +1448,42 @@ const throwBtnEl=document.getElementById('throwBtn'), throwWheelEl=document.getE
   });
 })();
 let throwStart={x:0,y:0};
+let throwLastPos={x:0,y:0};
 let throwAngle=0;
 let throwTouchId=null;
 let throwLocked=false;
+let throwWheelShown=false;
+let throwHoldTimer=null;
+let lastThrowType='smoke';
 const THROW_LOCK_RADIUS=42;
+const THROW_HOLD_MS=1200;
 function throwBegin(x,y){
   if(!gameStarted || caught || puzzleActive || pauseActive || actionLock) return;
-  throwActive=true; slowMoActive=true; throwSelected=null; throwLocked=false;
-  throwStart={x,y}; throwAngle=player.aimAngle;
-  throwWheelEl.style.left=x+'px'; throwWheelEl.style.top=y+'px';
-  throwWheelEl.style.display='block';
-  updateWheelHighlight(x,y);
+  throwActive=true; throwWheelShown=false; throwSelected=null; throwLocked=false;
+  throwStart={x,y}; throwLastPos={x,y}; throwAngle=player.aimAngle;
+  clearTimeout(throwHoldTimer);
+  throwHoldTimer=setTimeout(()=>{
+    if(!throwActive) return;
+    throwWheelShown=true;
+    slowMoActive=true;
+    throwWheelEl.style.left=throwStart.x+'px'; throwWheelEl.style.top=throwStart.y+'px';
+    throwWheelEl.style.display='block';
+    throwSelected=lastThrowType;
+    document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel','dim'));
+    const selEl=document.getElementById('opt-'+throwSelected);
+    if(selEl) selEl.classList.add('sel');
+    vibrate(15);
+  }, THROW_HOLD_MS);
 }
 function updateWheelHighlight(x,y){
   const dx=x-throwStart.x, dy=y-throwStart.y;
   const dist=Math.hypot(dx,dy);
-  const rawAngle = Math.atan2(dy,dx); // 실제 화면상 스와이프 방향 (라디안)
+  const rawAngle = Math.atan2(dy,dx);
+
+  if(!throwWheelShown){
+    if(dist>16){ clearTimeout(throwHoldTimer); } // 너무 많이 움직이면 롱프레스 취소 (빠른 스와이프로 처리됨)
+    return;
+  }
 
   if(throwLocked){
     // 항목은 이미 고정됨 - 이제부터는 어느 방향으로 움직이든 그 방향이 투척 방향이 됨
@@ -1450,7 +1491,7 @@ function updateWheelHighlight(x,y){
     return;
   }
 
-  if(dist<18){ throwSelected=null; return; }
+  if(dist<18){ throwSelected=lastThrowType; return; }
 
   throwAngle = rawAngle; // 아직 잠기기 전까지는 선택 방향 = 투척 방향
   let ang = rawAngle*180/Math.PI;
@@ -1470,17 +1511,33 @@ function updateWheelHighlight(x,y){
     document.querySelectorAll('.throwOpt').forEach(el=>{ if(!el.classList.contains('sel')) el.classList.add('dim'); });
   }
 }
-function throwMove(x,y){ if(throwActive) updateWheelHighlight(x,y); }
+function throwMove(x,y){ throwLastPos={x,y}; if(throwActive) updateWheelHighlight(x,y); }
 function throwEndGesture(){
   if(!throwActive)return;
+  clearTimeout(throwHoldTimer);
   throwActive=false; slowMoActive=false; throwLocked=false;
   throwWheelEl.style.display='none';
   document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel','dim'));
-  if(throwSelected){
-    if(charges[throwSelected]<=0){ showMsg(THROW_LABELS[throwSelected]+' 없음'); }
-    else { throwItem(throwSelected, throwAngle); }
+
+  if(throwWheelShown){
+    if(throwSelected){
+      lastThrowType=throwSelected;
+      if(charges[throwSelected]<=0){ showMsg(THROW_LABELS[throwSelected]+' 없음'); }
+      else { throwItem(throwSelected, throwAngle); }
+    }
+  } else {
+    // 휠이 뜨기 전 짧은 스와이프 - 8방향(상하좌우/대각선) 스냅 + 마지막 사용 투척물로 즉시 투척
+    const dx=throwLastPos.x-throwStart.x, dy=throwLastPos.y-throwStart.y;
+    const dist=Math.hypot(dx,dy);
+    if(dist>20){
+      const rawAngle=Math.atan2(dy,dx);
+      const snapped = Math.round(rawAngle/(Math.PI/4))*(Math.PI/4);
+      const type=lastThrowType;
+      if(charges[type]<=0){ showMsg(THROW_LABELS[type]+' 없음'); }
+      else { throwItem(type, snapped); }
+    }
   }
-  throwSelected=null;
+  throwSelected=null; throwWheelShown=false;
 }
 throwBtnEl.addEventListener('touchstart',e=>{
   if(throwTouchId!==null)return;
@@ -1515,12 +1572,12 @@ function pointInSmoke(x,y){
   for(const c of clouds){ if(c.type==='smoke' && Math.hypot(x-c.x,y-c.y)<c.radius) return true; }
   return false;
 }
-function hasLineOfSight(x1,y1,x2,y2){
+function hasLineOfSight(x1,y1,x2,y2,ignoreSmoke){
   const dist=Math.hypot(x2-x1,y2-y1); const steps=Math.ceil(dist/6);
   for(let i=1;i<steps;i++){
     const t=i/steps;const px=x1+(x2-x1)*t,py=y1+(y2-y1)*t;
     if(pointInWall(px,py))return false;
-    if(pointInSmoke(px,py))return false;
+    if(!ignoreSmoke && pointInSmoke(px,py))return false;
   }
   return true;
 }
@@ -1967,6 +2024,18 @@ function triggerCaught(){
 function showExecButtons(){
   document.getElementById('execButtons').style.display='flex';
 }
+function resetTouchStates(){
+  joy.active=false; joy.dx=0; joy.dy=0; joy.touchId=null;
+  fireJoy.active=false; fireJoy.dragged=false; fireJoy.fireAccum=0; fireJoy.touchId=null;
+  throwActive=false; throwSelected=null; slowMoActive=false; throwTouchId=null; throwLocked=false;
+  throwWheelShown=false; clearTimeout(throwHoldTimer);
+  document.getElementById('fireBase').style.display='none';
+  document.getElementById('fireStick').style.display='none';
+  document.getElementById('throwWheel').style.display='none';
+  document.getElementById('joyBase').style.display='none';
+  document.getElementById('joyStick').style.display='none';
+  document.getElementById('joyArrow').style.display='none';
+}
 function respawn(){
   player.x=checkpoint.x;player.y=checkpoint.y;
   player.hiddenIn=null;
@@ -1976,14 +2045,7 @@ function respawn(){
   caught=false; execAwaitingChoice=false;
   alarmRaised=false;
   actionLock=null;
-  fireJoy.active=false; fireJoy.dragged=false; fireJoy.fireAccum=0;
-  throwActive=false; throwSelected=null; slowMoActive=false;
-  joy.active=false; joy.dx=0; joy.dy=0;
-  document.getElementById('fireBase').style.display='none';
-  document.getElementById('fireStick').style.display='none';
-  document.getElementById('throwWheel').style.display='none';
-  document.getElementById('joyBase').style.display='none';
-  document.getElementById('joyStick').style.display='none';
+  resetTouchStates();
   for(const en of enemies){en.detect=0;en.state='patrol';en.target=null;en.stunned=false;en.stuck=false;}
 }
 function restartLevel(){
@@ -2075,7 +2137,7 @@ function handleFire(angle){
     if(dist>range)continue;
     const ang=Math.atan2(dy,dx);
     if(angleDiff(ang,angle) > tolerance)continue;
-    if(!hasLineOfSight(ox,oy,en.x,en.y))continue;
+    if(!hasLineOfSight(ox,oy,en.x,en.y, dist<70))continue;
     if(dist<bestDist){bestDist=dist;best=en;}
   }
 
@@ -3548,6 +3610,21 @@ function loopBody(dt){
       hv.style.opacity = Math.min(1, player.hurtFlash/0.35);
     } else {
       document.getElementById('hurtVignette').style.display='none';
+    }
+
+    // 근처 미션 코드 쪽지가 있으면 HUD에 힌트로 표시
+    {
+      const hintEl = document.getElementById('codeHint');
+      let hint=null;
+      for(const d of decor){
+        if(d.type!=='note' || !d.missionId) continue;
+        const m = missions.find(mm=>mm.id===d.missionId);
+        if(!m || m.done) continue;
+        const dist = Math.hypot(player.x-(d.x+d.w/2), player.y-(d.y+d.h/2));
+        if(dist<130){ hint = d.text; break; }
+      }
+      if(hint){ hintEl.textContent='코드: '+hint; hintEl.style.display='block'; }
+      else { hintEl.style.display='none'; }
     }
 
     const t = I18N[settings.lang] || I18N.ko;
