@@ -15,6 +15,10 @@
   #detBarWrap{width:160px;height:10px;background:#333;border:1px solid #555;border-radius:4px;overflow:hidden;margin-top:4px;}
   #detBar{height:100%;width:0%;background:#e0a030;transition:width 0.1s;}
   #detBar.alert{background:#e03030;}
+  #hpBarWrap{width:160px;height:8px;background:#2a1414;border:1px solid #5a2a2a;border-radius:4px;overflow:hidden;margin-top:3px;}
+  #hpBar{height:100%;width:100%;background:#4ac96a;transition:width 0.15s;}
+  #hurtVignette{position:fixed;inset:0;pointer-events:none;display:none;z-index:38;
+       box-shadow:inset 0 0 90px 26px rgba(220,20,20,0.55);}
   #stateText{font-weight:bold;margin-top:2px;}
   #timerText{font-size:11px;opacity:0.85;margin-top:2px;}
   #msg{position:fixed;top:56px;left:50%;transform:translateX(-50%);color:#fff;font-size:15px;
@@ -26,37 +30,39 @@
   #joyGuide{position:fixed;left:26px;bottom:26px;width:90px;height:90px;border-radius:50%;
        background:rgba(255,255,255,0.06);border:2px dashed rgba(255,255,255,0.22);display:none;pointer-events:none;z-index:5;}
 
-  #fireZone{position:fixed;right:0;bottom:0;width:45%;height:45%;display:none;}
-  #fireBase{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,120,80,0.12);
+  #fireZone{position:fixed;right:0;bottom:0;width:50%;height:55%;display:none;}
+  #fireBase{position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(255,120,80,0.12);
        border:2px solid rgba(255,140,100,0.35);display:none;}
-  #fireStick{position:absolute;width:46px;height:46px;border-radius:50%;background:rgba(255,140,100,0.55);display:none;
-       align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:bold;}
-  #fireGuide{position:fixed;right:26px;bottom:26px;width:90px;height:90px;border-radius:50%;
+  #fireStick{position:absolute;width:58px;height:58px;border-radius:50%;background:rgba(255,140,100,0.55);display:none;
+       align-items:center;justify-content:center;font-size:19px;color:#fff;font-weight:bold;}
+  #fireGuide{position:fixed;right:14px;bottom:14px;width:130px;height:130px;border-radius:50%;
        background:rgba(255,140,100,0.07);border:2px dashed rgba(255,160,120,0.28);display:none;
-       align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:bold;pointer-events:none;z-index:5;}
+       align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:bold;pointer-events:none;z-index:5;}
 
-  #interactBtn{position:fixed;right:22px;bottom:130px;width:66px;height:66px;border-radius:50%;
+  #btns{position:fixed;right:50px;bottom:152px;display:none;z-index:43;}
+  .btn{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
+       color:#fff;font-size:9.5px;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.15;}
+  .btn:active{background:rgba(255,255,255,0.35);}
+
+  #interactBtn{position:fixed;right:158px;bottom:46px;width:66px;height:66px;border-radius:50%;
        background:rgba(255,205,110,0.22);border:2px solid rgba(255,220,150,0.55);color:#fff;font-size:11px;
        display:none;align-items:center;justify-content:center;text-align:center;z-index:44;user-select:none;}
 
-  #btns{position:fixed;right:8px;bottom:10px;display:none;flex-direction:column;gap:8px;align-items:flex-end;z-index:43;}
-  .btn{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
-       color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.15;}
-  .btn:active{background:rgba(255,255,255,0.35);}
-  #miniAbilityBtns{position:fixed;right:20px;bottom:208px;display:none;flex-direction:row;gap:6px;z-index:43;}
+  #miniAbilityBtns{position:fixed;right:158px;bottom:120px;display:none;flex-direction:row;gap:6px;z-index:43;}
   .miniBtn2{width:38px;height:38px;border-radius:50%;font-size:7.5px;border:1.5px solid rgba(255,255,255,0.45);
        color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.1;}
   #btnNVG{background:rgba(120,220,140,0.28);}
   #btnThermal{background:rgba(230,140,80,0.28);}
 
-  #throwBtn{position:fixed;right:26px;bottom:258px;width:60px;height:60px;border-radius:50%;
+  #throwBtn{position:fixed;right:238px;bottom:46px;width:66px;height:66px;border-radius:50%;
        background:rgba(230,220,120,0.22);border:2px solid rgba(255,220,140,0.5);color:#fff;font-size:11px;
        display:none;align-items:center;justify-content:center;text-align:center;z-index:42;user-select:none;}
-  #throwWheel{position:fixed;right:26px;bottom:258px;width:1px;height:1px;display:none;z-index:41;}
+  #throwWheel{position:fixed;right:238px;bottom:46px;width:1px;height:1px;display:none;z-index:41;}
   .throwOpt{position:absolute;width:64px;height:64px;margin-left:-32px;margin-top:-32px;border-radius:50%;
        background:rgba(20,20,24,0.85);border:2px solid rgba(255,255,255,0.35);color:#ddd;font-size:10.5px;
        display:flex;align-items:center;justify-content:center;text-align:center;transition:transform 0.1s,background 0.1s;}
   .throwOpt.sel{background:rgba(255,205,110,0.85);color:#111;border-color:#fff;transform:scale(1.18);font-weight:bold;}
+  .throwOpt.dim{opacity:0.35;}
   #slowMoVignette{position:fixed;inset:0;pointer-events:none;display:none;z-index:39;
        box-shadow:inset 0 0 80px 30px rgba(80,60,20,0.55);}
   #gearBtn{position:fixed;top:10px;right:180px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.18);
@@ -82,7 +88,7 @@
   #tutorialOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:250;}
   #tutorialBox{background:#1b1d17;border:1px solid #4a4536;border-radius:10px;padding:20px;max-width:280px;text-align:center;color:#eee;}
   #tutorialText{font-size:13.5px;line-height:1.7;margin-bottom:14px;}
-  #execOverlay{position:fixed;inset:0;background:#3a0000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+  #execOverlay{position:fixed;inset:0;background:#3a0000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:65;}
   #execButtons{display:none;flex-direction:column;align-items:center;gap:8px;margin-top:16px;}
   #execButtons .menuBtn{width:220px;}
   #execSkull{font-size:64px;color:#e8e0d0;text-shadow:0 0 18px rgba(255,60,60,0.9),0 0 34px rgba(255,20,20,0.6);
@@ -182,8 +188,10 @@
 <div id="hud">
   <div id="stateText">잠입중</div>
   <div id="detBarWrap"><div id="detBar"></div></div>
+  <div id="hpBarWrap"><div id="hpBar"></div></div>
   <div id="timerText">00:00</div>
 </div>
+<div id="hurtVignette"></div>
 <div id="msg"></div>
 <div id="gearBtn">⚙</div>
 <div id="pauseBtn">⏸</div>
@@ -238,7 +246,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.13.1.0</div>
+  <div id="verText">Ver 1.15.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -274,7 +282,8 @@
       <li>야간투시경: 10초간 화면 전체가 또렷하게 보임(녹색 톤), 이후 재사용 대기시간 필요</li>
       <li>열화상: 10초간 적의 위치가 벽 너머에서도 빛나 보임. 야간투시경과 동시 사용 가능</li>
       <li>경비견은 벽/각도 상관없이 냄새로 근접한 플레이어를 감지함, 발소리도 훨씬 잘 들음 - 조심할 것</li>
-      <li>발각된 경비 중 일부는 원거리 무기 소지 - 테이저는 맞으면 잠시 마비, 총은 맞으면 그 자리에서 체크포인트로 되돌아감. 삼단봉 경비는 원거리 공격은 없지만 발각 시 훨씬 빠르게 쫓아옴</li>
+      <li>총에 맞거나 경비견에게 물리면 체력(HP)이 깎임 - 한 방에 죽지 않고 체력이 0이 되면 체크포인트로 되돌아감. 테이저는 맞으면 체력 대신 잠시 마비됨. 난이도가 낮을수록 받는 피해가 적음</li>
+      <li>삼단봉 경비는 원거리 공격은 없지만 발각 시 훨씬 빠르게 쫓아오며, 붙잡히면 체력이 빠르게 깎임</li>
       <li>시작화면 '상점'에서 무기를 장착할 수 있음(전부 베타 무료) - 무기마다 사거리·정확도·연사력·소리가 다름</li>
       <li>난이도(쉬움/보통/어려움)에 따라 등장하는 경비 수가 달라짐</li>
       <li>침대/책상 위에 놓인 쪽지에 암호가 적혀있음(매 판마다 랜덤) - 해당 단말기 미션에서 그 숫자를 입력</li>
@@ -374,19 +383,17 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 1.13.1.0)</h2>
+    <h2>업데이트 안내 (Ver 1.15.0.0)</h2>
     <ul>
-      <li>경비견 시체가 이제 강아지 모양으로 표시됨, 사격/폭발 처치에도 비명 추가</li>
-      <li>발소리 3단계 구분 - 평소(사박사박) / 달리기(터벅터벅) / 웅크리기(무음)</li>
-      <li>웅크리면 캐릭터 주변에 점선 원 표시</li>
-      <li>미니맵에 안개(fog-of-war) 적용 - 실제로 본 적만, 그것도 잠시 후 흐려지다 사라짐</li>
-      <li>다른 앱으로 전환했다가 돌아오면 자동 일시정지 + "계속하기" 안내</li>
-      <li>비상벨 설치 - 경보 중 근처에서 상호작용하면 끌 수 있음</li>
-      <li>미션 2종 추가(전압 동기화 타이밍바, 보안 패턴 암기) - 총 5종 미션</li>
-      <li>상점에 무기별 그림 아이콘 추가, 라벨을 "장착하기 (베타 무료)"로 통일</li>
-      <li>가구 추가 보강 + 매판 일부 가구가 랜덤으로 등장/생략되어 배치가 조금씩 달라짐</li>
-      <li>튜토리얼에 웅크리기/은신/적 종류별 대응법 내용 보강</li>
+      <li>체력(HP) 시스템 도입 - 총에 맞거나 물려도 한 방에 죽지 않고 체력이 서서히 깎임. 난이도 낮을수록 피해 적음</li>
+      <li>처형 후 재시작 버튼을 눌러도 화면이 멈추던 버그 수정 (예기치 못한 오류가 있어도 게임이 멈추지 않도록 안전장치 추가)</li>
+      <li>가로모드 UI 전면 재배치 - 사격 조이스틱 확대, 웅크리기는 사격 위, 투척물은 상호작용 왼쪽으로</li>
+      <li>투척휠 조작 개선 - 방향으로 아이템 선택 후 고정되면, 이후 자유로운 360도 방향으로 던질 수 있음</li>
+      <li>크레모아 폭발범위를 실제처럼 전방 부채꼴(120도)로 표시 및 판정</li>
+      <li>사격 버튼 글자 흰색으로 변경</li>
     </ul>
+    <div class="closeBtn" id="closeWhatsNew">확인</div>
+  </div>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
 </div>
@@ -638,7 +645,7 @@ const missions = [
 let missionsComplete=false;
 let puzzleActive=null;
 
-let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,aimAngle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0,stunnedTimer:0,weapon:'pistol'};
+let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,aimAngle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0,stunnedTimer:0,weapon:'pistol',hp:100,maxHp:100,hurtFlash:0};
 
 const WEAPON_DEFS = {
   pistol:   {name:'소음기 권총', sound:'playSuppressedShot', range:420, tolerance:4,  autoRate:0.22, nonLethal:false},
@@ -780,9 +787,21 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '1.13.1.0';
+const GAME_VERSION = '1.15.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
+const DAMAGE_MUL = { easy:0.6, normal:1, hard:1.4 };
+
+function damagePlayer(amount, sourceX, sourceY){
+  if(caught || player.hp<=0) return;
+  const dmg = amount * (DAMAGE_MUL[difficulty]||1);
+  player.hp = Math.max(0, player.hp - dmg);
+  player.hurtFlash = 0.35;
+  vibrate(40);
+  if(player.hp<=0){
+    triggerCaught();
+  }
+}
 let pauseActive=false;
 let missionPunchTimer=0;
 let charges = {smoke:2, stun:2, grenade:1, claymore:1, glue:2, decoy:3};
@@ -1135,23 +1154,23 @@ document.getElementById('handToggle').addEventListener('click',()=>{
   if(settings.leftHanded){
     jz.style.left='auto'; jz.style.right='0';
     fz.style.left='0'; fz.style.right='auto';
-    jg.style.left='auto'; jg.style.right='26px';
-    fg.style.left='26px'; fg.style.right='auto';
-    bt.style.right='auto'; bt.style.left='8px';
-    tb.style.right='auto'; tb.style.left='26px';
-    tw.style.right='auto'; tw.style.left='26px';
-    mb.style.right='auto'; mb.style.left='20px';
-    ib.style.right='auto'; ib.style.left='22px';
+    jg.style.left='auto'; jg.style.right='14px';
+    fg.style.left='14px'; fg.style.right='auto';
+    bt.style.right='auto'; bt.style.left='50px';
+    tb.style.right='auto'; tb.style.left='238px';
+    tw.style.right='auto'; tw.style.left='238px';
+    mb.style.right='auto'; mb.style.left='158px';
+    ib.style.right='auto'; ib.style.left='158px';
   } else {
     jz.style.right='auto'; jz.style.left='0';
     fz.style.right='0'; fz.style.left='auto';
     jg.style.right='auto'; jg.style.left='26px';
-    fg.style.right='26px'; fg.style.left='auto';
-    bt.style.left='auto'; bt.style.right='8px';
-    tb.style.left='auto'; tb.style.right='26px';
-    tw.style.left='auto'; tw.style.right='26px';
-    mb.style.left='auto'; mb.style.right='20px';
-    ib.style.left='auto'; ib.style.right='22px';
+    fg.style.right='14px'; fg.style.left='auto';
+    bt.style.left='auto'; bt.style.right='50px';
+    tb.style.left='auto'; tb.style.right='238px';
+    tw.style.left='auto'; tw.style.right='238px';
+    mb.style.left='auto'; mb.style.right='158px';
+    ib.style.left='auto'; ib.style.right='158px';
   }
 });
 
@@ -1352,17 +1371,17 @@ let fireJoy = {active:false,startX:0,startY:0,dragged:false,fireAccum:0,touchId:
 function fireStart(x,y){
   if(!gameStarted || caught || puzzleActive || pauseActive) return;
   fireJoy.active=true; fireJoy.startX=x; fireJoy.startY=y; fireJoy.dragged=false; fireJoy.fireAccum=0;
-  fireBase.style.left=(x-50)+'px'; fireBase.style.top=(y-50)+'px';
-  fireStick.style.left=(x-23)+'px'; fireStick.style.top=(y-23)+'px';
+  fireBase.style.left=(x-65)+'px'; fireBase.style.top=(y-65)+'px';
+  fireStick.style.left=(x-29)+'px'; fireStick.style.top=(y-29)+'px';
   fireBase.style.display='flex'; fireStick.style.display='flex';
 }
 function fireMove(x,y){
   if(!fireJoy.active)return;
-  let dx=x-fireJoy.startX, dy=y-fireJoy.startY; const max=50;
+  let dx=x-fireJoy.startX, dy=y-fireJoy.startY; const max=65;
   const dist=Math.hypot(dx,dy);
   if(dist>12){ player.aimAngle = Math.atan2(dy,dx); fireJoy.dragged=true; }
   const cdx = dist>max ? dx/dist*max : dx, cdy = dist>max ? dy/dist*max : dy;
-  fireStick.style.left=(fireJoy.startX+cdx-23)+'px'; fireStick.style.top=(fireJoy.startY+cdy-23)+'px';
+  fireStick.style.left=(fireJoy.startX+cdx-29)+'px'; fireStick.style.top=(fireJoy.startY+cdy-29)+'px';
 }
 function fireEnd(){
   if(!fireJoy.active)return;
@@ -1410,9 +1429,12 @@ const throwBtnEl=document.getElementById('throwBtn'), throwWheelEl=document.getE
 let throwStart={x:0,y:0};
 let throwAngle=0;
 let throwTouchId=null;
+let throwLocked=false;
+const THROW_LOCK_RADIUS=42;
 function throwBegin(x,y){
   if(!gameStarted || caught || puzzleActive || pauseActive || actionLock) return;
-  throwActive=true; slowMoActive=true; throwSelected=null; throwStart={x,y}; throwAngle=player.aimAngle;
+  throwActive=true; slowMoActive=true; throwSelected=null; throwLocked=false;
+  throwStart={x,y}; throwAngle=player.aimAngle;
   throwWheelEl.style.left=x+'px'; throwWheelEl.style.top=y+'px';
   throwWheelEl.style.display='block';
   updateWheelHighlight(x,y);
@@ -1420,10 +1442,17 @@ function throwBegin(x,y){
 function updateWheelHighlight(x,y){
   const dx=x-throwStart.x, dy=y-throwStart.y;
   const dist=Math.hypot(dx,dy);
-  document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel'));
-  if(dist<18){ throwSelected=null; return; }
   const rawAngle = Math.atan2(dy,dx); // 실제 화면상 스와이프 방향 (라디안)
-  throwAngle = rawAngle; // 이 각도로 투척됨 (화면 기준 - 카메라 회전이 없으므로 월드 각도와 동일)
+
+  if(throwLocked){
+    // 항목은 이미 고정됨 - 이제부터는 어느 방향으로 움직이든 그 방향이 투척 방향이 됨
+    if(dist>6){ throwAngle = rawAngle; }
+    return;
+  }
+
+  if(dist<18){ throwSelected=null; return; }
+
+  throwAngle = rawAngle; // 아직 잠기기 전까지는 선택 방향 = 투척 방향
   let ang = rawAngle*180/Math.PI;
   let best=0, bestDiff=999;
   THROW_TYPES.forEach((t,i)=>{
@@ -1432,14 +1461,21 @@ function updateWheelHighlight(x,y){
     if(diff<bestDiff){bestDiff=diff; best=i;}
   });
   throwSelected = THROW_TYPES[best];
+  document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel'));
   document.getElementById('opt-'+throwSelected).classList.add('sel');
+
+  if(dist>=THROW_LOCK_RADIUS){
+    // 선택 확정 - 이후로는 항목이 안 바뀌고 조준 방향만 자유롭게 바뀜
+    throwLocked=true;
+    document.querySelectorAll('.throwOpt').forEach(el=>{ if(!el.classList.contains('sel')) el.classList.add('dim'); });
+  }
 }
 function throwMove(x,y){ if(throwActive) updateWheelHighlight(x,y); }
 function throwEndGesture(){
   if(!throwActive)return;
-  throwActive=false; slowMoActive=false;
+  throwActive=false; slowMoActive=false; throwLocked=false;
   throwWheelEl.style.display='none';
-  document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel'));
+  document.querySelectorAll('.throwOpt').forEach(el=>el.classList.remove('sel','dim'));
   if(throwSelected){
     if(charges[throwSelected]<=0){ showMsg(THROW_LABELS[throwSelected]+' 없음'); }
     else { throwItem(throwSelected, throwAngle); }
@@ -1601,6 +1637,7 @@ function throwItem(type, angle){
 }
 
 function updateTraps(dt){
+  const CLAYMORE_HALF_ANGLE = 60*Math.PI/180; // 전방 120도 부채꼴
   for(const tr of traps){
     if(tr.type==='claymore'){
       if(!tr.armed){
@@ -1610,11 +1647,14 @@ function updateTraps(dt){
       }
       for(const en of enemies){
         if(en.state==='dying')continue;
-        if(Math.hypot(en.x-tr.x,en.y-tr.y)<tr.triggerRadius){
-          detonateGrenade(tr.x,tr.y);
-          tr.dead=true;
-          break;
-        }
+        const dx=en.x-tr.x, dy=en.y-tr.y;
+        const dist=Math.hypot(dx,dy);
+        if(dist>=tr.triggerRadius) continue;
+        const angDiff = angleDiff(Math.atan2(dy,dx), tr.angle||0);
+        if(angDiff>CLAYMORE_HALF_ANGLE) continue;
+        detonateGrenade(tr.x,tr.y);
+        tr.dead=true;
+        break;
       }
     } else if(tr.type==='glue'){
       tr.life -= dt;
@@ -1854,7 +1894,7 @@ function updateEnemy(en,dt){
         bullets.push({x:en.x,y:en.y,tx:player.x,ty:player.y,t:0,dur:0.12});
         if(en.weapon==='gun'){
           playEnemyGunshot(clamp(1-dist/500,0.2,1));
-          if(Math.random()<acc){ triggerCaught(); }
+          if(Math.random()<acc){ damagePlayer(34, en.x, en.y); spawnText(player.x,player.y-24,'피격!','#ff6a6a'); }
         } else {
           playTaserZap(clamp(1-dist/500,0.2,1));
           if(Math.random()<acc && player.stunnedTimer<=0){
@@ -1867,7 +1907,8 @@ function updateEnemy(en,dt){
     }
 
     if(en.state==='search' && dist < en.r+player.r+6){
-      triggerCaught();
+      const bitePerSec = en.isDog ? 55 : 40;
+      damagePlayer(bitePerSec*dt, en.x, en.y);
     }
   }
 
@@ -1930,6 +1971,7 @@ function respawn(){
   player.x=checkpoint.x;player.y=checkpoint.y;
   player.hiddenIn=null;
   player.stunnedTimer=0;
+  player.hp=player.maxHp; player.hurtFlash=0;
   player.crouch=false; crouchHeld=false;
   caught=false; execAwaitingChoice=false;
   alarmRaised=false;
@@ -2948,21 +2990,28 @@ function drawTraps(camX,camY){
     if(tr.type==='claymore'){
       ctx.save();
       ctx.translate(tr.x-camX,tr.y-camY);
+      ctx.rotate(tr.angle||0);
 
       if(tr.armed){
         const pulse = 0.5+0.5*Math.sin(simTime*2.4);
+        const halfAng = 60*Math.PI/180;
         const g=ctx.createRadialGradient(0,0,4,0,0,tr.triggerRadius);
-        g.addColorStop(0,'rgba(255,40,40,'+(0.16+0.08*pulse)+')');
+        g.addColorStop(0,'rgba(255,40,40,'+(0.18+0.09*pulse)+')');
         g.addColorStop(1,'rgba(255,40,40,0)');
         ctx.fillStyle=g;
-        ctx.beginPath();ctx.arc(0,0,tr.triggerRadius,0,7);ctx.fill();
-        ctx.strokeStyle='rgba(255,60,60,'+(0.35+0.25*pulse)+')';ctx.lineWidth=1.4;
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.arc(0,0,tr.triggerRadius,-halfAng,halfAng);
+        ctx.closePath();ctx.fill();
+        ctx.strokeStyle='rgba(255,60,60,'+(0.4+0.3*pulse)+')';ctx.lineWidth=1.4;
         ctx.setLineDash([4,4]);
-        ctx.beginPath();ctx.arc(0,0,tr.triggerRadius,0,7);ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.arc(0,0,tr.triggerRadius,-halfAng,halfAng);
+        ctx.closePath();ctx.stroke();
         ctx.setLineDash([]);
       }
 
-      ctx.rotate(tr.angle||0);
       // 다리(지지대) 2개
       ctx.strokeStyle='#1a1a1a';ctx.lineWidth=1.6;
       ctx.beginPath();ctx.moveTo(-4,6);ctx.lineTo(-7,11);ctx.stroke();
@@ -3401,7 +3450,14 @@ let simTime=0;
 let last=performance.now();
 function loop(now){
   const dt=Math.min((now-last)/1000, 0.05); last=now;
-
+  try{
+    loopBody(dt);
+  }catch(err){
+    console.error('game loop error (frame skipped):', err);
+  }
+  requestAnimationFrame(loop);
+}
+function loopBody(dt){
   if(gameStarted && !pauseActive){
     updateAbilities(dt);
   }
@@ -3479,6 +3535,21 @@ function loop(now){
     const bar=document.getElementById('detBar');
     bar.style.width=maxDetect+'%';
     bar.className = alarmRaised?'alert':'';
+
+    const hpPct = Math.max(0,(player.hp/player.maxHp)*100);
+    const hpBar = document.getElementById('hpBar');
+    hpBar.style.width = hpPct+'%';
+    hpBar.style.background = hpPct>50 ? '#4ac96a' : (hpPct>25 ? '#e0a030' : '#e03030');
+
+    if(player.hurtFlash>0){
+      player.hurtFlash = Math.max(0, player.hurtFlash - dt);
+      const hv=document.getElementById('hurtVignette');
+      hv.style.display='block';
+      hv.style.opacity = Math.min(1, player.hurtFlash/0.35);
+    } else {
+      document.getElementById('hurtVignette').style.display='none';
+    }
+
     const t = I18N[settings.lang] || I18N.ko;
     document.getElementById('stateText').textContent = caught?t.stateExec:(alarmRaised?t.stateAlert:t.stateInfil);
     if(!missionsComplete){
@@ -3492,8 +3563,6 @@ function loop(now){
     });
     if(msgTimer>0){msgTimer--;if(msgTimer<=0)document.getElementById('msg').style.display='none';}
   }
-
-  requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
 
