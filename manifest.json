@@ -4,7 +4,7 @@
   "description": "2D 탑다운 스텔스 잠입 게임 - 손전등 시야와 은신 처치를 활용해 미션을 완료하세요.",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "any",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
