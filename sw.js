@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stealth-ops-v18';
+const CACHE_NAME = 'stealth-ops-v19';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -8,7 +8,11 @@ const ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(ASSETS.map((url) =>
+        fetch(url, { cache: 'reload' }).then((resp) => cache.put(url, resp))
+      ))
+    )
   );
   self.skipWaiting();
 });
