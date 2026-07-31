@@ -30,10 +30,10 @@
   #fireBase{position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(255,120,80,0.12);
        border:2px solid rgba(255,140,100,0.35);display:none;}
   #fireStick{position:absolute;width:46px;height:46px;border-radius:50%;background:rgba(255,140,100,0.55);display:none;
-       align-items:center;justify-content:center;font-size:18px;}
+       align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:bold;}
   #fireGuide{position:fixed;right:26px;bottom:26px;width:90px;height:90px;border-radius:50%;
        background:rgba(255,140,100,0.07);border:2px dashed rgba(255,160,120,0.28);display:none;
-       align-items:center;justify-content:center;font-size:20px;pointer-events:none;z-index:5;}
+       align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:bold;pointer-events:none;z-index:5;}
 
   #interactBtn{position:fixed;right:22px;bottom:130px;width:66px;height:66px;border-radius:50%;
        background:rgba(255,205,110,0.22);border:2px solid rgba(255,220,150,0.55);color:#fff;font-size:11px;
@@ -238,7 +238,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 1.13.0.0</div>
+  <div id="verText">Ver 1.13.1.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -374,7 +374,7 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 1.13.0.0)</h2>
+    <h2>업데이트 안내 (Ver 1.13.1.0)</h2>
     <ul>
       <li>경비견 시체가 이제 강아지 모양으로 표시됨, 사격/폭발 처치에도 비명 추가</li>
       <li>발소리 3단계 구분 - 평소(사박사박) / 달리기(터벅터벅) / 웅크리기(무음)</li>
@@ -780,7 +780,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '1.13.0.0';
+const GAME_VERSION = '1.13.1.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 let pauseActive=false;
