@@ -30,6 +30,11 @@
   #qteRing{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(255,220,120,0.9),rgba(255,120,60,0.6));
        border:4px solid #fff;box-shadow:0 0 24px rgba(255,180,80,0.8);animation:qte-pulse 0.4s ease-in-out infinite;}
   @keyframes qte-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+  .tutorial-highlight{animation:tutorial-glow 0.8s ease-in-out infinite !important; z-index:255 !important;}
+  @keyframes tutorial-glow{
+    0%,100%{ box-shadow:0 0 0 0 rgba(255,235,120,0.9), 0 0 14px 4px rgba(255,235,120,0.7); }
+    50%{ box-shadow:0 0 0 8px rgba(255,235,120,0), 0 0 26px 10px rgba(255,235,120,0.95); }
+  }
   #lockpickTrack{position:relative;width:260px;height:36px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.3);border-radius:18px;touch-action:none;}
   #lockpickHandle{position:absolute;top:2px;left:0;width:32px;height:28px;border-radius:14px;
        background:radial-gradient(circle at 35% 30%,rgba(255,220,140,0.95),rgba(200,150,60,0.7));
@@ -318,7 +323,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 3.2.0.0</div>
+  <div id="verText">Ver 3.3.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -514,14 +519,12 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 3.2.0.0)</h2>
+    <h2>업데이트 안내 (Ver 3.3.0.0)</h2>
     <ul>
-      <li>"게임 새로 하기" 클릭 시 요원 이름 입력 → 스토리 인트로(건너뛰기 가능) → 튜토리얼(건너뛰기 가능) 순서로 진행</li>
-      <li>"게임 이어하기" 추가 - 미션 진행상황·투척물 개수·경과시간이 저장되어 나중에 이어서 플레이 가능</li>
-      <li>일시정지 메뉴에 "처음부터 다시 시작" 추가 (확인 창 거쳐야 실행됨)</li>
-      <li>튜토리얼에 미션 내용·쪽지 읽는 법 안내 추가, 건너뛰기 버튼 추가</li>
-      <li>장롱에서도 웅크리고 상호작용하면 숨을 수 있게 됨 (원래 있어야 했는데 빠져있던 기능)</li>
-      <li>감시 카메라를 총으로 쏴서 파괴할 수 있음</li>
+      <li>튜토리얼 4단계 문구 수정("좌측" 노란 버튼으로) + 야간투시/열화상 설명 단계 추가</li>
+      <li>튜토리얼 각 단계에서 설명 중인 버튼이 화면에서 직접 반짝이며 위치를 알려줌</li>
+      <li>난이도별 순찰 인원 차이를 더 명확하게 (쉬움 더 적게, 어려움 더 많게)</li>
+      <li>난이도별 미니맵 정보량 차등 - 쉬움: 모든 적 항상 표시 / 보통: 실제 시야에 든 적만 색으로, 나머지는 회색 / 어려움: 미니맵 완전 암전("NO SIGNAL - EMP로 교란됨")</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -904,11 +907,11 @@ return [
 function applyDifficulty(roster, diff){
   let list = roster.filter(en => !en.hardOnly);
   if(diff==='easy'){
-    // 필수 인원(원년 버디 2명 + 경비견 1마리)은 남기고, 정지 NPC와 나머지 순찰 일부를 솎아냄
+    // 필수 인원(원년 버디 2명 + 경비견 1마리)은 남기고, 정지 NPC와 나머지 순찰/경비견 일부를 솎아냄
     const idleList = list.filter(en=>en.state==='idle');
     const otherList = list.filter(en=>en.state!=='idle');
     const keepIdle = idleList.filter((en,i)=> en.essential || i%2===0); // 정지 NPC 절반만
-    const keepOther = otherList.filter(en=> en.essential || en.isDog || Math.random()<0.6);
+    const keepOther = otherList.filter(en=> en.essential || Math.random()<0.55); // 경비견도 필수 아니면 확률적으로 제외
     list = [...keepOther, ...keepIdle];
   } else if(diff==='hard'){
     list = roster.slice(); // hardOnly 포함 전체 로스터 유지
@@ -955,7 +958,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '3.2.0.0';
+const GAME_VERSION = '3.3.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 function updateDiffStatsText(){
@@ -1324,29 +1327,44 @@ document.querySelectorAll('.diffBtn').forEach(btn=>{
 
 /* ===================== 튜토리얼 ===================== */
 const TUTORIAL_STEPS = [
-  '좌측 조이스틱으로 이동해요. 살짝 당기면 걷고, 끝까지 당기면 뛰어요(발소리가 커짐).',
-  '웅크리기 버튼을 누르면 몸을 낮춰요. 이동은 느려지지만 발각이 잘 안 되고, 침대·소파·책상·장롱 등 앞에서 웅크린 채 상호작용하면 그 안에 완전히 숨을 수 있어요 (실루엣만 살짝 보임).',
-  '우측 조이스틱(사격)을 드래그해서 조준하고 손을 떼면 그 방향으로 발사돼요. 이동과 완전히 독립적이라 걸으면서 다른 방향도 조준할 수 있어요. 짧게 탭하면 한 발, 드래그한 채 있으면 연발돼요.',
-  '상호작용 버튼(사격 조이스틱 위 노란 버튼)으로 근접한 적 처치, 미션, 시체 은닉, 은신처 진입/탈출, 비상벨 끄기를 해요. 비상벨을 꺼도 한동안은 경비들이 예민한 상태(경계 태세)로 남아있어요.',
-  '적은 여러 종류예요 - 테이저를 든 경비(맞으면 잠시 마비), 총을 든 경비(맞으면 체크포인트로), 삼단봉 경비(원거리 공격은 없지만 매우 빠르게 추격), 경비견(냄새와 발소리로 감지). 정면에서 처치하면 빠르지만 비명이 나고, 뒤에서 처치하면 조용해요.',
-  '"투척물" 버튼을 탭하면 종류 선택창이 떠요. 원하는 걸 고른 다음, 다시 버튼을 눌러서 원하는 방향으로 드래그하고 손을 떼면 그 방향으로 던져져요.',
-  '집안 곳곳에 5개의 미션(전선 연결, 다이얼 자물쇠, 키패드, 타이밍 맞추기, 패턴 암기)이 있어요. 미션 지점 근처에서 상호작용하면 미니게임이 시작돼요. 전부 완료해야 클리어돼요.',
-  '다이얼이나 키패드 미션의 암호는 근처 책상이나 협탁 위의 "쪽지"에 적혀있어요. 쪽지 근처에 한 번이라도 가면 암호가 화면 위쪽에 계속 표시되니 미리 확인해두세요.',
-  '화면 오른쪽 위 미니맵으로 최근에 본 적(색깔별 상태)과 미션 위치를 확인하세요. 노란 화살표는 가장 가까운 미완료 미션 방향을 가리켜요. ⏸ 버튼으로 언제든 일시정지할 수 있어요.'
+  {text:'좌측 조이스틱으로 이동해요. 살짝 당기면 걷고, 끝까지 당기면 뛰어요(발소리가 커짐).', highlight:['joyBase','joyStick']},
+  {text:'웅크리기 버튼을 누르면 몸을 낮춰요. 이동은 느려지지만 발각이 잘 안 되고, 침대·소파·책상·장롱 등 앞에서 웅크린 채 상호작용하면 그 안에 완전히 숨을 수 있어요 (실루엣만 살짝 보임).', highlight:['btns']},
+  {text:'우측 조이스틱(사격)을 드래그해서 조준하고 손을 떼면 그 방향으로 발사돼요. 이동과 완전히 독립적이라 걸으면서 다른 방향도 조준할 수 있어요. 짧게 탭하면 한 발, 드래그한 채 있으면 연발돼요.', highlight:['fireBase','fireStick']},
+  {text:'상호작용 버튼(사격 조이스틱 좌측 노란 버튼)으로 근접한 적 처치, 미션, 시체 은닉, 은신처 진입/탈출, 비상벨 끄기를 해요. 비상벨을 꺼도 한동안은 경비들이 예민한 상태(경계 태세)로 남아있어요.', highlight:['interactBtn']},
+  {text:'적은 여러 종류예요 - 테이저를 든 경비(맞으면 잠시 마비), 총을 든 경비(맞으면 체크포인트로), 삼단봉 경비(원거리 공격은 없지만 매우 빠르게 추격), 경비견(냄새와 발소리로 감지). 정면에서 처치하면 빠르지만 비명이 나고, 뒤에서 처치하면 조용해요.', highlight:null},
+  {text:'"투척물" 버튼을 탭하면 종류 선택창이 떠요. 원하는 걸 고른 다음, 다시 버튼을 눌러서 원하는 방향으로 드래그하고 손을 떼면 그 방향으로 던져져요.', highlight:['throwBtn']},
+  {text:'야간투시(초록 버튼)는 어두운 곳을 밝게, 열화상(주황 버튼)은 벽 너머의 적까지 보여줘요. 각각 10초간 지속되고 15초 재사용 대기시간이 있어요. 배터리 픽업을 먹으면 대기시간이 바로 초기화돼요.', highlight:['miniAbilityBtns']},
+  {text:'집안 곳곳에 5개의 미션(전선 연결, 다이얼 자물쇠, 키패드, 타이밍 맞추기, 패턴 암기)이 있어요. 미션 지점 근처에서 상호작용하면 미니게임이 시작돼요. 전부 완료해야 클리어돼요.', highlight:null},
+  {text:'다이얼이나 키패드 미션의 암호는 근처 책상이나 협탁 위의 "쪽지"에 적혀있어요. 쪽지 근처에 한 번이라도 가면 암호가 화면 위쪽에 계속 표시되니 미리 확인해두세요.', highlight:null},
+  {text:'화면 오른쪽 위 미니맵으로 최근에 본 적(색깔별 상태)과 미션 위치를 확인하세요. 노란 화살표는 가장 가까운 미완료 미션 방향을 가리켜요. ⏸ 버튼으로 언제든 일시정지할 수 있어요.', highlight:['minimap']}
 ];
 let tutorialStep=0;
+let tutorialHighlightEls=[];
+function clearTutorialHighlight(){
+  tutorialHighlightEls.forEach(el=>{ if(el) el.classList.remove('tutorial-highlight'); });
+  tutorialHighlightEls=[];
+}
 function showTutorialStep(){
+  clearTutorialHighlight();
   if(tutorialStep>=TUTORIAL_STEPS.length){
     document.getElementById('tutorialOverlay').style.display='none';
     localStorage.setItem('stealthOpsTutorialSeen','1');
     return;
   }
+  const step = TUTORIAL_STEPS[tutorialStep];
   document.getElementById('tutorialProgress').textContent = (tutorialStep+1)+' / '+TUTORIAL_STEPS.length;
-  document.getElementById('tutorialText').textContent = TUTORIAL_STEPS[tutorialStep];
+  document.getElementById('tutorialText').textContent = step.text;
   document.getElementById('tutorialOverlay').style.display='flex';
+  if(step.highlight){
+    step.highlight.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){ el.classList.add('tutorial-highlight'); tutorialHighlightEls.push(el); }
+    });
+  }
 }
 document.getElementById('tutorialNext').addEventListener('click',()=>{ tutorialStep++; showTutorialStep(); });
 document.getElementById('tutorialSkip').addEventListener('click',()=>{
+  clearTutorialHighlight();
   document.getElementById('tutorialOverlay').style.display='none';
   localStorage.setItem('stealthOpsTutorialSeen','1');
 });
@@ -4274,6 +4292,18 @@ function render(){
 
 function drawMinimap(camX,camY){
   mmCtx.clearRect(0,0,120,88);
+  if(difficulty==='hard'){
+    mmCtx.fillStyle='#0a0a0a';
+    mmCtx.fillRect(0,0,120,88);
+    mmCtx.strokeStyle='#3a3a3a'; mmCtx.lineWidth=1; mmCtx.strokeRect(5,5,110,78);
+    mmCtx.fillStyle='#e04040';
+    mmCtx.font='bold 11px sans-serif'; mmCtx.textAlign='center';
+    mmCtx.fillText('NO SIGNAL', 60, 40);
+    mmCtx.font='9px sans-serif'; mmCtx.fillStyle='#a05050';
+    mmCtx.fillText('EMP로 교란됨', 60, 54);
+    mmCtx.textAlign='left';
+    return;
+  }
   const sx=110/WORLD_W, sy=78/WORLD_H;
   mmCtx.fillStyle='#2a2d24';
   mmCtx.fillRect(5,5,110,78);
@@ -4308,11 +4338,18 @@ function drawMinimap(camX,camY){
   }
   for(const en of enemies){
     if(en.state==='dying')continue;
-    if(simTime - en.lastSeenTime > 5) continue; // 최근에 못 본 적은 미니맵에서 숨김
     const fresh = simTime - en.lastSeenTime < 0.3;
-    mmCtx.globalAlpha = fresh ? 1 : 0.45;
-    mmCtx.fillStyle = en.state==='search' ? '#ff4040' : (en.state==='investigate' ? '#ffd040' : '#e0a0c0');
+    if(difficulty==='easy'){
+      // 쉬움: 모든 적을 항상 표시
+    } else {
+      // 보통: 최근에 못 본 적은 숨김
+      if(simTime - en.lastSeenTime > 5) continue;
+    }
     const ex=5+en.x*sx, ey=5+en.y*sy;
+    // 보통 난이도에서는 지금 실제로 시야에 들어온 적만 색으로, 나머지는 회색으로 표시
+    const useGrey = (difficulty==='normal' && !fresh);
+    mmCtx.globalAlpha = difficulty==='easy' ? (fresh?1:0.6) : (fresh ? 1 : 0.45);
+    mmCtx.fillStyle = useGrey ? '#888888' : (en.state==='search' ? '#ff4040' : (en.state==='investigate' ? '#ffd040' : '#e0a0c0'));
     if(settings.colorblind){
       // 색뿐 아니라 모양으로도 구분: 수색=사각형(큼), 조사=삼각형, 순찰=작은 원
       if(en.state==='search'){
