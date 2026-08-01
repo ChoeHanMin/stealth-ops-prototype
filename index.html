@@ -137,7 +137,9 @@
   #playerNameInput{width:200px;padding:10px;font-size:15px;background:#2a2c24;border:1px solid #666;border-radius:6px;color:#fff;text-align:center;margin-top:10px;}
   #storyOverlay{position:fixed;inset:0;background:#0a0a0f;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:260;}
   #storyBox{max-width:340px;text-align:center;color:#eee;padding:24px;}
-  #storyText{font-size:16px;line-height:2;min-height:140px;display:flex;align-items:center;justify-content:center;}
+  #storyPortrait{display:block;margin:0 auto 14px;image-rendering:pixelated;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.6));}
+  #storyText{font-size:15px;line-height:1.8;min-height:110px;display:flex;align-items:center;justify-content:center;white-space:pre-line;}
+  #storyDialogue{font-size:15.5px;font-style:italic;color:#ffd76a;min-height:24px;margin-top:6px;text-shadow:0 1px 4px rgba(0,0,0,0.7);}
   #execOverlay{position:fixed;inset:0;background:#3a0000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:65;}
   #execButtons{display:none;flex-direction:column;align-items:center;gap:8px;margin-top:16px;}
   #execButtons .menuBtn{width:220px;}
@@ -323,7 +325,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 3.3.1.0</div>
+  <div id="verText">Ver 3.4.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -358,7 +360,9 @@
 
 <div id="storyOverlay">
   <div id="storyBox">
+    <canvas id="storyPortrait" width="120" height="120"></canvas>
     <div id="storyText"></div>
+    <div id="storyDialogue"></div>
     <div style="display:flex;gap:10px;margin-top:18px;">
       <div class="closeBtn" id="btnStorySkip">건너뛰기</div>
       <div class="closeBtn" id="btnStoryNext">다음</div>
@@ -522,10 +526,13 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 3.3.1.0)</h2>
+    <h2>업데이트 안내 (Ver 3.4.0.0)</h2>
     <ul>
-      <li>이어하기가 저장 당시 난이도가 아니라 현재 선택된 난이도로 불러와지던 버그 수정</li>
-      <li>이름 입력 창에 취소 버튼 추가 (실수로 새로하기 눌러도 되돌아갈 수 있음)</li>
+      <li>모든 난이도 순찰 인원 증가, 어려움은 특히 대폭 증가</li>
+      <li>스토리 인트로에 도트 초상화와 대사("아들아!!!" 등) 추가, 5장으로 확장</li>
+      <li>보통 난이도 미니맵에 진짜 시야 안개 효과 추가 - 플레이어 주변만 밝고 나머지는 어둡게</li>
+      <li>연막탄 투척음 개선 - 캔이 통통 튀며 굴러가는 소리 + 연막탄 전용 분출음</li>
+      <li>집 내부 배경/벽 색상을 더 어둡고 음침한 톤으로 조정</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -862,6 +869,10 @@ return [
     path:[{x:60,y:1050},{x:60,y:1450},{x:850,y:1450},{x:850,y:1050}]}),
   makeGuard({x:950,y:1050,state:'patrol',rank:'rookie',hair:'#2a2015',weapon:'baton',
     path:[{x:950,y:1050},{x:950,y:1450},{x:1950,y:1450},{x:1950,y:1050}]}),
+  makeGuard({x:1950,y:260,state:'patrol',rank:'rookie',hair:'#555',weapon:'gun',
+    path:[{x:1950,y:60},{x:1950,y:450},{x:1450,y:450},{x:1450,y:60}]}),
+  makeGuard({x:850,y:1250,state:'patrol',rank:'rookie',hair:'#4a3a28',weapon:'taser',
+    path:[{x:850,y:1450},{x:60,y:1450},{x:60,y:1050},{x:850,y:1050}]}),
 
   // ---- 라운지에서 TV 보는 4명 ----
   makeGuard({x:1500,y:180,angle:-Math.PI/2,state:'idle',activity:'tv',visionRange:55,visionAngle:70,hair:'#3a2a1e'}),
@@ -893,6 +904,8 @@ return [
     path:[{x:500,y:900},{x:500,y:1050},{x:750,y:1050},{x:750,y:900}]}),
   makeGuard({x:1250,y:250,state:'patrol',isDog:true,
     path:[{x:1250,y:250},{x:1250,y:420},{x:1950,y:420},{x:1950,y:250}]}),
+  makeGuard({x:750,y:975,state:'patrol',isDog:true,
+    path:[{x:750,y:900},{x:750,y:1050},{x:500,y:1050},{x:500,y:900}]}),
 
   // ---- 어려움 난이도 전용 추가 인원 (hardOnly) ----
   Object.assign(makeGuard({x:260,y:700,state:'patrol',rank:'rookie',hair:'#4a3a28',weapon:'gun',
@@ -900,7 +913,13 @@ return [
   Object.assign(makeGuard({x:1100,y:700,state:'patrol',rank:'veteran',bandana:true,hair:'#333',weapon:'baton',
     path:[{x:1100,y:700},{x:1100,y:900},{x:1300,y:900},{x:1300,y:700}]}), {hardOnly:true}),
   Object.assign(makeGuard({x:1100,y:1150,state:'patrol',isDog:true,
-    path:[{x:1100,y:1150},{x:1100,y:1350},{x:1400,y:1350},{x:1400,y:1150}]}), {hardOnly:true})
+    path:[{x:1100,y:1150},{x:1100,y:1350},{x:1400,y:1350},{x:1400,y:1150}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:560,y:950,state:'patrol',rank:'rookie',hair:'#3a2a1e',weapon:'taser',
+    path:[{x:560,y:950},{x:560,y:700},{x:260,y:700},{x:260,y:950}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1300,y:900,state:'patrol',rank:'rookie',hair:'#555',weapon:'gun',
+    path:[{x:1300,y:900},{x:1300,y:700},{x:1100,y:700},{x:1100,y:900}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1400,y:1350,state:'patrol',isDog:true,
+    path:[{x:1400,y:1350},{x:1400,y:1150},{x:1100,y:1150},{x:1100,y:1350}]}), {hardOnly:true})
 ];
 }
 
@@ -959,7 +978,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '3.3.1.0';
+const GAME_VERSION = '3.4.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 function updateDiffStatsText(){
@@ -1192,12 +1211,23 @@ function playCoin(){
   setTimeout(()=>playTone(2200,0.05,0.10,'triangle'),55);
   setTimeout(()=>playTone(1600,0.07,0.09,'triangle'),115);
 }
-function playRoll(){ playNoise(0.45, 0.24, 380, 'lowpass'); }
+function playRoll(){
+  playNoise(0.45, 0.24, 380, 'lowpass');
+  // 캔이 바닥에 통통 튀며 굴러가는 듯한 짧은 금속성 임펄스를 겹쳐서 재생
+  playTone(190, 0.03, 0.16, 'square');
+  setTimeout(()=>playTone(160, 0.03, 0.13, 'square'), 110);
+  setTimeout(()=>playTone(140, 0.025, 0.1, 'square'), 230);
+  setTimeout(()=>playTone(125, 0.02, 0.07, 'square'), 340);
+}
 function playInstallClick(){
   playNoise(0.05, 0.18, 1600, 'bandpass');
   playTone(220, 0.06, 0.12, 'square');
 }
 function playHiss(){ playNoise(0.55, 0.14, 3200, 'highpass'); }
+function playSmokeHiss(){
+  playNoise(0.7, 0.17, 3000, 'highpass');
+  playNoiseSweep(0.55, 0.11, 1800, 3600, 'bandpass');
+}
 function playNVGSound(){
   if(!audioCtx)return;
   const osc=audioCtx.createOscillator(); osc.type='sawtooth';
@@ -1468,10 +1498,59 @@ const STORY_SLIDES = [];
 function buildStorySlides(name){
   const n = name || '요원';
   return [
-    '전직 국가비밀요원 '+n+'.\n그는 모든 걸 내려놓고,\n평범한 가장으로 조용히 살아가고 있었다.',
-    '하지만 어느 날 밤,\n그에게 원한을 품은 세력들이 손을 잡고\n그의 아들을 납치한다.',
-    n+'은(는) 다시 무기를 들었다.\n아들을 되찾기 위해, 그리고 배후를 밝히기 위해 —\n그들의 본거지로 향한다.'
+    {mood:'calm', text:'전직 국가비밀요원 '+n+'.\n그는 모든 걸 내려놓고,\n평범한 가장으로 조용히 살아가고 있었다.', dialogue:''},
+    {mood:'family', text:'전장의 기억은 서랍 깊숙이 넣어둔 채,\n그는 그저 좋은 아빠로 살아가는 하루하루가\n더없이 소중했다.', dialogue:'"아빠! 저녁 언제 먹어요?"'},
+    {mood:'shock', text:'하지만 어느 날 밤,\n그에게 원한을 품은 세력들이 손을 잡고\n그의 집으로 들이닥쳤다.', dialogue:'"아들아!!!"'},
+    {mood:'determined', text:'아이는 사라졌고, 남은 건\n부서진 문과 서늘한 정적뿐이었다.\n그는 오랫동안 잠들어 있던 무언가를 다시 깨웠다.', dialogue:'"아빠가... 너 데리러 갈게."'},
+    {mood:'armed', text:n+'은(는) 다시 무기를 들었다.\n아들을 되찾기 위해, 그리고 배후를 밝히기 위해 —\n그들의 본거지로 향한다.', dialogue:''}
   ];
+}
+function drawStoryPortrait(mood){
+  const c = document.getElementById('storyPortrait');
+  const g = c.getContext('2d');
+  g.clearRect(0,0,120,120);
+  g.save();
+  g.translate(60,66);
+  // 배경 원
+  const bgCol = mood==='shock' ? '#3a1414' : (mood==='armed' ? '#14181c' : '#1c1e16');
+  g.fillStyle=bgCol; g.beginPath(); g.arc(0,0,56,0,7); g.fill();
+  // 몸통(옷)
+  const shirt = mood==='armed' ? '#2a2e26' : (mood==='family' ? '#4a6a7a' : '#556070');
+  g.fillStyle=shirt;
+  g.fillRect(-26,18,52,40);
+  if(mood==='armed'){
+    g.fillStyle='#1a1c18'; g.fillRect(-26,18,52,14); // 방탄조끼 상단
+    g.fillStyle='#333'; g.fillRect(-6,10,12,16); // 무기 실루엣(어깨에 걸침)
+  }
+  // 목
+  g.fillStyle='#c99a72'; g.fillRect(-8,6,16,14);
+  // 얼굴
+  g.fillStyle='#d9ac82';
+  g.beginPath(); g.arc(0,-14,24,0,7); g.fill();
+  // 머리카락
+  g.fillStyle='#2a2018';
+  g.beginPath(); g.arc(0,-24,25,Math.PI,0); g.fill();
+  g.fillRect(-25,-24,6,14); g.fillRect(19,-24,6,14);
+  // 눈썹/눈
+  g.fillStyle='#241a12';
+  if(mood==='shock'){
+    g.fillRect(-16,-22,9,3); g.fillRect(7,-22,9,3);
+    g.fillStyle='#fff'; g.beginPath(); g.arc(-11,-16,5,0,7); g.fill(); g.beginPath(); g.arc(11,-16,5,0,7); g.fill();
+    g.fillStyle='#241a12'; g.beginPath(); g.arc(-11,-16,2.4,0,7); g.fill(); g.beginPath(); g.arc(11,-16,2.4,0,7); g.fill();
+  } else if(mood==='determined' || mood==='armed'){
+    g.fillRect(-16,-19,9,2.6); g.fillRect(7,-19,9,2.6);
+    g.fillRect(-14,-15,7,2.4); g.fillRect(7,-15,7,2.4);
+  } else {
+    g.fillRect(-15,-19,8,2.4); g.fillRect(7,-19,8,2.4);
+    g.beginPath(); g.arc(-11,-15,2.6,0,7); g.fill(); g.beginPath(); g.arc(11,-15,2.6,0,7); g.fill();
+  }
+  // 입
+  g.strokeStyle='#241a12'; g.lineWidth=2; g.beginPath();
+  if(mood==='shock'){ g.ellipse(0,-2,5,7,0,0,7); g.fillStyle='#5a2020'; g.fill(); }
+  else if(mood==='family'){ g.arc(0,-5,7,0.15*Math.PI,0.85*Math.PI); g.stroke(); }
+  else if(mood==='determined' || mood==='armed'){ g.moveTo(-7,-3); g.lineTo(7,-3); g.stroke(); }
+  else { g.moveTo(-6,-3); g.lineTo(6,-3); g.stroke(); }
+  g.restore();
 }
 let storyStep=0, currentStorySlides=[];
 function showStorySlide(){
@@ -1480,7 +1559,10 @@ function showStorySlide(){
     beginGameplay({forceTutorial:true});
     return;
   }
-  document.getElementById('storyText').textContent = currentStorySlides[storyStep];
+  const slide = currentStorySlides[storyStep];
+  drawStoryPortrait(slide.mood);
+  document.getElementById('storyText').textContent = slide.text;
+  document.getElementById('storyDialogue').textContent = slide.dialogue || '';
   document.getElementById('storyOverlay').style.display='flex';
 }
 document.getElementById('btnStoryNext').addEventListener('click',()=>{ storyStep++; showStorySlide(); });
@@ -2185,7 +2267,7 @@ function throwItem(type, angle){
   showMsg(THROW_LABELS[type]+' 투척');
   setTimeout(()=>{
     if(type==='smoke' || type==='stun'){
-      playHiss(); // 푸쉬익
+      if(type==='smoke') playSmokeHiss(); else playHiss(); // 연막탄은 전용 사운드, 기절탄은 짧은 가스음
       const maxR = type==='smoke' ? 190 : 88;
       const life = type==='smoke' ? 11 : 8.5;
       const puffs = type==='smoke' ? Array.from({length:6},()=>({
@@ -3895,9 +3977,9 @@ function drawCameras(camX,camY){
   }
 }
 function drawWorld(camX,camY){
-  ctx.fillStyle='#3a3f2c';
+  ctx.fillStyle='#22251c';
   ctx.fillRect(-camX,-camY,WORLD_W,WORLD_H);
-  ctx.fillStyle='#555b52';
+  ctx.fillStyle='#34382f';
   for(const w of walls){ctx.fillRect(w.x-camX,w.y-camY,w.w,w.h);}
 
   drawDecor(camX,camY);
@@ -4312,8 +4394,18 @@ function drawMinimap(camX,camY){
     return;
   }
   const sx=110/WORLD_W, sy=78/WORLD_H;
-  mmCtx.fillStyle='#2a2d24';
+  // 보통 난이도: 미탐색 지역은 어둡게, 플레이어 주변 시야 반경 안만 실제 지도 내용을 그림
+  mmCtx.fillStyle = difficulty==='normal' ? '#15150f' : '#2a2d24';
   mmCtx.fillRect(5,5,110,78);
+  if(difficulty==='normal'){
+    mmCtx.save();
+    mmCtx.beginPath();
+    mmCtx.rect(5,5,110,78);
+    mmCtx.clip();
+    mmCtx.beginPath();
+    mmCtx.arc(5+player.x*sx, 5+player.y*sy, 360*((sx+sy)/2), 0, 7);
+    mmCtx.clip();
+  }
   mmCtx.fillStyle='#4a4d42';
   for(const w of walls) mmCtx.fillRect(5+w.x*sx, 5+w.y*sy, Math.max(1,w.w*sx), Math.max(1,w.h*sy));
   mmCtx.fillStyle='#40c060';
@@ -4374,6 +4466,9 @@ function drawMinimap(camX,camY){
       mmCtx.strokeRect(ex-3.5,ey-3.5,7,7);
     }
     mmCtx.globalAlpha = 1;
+  }
+  if(difficulty==='normal'){
+    mmCtx.restore(); // 시야 반경 클리핑 해제 - 이후(플레이어 표시, 미션 화살표)는 항상 보임
   }
   const mpx=5+player.x*sx, mpy=5+player.y*sy;
   mmCtx.save();
