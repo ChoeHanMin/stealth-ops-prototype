@@ -325,7 +325,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 3.4.0.0</div>
+  <div id="verText">Ver 3.5.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -526,13 +526,10 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 3.4.0.0)</h2>
+    <h2>업데이트 안내 (Ver 3.5.0.0)</h2>
     <ul>
-      <li>모든 난이도 순찰 인원 증가, 어려움은 특히 대폭 증가</li>
-      <li>스토리 인트로에 도트 초상화와 대사("아들아!!!" 등) 추가, 5장으로 확장</li>
-      <li>보통 난이도 미니맵에 진짜 시야 안개 효과 추가 - 플레이어 주변만 밝고 나머지는 어둡게</li>
-      <li>연막탄 투척음 개선 - 캔이 통통 튀며 굴러가는 소리 + 연막탄 전용 분출음</li>
-      <li>집 내부 배경/벽 색상을 더 어둡고 음침한 톤으로 조정</li>
+      <li>신규 무기 4종 추가 - 저격소총(최장거리 원샷), 기관단총(조용한 연사), 독침총(아주 긴 수면), EMP건(원거리에서 카메라만 무력화, 적에겐 무해)</li>
+      <li>상점에서 신규 무기 아이콘/스탯/설명 확인 및 장착 가능</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -823,7 +820,11 @@ const WEAPON_DEFS = {
   minigun:  {name:'미니건',      sound:'playMinigunShot',    range:380, tolerance:8,  autoRate:0.08, nonLethal:false, pellets:1, spread:0},
   taserGun: {name:'테이져건',    sound:'playTaserZap',       range:260, tolerance:5,  autoRate:0.5,  nonLethal:true,  pellets:1, spread:0},
   crossbow: {name:'석궁',        sound:'playCrossbowShot',   range:460, tolerance:3,  autoRate:0.9,  nonLethal:false, pellets:1, spread:0},
-  shotgun:  {name:'샷건',        sound:'playShotgunShot',    range:190, tolerance:11, autoRate:0.5,  nonLethal:false, pellets:6, spread:22}
+  shotgun:  {name:'샷건',        sound:'playShotgunShot',    range:190, tolerance:11, autoRate:0.5,  nonLethal:false, pellets:6, spread:22},
+  sniper:   {name:'저격소총',    sound:'playSniperShot',     range:650, tolerance:1.6,autoRate:1.3,  nonLethal:false, pellets:1, spread:0},
+  smg:      {name:'기관단총',    sound:'playSMGShot',        range:300, tolerance:7,  autoRate:0.13, nonLethal:false, pellets:1, spread:0},
+  poisonDart:{name:'독침총',     sound:'playDartShot',       range:280, tolerance:5,  autoRate:0.7,  nonLethal:true,  pellets:1, spread:0, sleepTime:22},
+  empGun:   {name:'EMP건',       sound:'playEMPShot',        range:340, tolerance:6,  autoRate:0.8,  nonLethal:true,  pellets:1, spread:0, empOnly:true}
 };
 
 function makeGuard(opts){
@@ -978,7 +979,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '3.4.0.0';
+const GAME_VERSION = '3.5.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 function updateDiffStatsText(){
@@ -1279,6 +1280,26 @@ function playShotgunShot(volScale){
 }
 function playCrossbowShot(volScale){
   playNoiseSweep(0.14, 0.17*volScale, 3400, 800, 'bandpass');
+}
+function playSniperShot(volScale){
+  // 깊고 묵직하지만 소음기로 억눌린 저격 사운드
+  playNoise(0.16, 0.34*volScale, 220, 'lowpass');
+  playNoise(0.05, 0.12*volScale, 4200, 'highpass');
+  playTone(80, 0.1, 0.14*volScale, 'sine');
+}
+function playSMGShot(volScale){
+  // 빠르고 조용한 연사음
+  playNoise(0.045, 0.16*volScale, 2400, 'bandpass');
+  playNoise(0.03, 0.08*volScale, 300, 'lowpass');
+}
+function playDartShot(volScale){
+  // 아주 조용한 "퓩" 소리
+  playNoiseSweep(0.07, 0.09*volScale, 2600, 900, 'bandpass');
+}
+function playEMPShot(volScale){
+  // 전자기 펄스 느낌의 사운드
+  playTone(900, 0.05, 0.14*volScale, 'square');
+  playNoiseSweep(0.18, 0.12*volScale, 3000, 200, 'bandpass');
 }
 function playEnemyGunshot(volScale){
   playNoise(0.18, 0.32*volScale, 200, 'lowpass');
@@ -1766,7 +1787,11 @@ const SHOP_WEAPONS = [
   {key:'minigun', name:'미니건', desc:'초당 발사속도가 압도적인 연사형 화기. 대신 정확도가 낮아 근~중거리에서 유리함', dmg:60, acc:35, rate:95},
   {key:'taserGun', name:'테이저건', desc:'비살상 무기. 명중 시 적을 잠시 마비시킴(처치 대신 기절). 위력은 약하지만 소음이 거의 없음', dmg:20, acc:70, rate:40},
   {key:'crossbow', name:'석궁', desc:'매우 조용하고 정확하지만 발사 속도가 느림. 원거리 저격에 특화', dmg:90, acc:85, rate:20},
-  {key:'shotgun', name:'샷건', desc:'근거리에서 압도적인 화력, 원거리에서는 명중률이 급격히 떨어짐', dmg:85, acc:45, rate:55}
+  {key:'shotgun', name:'샷건', desc:'근거리에서 압도적인 화력, 원거리에서는 명중률이 급격히 떨어짐', dmg:85, acc:45, rate:55},
+  {key:'sniper', name:'저격소총', desc:'모든 화기 중 사거리가 가장 길고 정확하지만, 발사 속도가 매우 느림. 소음기가 달려있어 원거리 저격에 이상적', dmg:100, acc:97, rate:15},
+  {key:'smg', name:'기관단총', desc:'미니건보다는 느리지만 훨씬 조용한 연사 화기. 중거리에서 빠르게 제압할 때 유리함', dmg:55, acc:60, rate:80},
+  {key:'poisonDart', name:'독침총', desc:'비살상 무기. 명중 시 아주 오랫동안(테이저보다 훨씬 길게) 재우며, 소리가 거의 나지 않음', dmg:15, acc:65, rate:35},
+  {key:'empGun', name:'EMP건', desc:'적에게는 피해를 주지 않는 특수 무기. 감시 카메라를 근접하지 않고 원거리에서 즉시 무력화할 수 있음', dmg:0, acc:55, rate:30}
 ];
 function gaugeBar(label,val,color){
   return '<div class="gaugeRow"><div class="gaugeLabel">'+label+'</div><div class="gaugeTrack">'+
@@ -1777,7 +1802,11 @@ const WEAPON_ICONS = {
   minigun: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="4" y="13" width="6" height="6" fill="#777"/><rect x="8" y="10" width="34" height="4" fill="#999"/><rect x="8" y="15" width="34" height="4" fill="#777"/><rect x="8" y="20" width="34" height="4" fill="#999"/><rect x="42" y="8" width="6" height="16" rx="2" fill="#555"/><rect x="12" y="24" width="8" height="8" fill="#444"/></svg>',
   taserGun: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="8" y="13" width="26" height="7" rx="2" fill="#5ecbe8"/><rect x="30" y="10" width="10" height="4" fill="#8fe0f0"/><rect x="30" y="20" width="10" height="4" fill="#8fe0f0"/><rect x="14" y="20" width="8" height="10" rx="2" fill="#3a8aa8"/><circle cx="40" cy="16" r="2.4" fill="#fff"/></svg>',
   crossbow: '<svg viewBox="0 0 64 32" width="64" height="32"><line x1="10" y1="6" x2="10" y2="26" stroke="#8a6a48" stroke-width="4"/><rect x="9" y="14" width="34" height="4" fill="#6b4c30"/><rect x="20" y="21" width="8" height="9" rx="2" fill="#4a3320"/><line x1="10" y1="6" x2="43" y2="16" stroke="#ccc" stroke-width="1"/><line x1="10" y1="26" x2="43" y2="16" stroke="#ccc" stroke-width="1"/></svg>',
-  shotgun: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="6" y="14" width="38" height="6" rx="1" fill="#5a4530"/><rect x="6" y="14" width="38" height="2.4" fill="#7a6244"/><rect x="14" y="20" width="10" height="10" rx="2" fill="#3a2a18"/><rect x="44" y="13" width="6" height="8" fill="#222"/></svg>'
+  shotgun: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="6" y="14" width="38" height="6" rx="1" fill="#5a4530"/><rect x="6" y="14" width="38" height="2.4" fill="#7a6244"/><rect x="14" y="20" width="10" height="10" rx="2" fill="#3a2a18"/><rect x="44" y="13" width="6" height="8" fill="#222"/></svg>',
+  sniper: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="2" y="15" width="50" height="4" fill="#666"/><rect x="8" y="9" width="20" height="4" rx="1" fill="#4a4"/><rect x="34" y="10" width="10" height="3" fill="#333"/><rect x="16" y="20" width="8" height="10" rx="2" fill="#444"/><rect x="48" y="13" width="8" height="6" fill="#222"/></svg>',
+  smg: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="6" y="13" width="30" height="6" rx="1" fill="#666"/><rect x="34" y="11" width="12" height="10" rx="2" fill="#444"/><rect x="12" y="19" width="8" height="12" rx="2" fill="#333"/><rect x="22" y="19" width="6" height="9" fill="#555"/><rect x="46" y="14" width="6" height="4" fill="#222"/></svg>',
+  poisonDart: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="8" y="13" width="26" height="6" rx="3" fill="#7a5ea8"/><rect x="30" y="11" width="8" height="4" fill="#9a7ec8"/><rect x="14" y="19" width="8" height="10" rx="2" fill="#4a3a68"/><circle cx="38" cy="16" r="2.4" fill="#c0a0e8"/></svg>',
+  empGun: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="8" y="14" width="24" height="6" rx="2" fill="#3a6a7a"/><circle cx="34" cy="17" r="7" fill="none" stroke="#5ecbe8" stroke-width="2"/><circle cx="34" cy="17" r="3" fill="#8fe0f0"/><rect x="14" y="20" width="8" height="10" rx="2" fill="#2a4a58"/></svg>'
 };
 function renderShop(){
   const list=document.getElementById('shopList');
@@ -2789,7 +2818,8 @@ function pointSegDist(px,py,x1,y1,x2,y2){
 }
 
 const SOUND_FN = {
-  playSuppressedShot, playMinigunShot, playTaserZap, playCrossbowShot, playShotgunShot
+  playSuppressedShot, playMinigunShot, playTaserZap, playCrossbowShot, playShotgunShot,
+  playSniperShot, playSMGShot, playDartShot, playEMPShot
 };
 
 function handleFire(angle){
@@ -2814,27 +2844,32 @@ function handleFire(angle){
     bullets.push({x:ox,y:oy,tx,ty,t:0,dur:0.1});
 
     let best=null, bestDist=Infinity;
-    for(const en of enemies){
-      if(en.state==='dying' || hitSet.has(en))continue;
-      const dx=en.x-ox, dy=en.y-oy;
-      const dist=Math.hypot(dx,dy);
-      if(dist>range)continue;
-      const a=Math.atan2(dy,dx);
-      if(angleDiff(a,pelletAngle) > tolerance)continue;
-      if(!hasLineOfSight(ox,oy,en.x,en.y, true))continue;
-      if(dist<bestDist){bestDist=dist;best=en;}
+    if(!wdef.empOnly){
+      for(const en of enemies){
+        if(en.state==='dying' || hitSet.has(en))continue;
+        const dx=en.x-ox, dy=en.y-oy;
+        const dist=Math.hypot(dx,dy);
+        if(dist>range)continue;
+        const a=Math.atan2(dy,dx);
+        if(angleDiff(a,pelletAngle) > tolerance)continue;
+        if(!hasLineOfSight(ox,oy,en.x,en.y, true))continue;
+        if(dist<bestDist){bestDist=dist;best=en;}
+      }
     }
 
+    const empRadius = wdef.empOnly ? 40 : 14;
     for(const cam of cameras){
       if(cam.disabled) continue;
       const {dist:perpCam,t:tCam} = pointSegDist(cam.x,cam.y,ox,oy,tx,ty);
-      if(perpCam<14 && tCam>0 && tCam<=1 && hasLineOfSight(ox,oy,cam.x,cam.y,true)){
+      if(perpCam<empRadius && tCam>0 && tCam<=1 && hasLineOfSight(ox,oy,cam.x,cam.y,true)){
         cam.disabled=true;
         for(let i=0;i<10;i++) particles.push({x:cam.x,y:cam.y,vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,life:26,r:2.5,color:i%2?'#ffd060':'#888'});
         playNoise(0.08,0.16,2200,'bandpass');
-        spawnText(cam.x,cam.y-16,'카메라 파괴!','#ff8a5a');
+        spawnText(cam.x,cam.y-16, wdef.empOnly?'EMP 무력화!':'카메라 파괴!','#ff8a5a');
       }
     }
+
+    if(wdef.empOnly) continue; // EMP건은 적을 맞히지 않음(카메라 전용 유틸 무기)
 
     if(best){
       hitSet.add(best);
@@ -2859,8 +2894,8 @@ function handleFire(angle){
   if(hitSet.size>0){
     for(const best of hitSet){
       if(wdef.nonLethal){
-        best.stunned=true; best.stunTimer=5;
-        spawnText(best.x,best.y-24,'마비!','#8fd0ff');
+        best.stunned=true; best.stunTimer=wdef.sleepTime||5;
+        spawnText(best.x,best.y-24, wdef.sleepTime? '수면!' : '마비!','#8fd0ff');
       } else {
         best.state='dying';
         best.dieType='shot';
