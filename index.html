@@ -323,7 +323,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 3.3.0.0</div>
+  <div id="verText">Ver 3.3.1.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -349,7 +349,10 @@
   <div id="nameInputBox">
     <h2>요원 이름 입력</h2>
     <input type="text" id="playerNameInput" maxlength="10" placeholder="이름을 입력하세요" />
-    <div class="closeBtn" id="btnNameConfirm" style="margin-top:16px;">확인</div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+      <div class="closeBtn" id="btnNameCancel" style="background:transparent;border-color:#666;">취소</div>
+      <div class="closeBtn" id="btnNameConfirm">확인</div>
+    </div>
   </div>
 </div>
 
@@ -519,12 +522,10 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 3.3.0.0)</h2>
+    <h2>업데이트 안내 (Ver 3.3.1.0)</h2>
     <ul>
-      <li>튜토리얼 4단계 문구 수정("좌측" 노란 버튼으로) + 야간투시/열화상 설명 단계 추가</li>
-      <li>튜토리얼 각 단계에서 설명 중인 버튼이 화면에서 직접 반짝이며 위치를 알려줌</li>
-      <li>난이도별 순찰 인원 차이를 더 명확하게 (쉬움 더 적게, 어려움 더 많게)</li>
-      <li>난이도별 미니맵 정보량 차등 - 쉬움: 모든 적 항상 표시 / 보통: 실제 시야에 든 적만 색으로, 나머지는 회색 / 어려움: 미니맵 완전 암전("NO SIGNAL - EMP로 교란됨")</li>
+      <li>이어하기가 저장 당시 난이도가 아니라 현재 선택된 난이도로 불러와지던 버그 수정</li>
+      <li>이름 입력 창에 취소 버튼 추가 (실수로 새로하기 눌러도 되돌아갈 수 있음)</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -958,7 +959,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '3.3.0.0';
+const GAME_VERSION = '3.3.1.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 function updateDiffStatsText(){
@@ -1397,6 +1398,9 @@ function beginGameplay(opts){
   opts = opts || {};
   initAudio();
   gameStarted=true;
+  if(opts.continueState && opts.continueState.difficulty){
+    difficulty = opts.continueState.difficulty; // 이어하기는 저장 당시 난이도를 그대로 복원
+  }
   player.speed = 2.4*UPGRADES.speed.effect(getUpgradeLv('speed'));
   player.maxHp = UPGRADES.hp.effect(getUpgradeLv('hp'));
   player.hp = player.maxHp;
@@ -1488,6 +1492,9 @@ document.getElementById('btnStorySkip').addEventListener('click',()=>{
 document.getElementById('btnStart').addEventListener('click',()=>{
   document.getElementById('playerNameInput').value = playerName;
   document.getElementById('nameInputOverlay').style.display='flex';
+});
+document.getElementById('btnNameCancel').addEventListener('click',()=>{
+  document.getElementById('nameInputOverlay').style.display='none';
 });
 document.getElementById('btnNameConfirm').addEventListener('click',()=>{
   const val = document.getElementById('playerNameInput').value.trim();
