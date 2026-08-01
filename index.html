@@ -51,29 +51,29 @@
        background:rgba(255,140,100,0.07);border:2px dashed rgba(255,160,120,0.28);display:none;
        align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:bold;pointer-events:none;z-index:5;}
 
-  #btns{position:fixed;right:50px;bottom:152px;display:none;z-index:43;}
-  .btn{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
+  #btns{position:fixed;right:168px;bottom:110px;display:none;z-index:43;}
+  .btn{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);
        color:#fff;font-size:9.5px;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.15;}
   .btn:active{background:rgba(255,255,255,0.35);}
 
-  #interactBtn{position:fixed;right:158px;bottom:46px;width:66px;height:66px;border-radius:50%;
+  #interactBtn{position:fixed;right:168px;bottom:26px;width:70px;height:70px;border-radius:50%;
        background:rgba(255,205,110,0.22);border:2px solid rgba(255,220,150,0.55);color:#fff;font-size:11px;
        display:none;align-items:center;justify-content:center;text-align:center;z-index:44;user-select:none;}
 
-  #miniAbilityBtns{position:fixed;right:158px;bottom:120px;display:none;flex-direction:column;gap:6px;z-index:43;}
-  .miniBtn2{width:58px;height:34px;border-radius:50%/50%;font-size:8px;border:1.5px solid rgba(255,255,255,0.5);
+  #miniAbilityBtns{position:fixed;right:250px;bottom:26px;display:none;flex-direction:column;gap:6px;z-index:43;}
+  .miniBtn2{width:48px;height:30px;border-radius:50%/50%;font-size:7.5px;border:1.5px solid rgba(255,255,255,0.5);
        color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;user-select:none;line-height:1.1;
        box-shadow:0 2px 4px rgba(0,0,0,0.3);}
   #btnNVG{background:linear-gradient(160deg,rgba(120,220,140,0.5),rgba(60,150,90,0.35));border-color:rgba(160,255,180,0.7);}
   #btnThermal{background:linear-gradient(160deg,rgba(255,150,80,0.5),rgba(200,90,30,0.35));border-color:rgba(255,180,120,0.7);}
 
-  #throwBtn{position:fixed;right:224px;bottom:116px;width:94px;height:94px;border-radius:50%;
-       background:rgba(230,220,120,0.22);border:2px solid rgba(255,220,140,0.5);color:#fff;font-size:16px;font-weight:bold;
+  #throwBtn{position:fixed;right:168px;bottom:188px;width:84px;height:84px;border-radius:50%;
+       background:rgba(230,220,120,0.22);border:2px solid rgba(255,220,140,0.5);color:#fff;font-size:14px;font-weight:bold;
        display:none;align-items:center;justify-content:center;text-align:center;z-index:42;user-select:none;white-space:nowrap;line-height:1.5;}
   #throwStick{position:fixed;width:30px;height:30px;border-radius:50%;
        background:radial-gradient(circle at 35% 30%,rgba(255,235,160,0.95),rgba(220,190,90,0.7));
        box-shadow:0 2px 5px rgba(0,0,0,0.4);display:none;pointer-events:none;z-index:43;}
-  #throwBtnItem{font-size:14px;font-weight:bold;opacity:0.95;white-space:nowrap;display:block;margin-top:2px;}
+  #throwBtnItem{font-size:12px;font-weight:bold;opacity:0.95;white-space:nowrap;display:block;margin-top:2px;}
   #throwPickerGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
   .pickerOpt{padding:16px 6px;border-radius:12px;background:rgba(255,255,255,0.1);
        border:2px solid rgba(255,255,255,0.3);color:#fff;text-align:center;font-size:14px;user-select:none;}
@@ -271,7 +271,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 2.1.1.0</div>
+  <div id="verText">Ver 2.3.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -410,9 +410,9 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 2.1.1.0)</h2>
+    <h2>업데이트 안내 (Ver 2.3.0.0)</h2>
     <ul>
-      <li>투척물 버튼을 키우고 글자를 크고 또렷하게 (투척물 / 아이템명 개수 두 줄로 넉넉하게 표시)</li>
+      <li>우측 버튼 배치를 사용 빈도순으로 재정리 - 사격(코너, 크게) → 상호작용·웅크리기(바로 옆) → 투척물(그 위) → 야간투시·열화상(옆으로 작게, 필요할 때만)</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -664,6 +664,7 @@ const missions = [
   {id:'pattern', x:1750,y:1200, r:16, done:false, label:'보안 패턴 암기', color:'#f0a860', puzzleType:'pattern'}
 ];
 let missionsComplete=false;
+let discoveredCodes = {}; // 한 번 본 미션 코드를 계속 기억해서 화면에 유지 표시
 let puzzleActive=null;
 
 let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4,angle:0,aimAngle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0,stunnedTimer:0,weapon:'pistol',hp:100,maxHp:100,hurtFlash:0};
@@ -810,7 +811,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '2.1.1.0';
+const GAME_VERSION = '2.3.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7}, normal:{vision:1, hear:1, alarm:1}, hard:{vision:1.25, hear:1.3, alarm:1.4} };
 const DAMAGE_MUL = { easy:0.6, normal:1, hard:1.4 };
@@ -1134,6 +1135,7 @@ document.getElementById('btnStart').addEventListener('click',()=>{
   gameStarted=true;
   stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
   THROW_TYPES.forEach(t=>{ charges[t] = maxChargesFor(t); });
+  discoveredCodes = {};
   randomizeMissionCodes();
   randomizeFillerDecor();
   enemies = applyDifficulty(buildEnemyRoster(), difficulty);
@@ -1203,19 +1205,19 @@ document.getElementById('handToggle').addEventListener('click',()=>{
     fz.style.left='0'; fz.style.right='auto';
     jg.style.left='auto'; jg.style.right='60px';
     fg.style.left='14px'; fg.style.right='auto';
-    bt.style.right='auto'; bt.style.left='50px';
-    tb.style.right='auto'; tb.style.left='238px';
-    mb.style.right='auto'; mb.style.left='158px';
-    ib.style.right='auto'; ib.style.left='158px';
+    bt.style.right='auto'; bt.style.left='168px';
+    tb.style.right='auto'; tb.style.left='168px';
+    mb.style.right='auto'; mb.style.left='250px';
+    ib.style.right='auto'; ib.style.left='168px';
   } else {
     jz.style.right='auto'; jz.style.left='0';
     fz.style.right='0'; fz.style.left='auto';
     jg.style.right='auto'; jg.style.left='60px';
     fg.style.right='14px'; fg.style.left='auto';
-    bt.style.left='auto'; bt.style.right='50px';
-    tb.style.left='auto'; tb.style.right='238px';
-    mb.style.left='auto'; mb.style.right='158px';
-    ib.style.left='auto'; ib.style.right='158px';
+    bt.style.left='auto'; bt.style.right='168px';
+    tb.style.left='auto'; tb.style.right='168px';
+    mb.style.left='auto'; mb.style.right='250px';
+    ib.style.left='auto'; ib.style.right='168px';
   }
   if(gameStarted && !joy.active) showJoyHint();
 });
@@ -2142,6 +2144,7 @@ function respawn(){
   }
 }
 function restartLevel(){
+  discoveredCodes = {};
   enemies = applyDifficulty(buildEnemyRoster(), difficulty);
   enemies.forEach((e,i)=>e._id=i);
   corpses=[]; clouds=[]; bullets=[]; traps=[]; particles=[]; textParticles=[]; decoys=[];
@@ -3766,18 +3769,18 @@ function loopBody(dt){
       document.getElementById('hurtVignette').style.display='none';
     }
 
-    // 근처 미션 코드 쪽지가 있으면 HUD에 힌트로 표시
+    // 근처 미션 코드 쪽지 - 한 번이라도 가까이 가서 본 코드는 미션 완료 전까지 계속 표시됨
     {
       const hintEl = document.getElementById('codeHint');
-      let hint=null;
       for(const d of decor){
         if(d.type!=='note' || !d.missionId) continue;
         const m = missions.find(mm=>mm.id===d.missionId);
-        if(!m || m.done) continue;
+        if(!m || m.done){ delete discoveredCodes[d.missionId]; continue; }
         const dist = Math.hypot(player.x-(d.x+d.w/2), player.y-(d.y+d.h/2));
-        if(dist<130){ hint = d.text; break; }
+        if(dist<130) discoveredCodes[d.missionId] = d.text;
       }
-      if(hint){ hintEl.textContent='코드: '+hint; hintEl.style.display='block'; }
+      const lines = Object.values(discoveredCodes);
+      if(lines.length>0){ hintEl.textContent='코드: '+lines.join(' / '); hintEl.style.display='block'; }
       else { hintEl.style.display='none'; }
     }
 
