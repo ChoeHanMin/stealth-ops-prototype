@@ -340,7 +340,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.0.1.0</div>
+  <div id="verText">Ver 4.1.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -543,9 +543,11 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 4.0.1.0)</h2>
+    <h2>업데이트 안내 (Ver 4.1.0.0)</h2>
     <ul>
-      <li>스테이지 1 클리어 시 결과화면에 "다음 스테이지로 이동" 버튼 추가 - 바로 스테이지 2로 넘어갈 수 있음 (예전엔 홈 화면으로 나갔다가 다시 골라야 했음)</li>
+      <li>정원(스테이지 2)에 오브젝트 대폭 추가 - 나무 8그루, 화단, 정원 소품(가든노움·외바퀴수레·물뿌리개·격자울타리·버섯·돌무더기·작은 연못) 등으로 더 풍성하게</li>
+      <li>신규 은신처 3종 추가: 쓰레기통, 나무통, 건초더미</li>
+      <li>스테이지 2 시작 시 이름입력·스토리·튜토리얼을 건너뛰고 바로 시작하도록 수정 (그건 스테이지 1 최초 플레이 때만 나오면 되는 거였음)</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -1168,7 +1170,47 @@ const STAGE2_DECOR = [
   {type:'medkit',x:1750,y:900,w:22,h:16,solid:false},
   {type:'supplycrate',x:250,y:900,w:26,h:22,solid:false},
   {type:'battery',x:1450,y:900,w:16,h:22,solid:false},
-  {type:'lockedCabinet',x:230,y:1200,w:26,h:34,solid:true,locked:true}
+  {type:'lockedCabinet',x:230,y:1200,w:26,h:34,solid:true,locked:true},
+
+  // 신규 은신처 - 쓰레기통/나무통/건초더미
+  {type:'trashCan',x:320,y:1180,w:24,h:24,solid:true,hideable:true},
+  {type:'trashCan',x:1850,y:850,w:24,h:24,solid:true,hideable:true},
+  {type:'trashCan',x:480,y:750,w:24,h:24,solid:true,hideable:true},
+  {type:'trashCan',x:1550,y:1000,w:24,h:24,solid:true,hideable:true},
+  {type:'barrel',x:700,y:250,w:30,h:30,solid:true,hideable:true},
+  {type:'barrel',x:1900,y:900,w:30,h:30,solid:true,hideable:true},
+  {type:'haystack',x:180,y:1250,w:46,h:36,solid:true,hideable:true},
+  {type:'haystack',x:1500,y:1350,w:46,h:36,solid:true,hideable:true},
+
+  // 정원 소품(장식용)
+  {type:'gnome',x:1050,y:680,r:9},
+  {type:'gnome',x:1050,y:820,r:9},
+  {type:'wheelbarrow',x:180,y:1280,w:36,h:22},
+  {type:'wateringcan',x:760,y:300,r:8},
+  {type:'trellis',x:720,y:120,w:10,h:60},
+  {type:'trellis',x:920,y:120,w:10,h:60},
+  {type:'mushroom',x:400,y:850,r:7},
+  {type:'mushroom',x:1650,y:750,r:7},
+  {type:'mushroom',x:850,y:1200,r:7},
+  {type:'rockpile',x:600,y:1000,w:34,h:24,solid:true},
+  {type:'rockpile',x:1750,y:600,w:34,h:24,solid:true},
+  {type:'pond',x:1550,y:850,w:90,h:60,solid:true},
+
+  // 추가 화단/나무/덤불로 밀도 보강
+  {type:'flowerbed',x:670,y:880,w:60,h:40,color:'#e0a840'},
+  {type:'flowerbed',x:1480,y:1230,w:60,h:40,color:'#c85878'},
+  {type:'flowerbed',x:280,y:580,w:60,h:40,color:'#7858c8'},
+  {type:'tree',x:1000,y:1250,r:22,solid:true,hideable:true},
+  {type:'tree',x:1750,y:1350,r:22,solid:true,hideable:true},
+  {type:'tree',x:350,y:500,r:22,solid:true,hideable:true},
+  {type:'tree',x:1850,y:1000,r:22,solid:true,hideable:true},
+  {type:'tree',x:1000,y:1420,r:22,solid:true,hideable:true},
+  {type:'tree',x:150,y:700,r:22,solid:true,hideable:true},
+  {type:'tree',x:1900,y:500,r:22,solid:true,hideable:true},
+  {type:'tree',x:600,y:1400,r:22,solid:true,hideable:true},
+  {type:'hedgeBush',x:1000,y:900,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:500,y:1350,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:1800,y:300,w:34,h:34,solid:true,hideable:true}
 ];
 const STAGE2_MISSIONS = [
   {id:'greenhouse', x:820,y:220, r:16, done:false, label:'온실 관개 시스템', color:'#8fe098', puzzleType:'wires'},
@@ -1288,7 +1330,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '4.0.1.0';
+const GAME_VERSION = '4.1.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7, hitTolerance:1.5}, normal:{vision:1, hear:1, alarm:1, hitTolerance:1}, hard:{vision:1.25, hear:1.3, alarm:1.4, hitTolerance:0.75} };
 function updateDiffStatsText(){
@@ -1970,6 +2012,12 @@ document.getElementById('btnStorySkip').addEventListener('click',()=>{
 });
 
 document.getElementById('btnStart').addEventListener('click',()=>{
+  if(selectedStage===2){
+    // 스테이지 2는 이미 스테이지 1에서 이름/스토리/튜토리얼을 거친 이후이므로 바로 시작
+    clearContinueState();
+    beginGameplay({forceTutorial:false});
+    return;
+  }
   document.getElementById('playerNameInput').value = playerName;
   document.getElementById('nameInputOverlay').style.display='flex';
 });
@@ -4238,6 +4286,73 @@ function drawDecorItem(d,camX,camY){
       ctx.fillStyle=d.color||'#7a7060';
       ctx.globalAlpha=0.55;
       ctx.fillRect(x,y,d.w,d.h);
+      ctx.globalAlpha=1;
+      break;
+    case 'trashCan':
+      ctx.fillStyle='#4a5048';ctx.fillRect(x+2,y+4,d.w-4,d.h-4);
+      ctx.strokeStyle='#2a2e28';ctx.lineWidth=1.5;ctx.strokeRect(x+2,y+4,d.w-4,d.h-4);
+      ctx.fillStyle='#5a6058';ctx.fillRect(x,y,d.w,5);
+      break;
+    case 'barrel':
+      ctx.fillStyle='#6b4a2e';
+      ctx.beginPath();ctx.ellipse(x+d.w/2,y+d.h/2,d.w/2,d.h/2,0,0,7);ctx.fill();
+      ctx.strokeStyle='#3a2818';ctx.lineWidth=2;ctx.stroke();
+      ctx.strokeStyle='#8a6a30';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.ellipse(x+d.w/2,y+d.h/2,d.w/2-3,d.h/2-3,0,0,7);ctx.stroke();
+      break;
+    case 'haystack':
+      ctx.fillStyle='#c8a840';
+      ctx.beginPath();ctx.ellipse(x+d.w/2,y+d.h/2,d.w/2,d.h/2,0,0,7);ctx.fill();
+      ctx.strokeStyle='#8a7020';ctx.lineWidth=1.5;
+      for(let i=0;i<5;i++){
+        ctx.beginPath();ctx.moveTo(x+4+i*(d.w-8)/4,y+d.h-4);ctx.lineTo(x+2+i*(d.w-8)/4,y+4);ctx.stroke();
+      }
+      break;
+    case 'gnome':
+      ctx.fillStyle='#3a5c8a';ctx.beginPath();ctx.arc(x,y+d.r*0.3,d.r*0.6,0,7);ctx.fill();
+      ctx.fillStyle='#d9ac82';ctx.beginPath();ctx.arc(x,y-d.r*0.2,d.r*0.4,0,7);ctx.fill();
+      ctx.fillStyle='#c0392b';ctx.beginPath();ctx.moveTo(x-d.r*0.5,y-d.r*0.3);ctx.lineTo(x+d.r*0.5,y-d.r*0.3);ctx.lineTo(x,y-d.r*1.2);ctx.closePath();ctx.fill();
+      break;
+    case 'wheelbarrow':
+      ctx.fillStyle='#6a6248';ctx.fillRect(x,y,d.w,d.h);
+      ctx.strokeStyle='#3a3620';ctx.lineWidth=1.2;ctx.strokeRect(x,y,d.w,d.h);
+      ctx.fillStyle='#2a2a2a';ctx.beginPath();ctx.arc(x-2,y+d.h/2,6,0,7);ctx.fill();
+      break;
+    case 'wateringcan':
+      ctx.fillStyle='#5a8ac0';
+      ctx.beginPath();ctx.ellipse(x,y,d.r,d.r*0.8,0,0,7);ctx.fill();
+      ctx.strokeStyle='#3a5a80';ctx.lineWidth=1;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+d.r*0.7,y-d.r*0.3);ctx.lineTo(x+d.r*1.6,y-d.r*0.8);ctx.lineWidth=2.5;ctx.strokeStyle='#5a8ac0';ctx.stroke();
+      break;
+    case 'trellis':
+      ctx.strokeStyle='#6b4a2e';ctx.lineWidth=2;
+      ctx.strokeRect(x,y,d.w,d.h);
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+d.w,y+d.h);ctx.moveTo(x+d.w,y);ctx.lineTo(x,y+d.h);ctx.stroke();
+      ctx.strokeStyle='#3f7a3f';ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.moveTo(x+d.w/2,y+d.h);ctx.quadraticCurveTo(x-4,y+d.h*0.5,x+d.w/2,y);ctx.stroke();
+      break;
+    case 'mushroom':
+      ctx.fillStyle='#e8e0d0';ctx.fillRect(x-1.5,y,3,d.r);
+      ctx.fillStyle='#c85030';
+      ctx.beginPath();ctx.arc(x,y-1,d.r,Math.PI,0);ctx.fill();
+      ctx.fillStyle='#f0d0c0';
+      ctx.beginPath();ctx.arc(x-d.r*0.4,y-d.r*0.6,1.4,0,7);ctx.fill();
+      ctx.beginPath();ctx.arc(x+d.r*0.3,y-d.r*0.8,1.2,0,7);ctx.fill();
+      break;
+    case 'rockpile':
+      ctx.fillStyle='#7a7568';
+      ctx.beginPath();ctx.ellipse(x+d.w*0.35,y+d.h*0.5,d.w*0.32,d.h*0.42,0,0,7);ctx.fill();
+      ctx.beginPath();ctx.ellipse(x+d.w*0.7,y+d.h*0.6,d.w*0.28,d.h*0.36,0,0,7);ctx.fill();
+      ctx.fillStyle='#918c7c';
+      ctx.beginPath();ctx.ellipse(x+d.w*0.5,y+d.h*0.35,d.w*0.3,d.h*0.34,0,0,7);ctx.fill();
+      break;
+    case 'pond':
+      ctx.fillStyle='#4a4438';
+      ctx.beginPath();ctx.ellipse(x+d.w/2,y+d.h/2,d.w/2,d.h/2,0,0,7);ctx.fill();
+      ctx.fillStyle='#3f7fb0';
+      ctx.beginPath();ctx.ellipse(x+d.w/2,y+d.h/2,d.w/2-6,d.h/2-6,0,0,7);ctx.fill();
+      ctx.fillStyle='#5ea0d0';ctx.globalAlpha=0.5+Math.sin(simTime*2)*0.12;
+      ctx.beginPath();ctx.ellipse(x+d.w/2,y+d.h/2,d.w/2-6,d.h/2-6,0,0,7);ctx.fill();
       ctx.globalAlpha=1;
       break;
     case 'lockedCabinet':
