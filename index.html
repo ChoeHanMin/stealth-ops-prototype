@@ -340,7 +340,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.0.0.0</div>
+  <div id="verText">Ver 4.0.1.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -480,6 +480,7 @@
     <h2>미션 완료</h2>
     <p id="resultBody"></p>
     <div id="achToast"></div>
+    <div class="closeBtn" id="btnNextStage" style="display:none;background:rgba(120,200,120,0.25);border-color:rgba(120,220,120,0.7);margin-bottom:8px;">다음 스테이지로 이동</div>
     <div class="closeBtn" id="closeResult">확인</div>
   </div>
 </div>
@@ -542,12 +543,9 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 4.0.0.0)</h2>
+    <h2>업데이트 안내 (Ver 4.0.1.0)</h2>
     <ul>
-      <li>스테이지 2 "저택 정원" 추가! 스테이지 1을 클리어하면 해금됨</li>
-      <li>정원 전용 신규 미션 6개(온실 관개, 창고 자물쇠, 분수 제어반, 스프링클러 타이밍, 정원 조명 패턴, 발전기 차단기)</li>
-      <li>나무·화단·산울타리 뒤에 숨을 수 있는 야외 은신 시스템, 분수대·우물·정원등·벤치 등으로 꾸며진 정원</li>
-      <li>정원 전용 경비 배치와 순찰 경로 추가</li>
+      <li>스테이지 1 클리어 시 결과화면에 "다음 스테이지로 이동" 버튼 추가 - 바로 스테이지 2로 넘어갈 수 있음 (예전엔 홈 화면으로 나갔다가 다시 골라야 했음)</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -1290,7 +1288,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '4.0.0.0';
+const GAME_VERSION = '4.0.1.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7, hitTolerance:1.5}, normal:{vision:1, hear:1, alarm:1, hitTolerance:1}, hard:{vision:1.25, hear:1.3, alarm:1.4, hitTolerance:0.75} };
 function updateDiffStatsText(){
@@ -3186,8 +3184,16 @@ function showResultScreen(){
   const toast = document.getElementById('achToast');
   toast.innerHTML = newly.length ? ('🏆 새 업적: '+newly.map(a=>a.name).join(', ')) : '';
 
+  const nextBtn = document.getElementById('btnNextStage');
+  nextBtn.style.display = (currentStage===1 && isStage2Unlocked()) ? 'block' : 'none';
+
   document.getElementById('resultModal').style.display='flex';
 }
+document.getElementById('btnNextStage').addEventListener('click',()=>{
+  document.getElementById('resultModal').style.display='none';
+  selectedStage = 2;
+  beginGameplay({forceTutorial:false});
+});
 
 const FIRE_RANGE = 420;
 const FIRE_TOLERANCE = 4*Math.PI/180;
