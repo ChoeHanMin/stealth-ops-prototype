@@ -340,7 +340,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 3.8.1.0</div>
+  <div id="verText">Ver 4.0.0.0</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
@@ -348,8 +348,8 @@
     <div class="miniBtn diffBtn" data-diff="hard">어려움</div>
   </div>
   <div class="miniRow">
-    <div class="miniBtn stageBtn active" data-stage="1">스테이지 1</div>
-    <div class="miniBtn stageLocked">스테이지 2 (준비중)</div>
+    <div class="miniBtn stageBtn active" data-stage="1" id="stageBtn1">스테이지 1</div>
+    <div class="miniBtn stageBtn stageLocked" data-stage="2" id="stageBtn2">스테이지 2 (잠김)</div>
   </div>
 
   <div class="menuBtn primary" id="btnStart">게임 새로 하기</div>
@@ -403,6 +403,7 @@
       <li>잠긴 캐비닛을 상호작용하면 진동 세기로 위치를 찾는 자물쇠 따기 미니게임이 뜸 - 성공하면 요원 포인트 보너스</li>
       <li>체력이 0이 되기 직전, 체크포인트당 딱 한 번 화면을 탭해서 탈출할 수 있는 위기 찬스가 옴</li>
       <li>클리어할 때마다 요원 포인트를 얻어서 시작화면의 "요원 강화"에서 이동속도·최대체력·은신 보너스·투척물 소지량을 영구 강화할 수 있음</li>
+      <li>스테이지 1(저택)을 클리어하면 스테이지 2(저택 정원)가 해금됨 - 나무·화단·분수대 뒤에 숨을 수 있는 야외 맵</li>
       <li>경비장(★ 표시된 베테랑)을 처치하면 근처 동료들이 동요함 - 미니맵에서도 금색 테두리로 구분됨</li>
       <li>연막탄: 뭉게구름처럼 넓게 퍼져 시야 차단 · 기절탄: 범위 내 적 5초 무력화 · 수류탄: 명중 시 즉사하지만 폭발음으로 전역 알람 발생 · 크레모아: 던지지 않고 그 자리에 바로 설치되며(방향만 조준), 근처에 적이 오면 자동 폭발 · 끈끈이: 밟은 적을 한동안 못 움직이게 함(감지는 계속함)</li>
       <li>정면 기습(칼) 처치는 비명을 질러 근처 적이 조사하러 옴 - 후방 조르기는 완전히 조용함</li>
@@ -541,9 +542,12 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 3.8.1.0)</h2>
+    <h2>업데이트 안내 (Ver 4.0.0.0)</h2>
     <ul>
-      <li>끈끈이 색상을 연두색으로 변경</li>
+      <li>스테이지 2 "저택 정원" 추가! 스테이지 1을 클리어하면 해금됨</li>
+      <li>정원 전용 신규 미션 6개(온실 관개, 창고 자물쇠, 분수 제어반, 스프링클러 타이밍, 정원 조명 패턴, 발전기 차단기)</li>
+      <li>나무·화단·산울타리 뒤에 숨을 수 있는 야외 은신 시스템, 분수대·우물·정원등·벤치 등으로 꾸며진 정원</li>
+      <li>정원 전용 경비 배치와 순찰 경로 추가</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -658,9 +662,10 @@ document.getElementById('rotateCloseBtn').addEventListener('click', ()=>{
 });
 window.addEventListener('resize', ()=>{ rotateOverlayEl.style.display=''; });
 
+let currentStage = 1; // 1=저택, 2=정원 (2단계는 1단계 클리어해야 해금)
 const WORLD_W = 2000, WORLD_H = 1500;
 
-const walls = [
+const STAGE1_WALLS = [
   {x:0,y:0,w:WORLD_W,h:20},{x:0,y:0,w:20,h:WORLD_H},
   {x:0,y:WORLD_H-20,w:WORLD_W,h:20},{x:WORLD_W-20,y:0,w:20,h:WORLD_H},
   {x:200,y:0,w:20,h:260},
@@ -679,7 +684,7 @@ const walls = [
   {x:900,y:1290,w:20,h:210}
 ];
 
-const decor = [
+const STAGE1_DECOR = [
   {type:'alarmPanel',x:950,y:480,w:20,h:26,solid:false},
   {type:'bookshelf',x:35,y:35,w:50,h:100},
   {type:'bed',x:30,y:380,w:90,h:150,solid:true,hideable:true},
@@ -816,16 +821,38 @@ const decor = [
   {type:'battery',x:400,y:1200,w:16,h:22,solid:false},
   {type:'lockedCabinet',x:1000,y:500,w:26,h:34,solid:true,locked:true}
 ];
-const furnitureSolids = decor.filter(d=>d.solid).map(d=>({x:d.x,y:d.y,w:d.w,h:d.h}));
-const solidRects = walls.concat(furnitureSolids);
-// 시야/사격 판정용: 침대는 이동은 막지만 시야(총알 명중 등)까지 가리면 안 됨(자는 적이 자기 침대에 가려 안 맞는 버그 방지)
-const visionBlockRects = walls.concat(decor.filter(d=>d.solid && d.type!=='bed').map(d=>({x:d.x,y:d.y,w:d.w,h:d.h})));
-const lamps = decor.filter(d=>d.type==='lamp' || d.type==='floorLamp');
-const hidingSpots = decor.filter(d=>d.isHidingSpot);
-const hideableFurn = decor.filter(d=>d.hideable);
+let walls = STAGE1_WALLS, decor = STAGE1_DECOR;
+let furnitureSolids, solidRects, visionBlockRects, lamps, hidingSpots, hideableFurn;
+function recomputeMapDerived(){
+  furnitureSolids = decor.filter(d=>d.solid).map(d=>({x:d.x,y:d.y,w:d.w,h:d.h}));
+  solidRects = walls.concat(furnitureSolids);
+  // 시야/사격 판정용: 침대는 이동은 막지만 시야(총알 명중 등)까지 가리면 안 됨(자는 적이 자기 침대에 가려 안 맞는 버그 방지)
+  visionBlockRects = walls.concat(decor.filter(d=>d.solid && d.type!=='bed').map(d=>({x:d.x,y:d.y,w:d.w,h:d.h})));
+  lamps = decor.filter(d=>d.type==='lamp' || d.type==='floorLamp' || d.type==='lampPost');
+  hidingSpots = decor.filter(d=>d.isHidingSpot);
+  hideableFurn = decor.filter(d=>d.hideable);
+}
 
-const checkpoint = {x:120,y:120};
-const missions = [
+const STAGE1_CHECKPOINT = {x:120,y:120};
+let checkpoint = {x:120,y:120};
+function loadStageData(stageNum){
+  currentStage = stageNum;
+  if(stageNum===2){
+    walls = STAGE2_WALLS;
+    decor = STAGE2_DECOR.map(d=>({...d}));
+    missions = STAGE2_MISSIONS.map(m=>({...m}));
+    cameras = STAGE2_CAMERAS.map(c=>({...c}));
+    checkpoint = {...STAGE2_CHECKPOINT};
+  } else {
+    walls = STAGE1_WALLS;
+    decor = STAGE1_DECOR.map(d=>({...d}));
+    missions = STAGE1_MISSIONS.map(m=>({...m}));
+    cameras = STAGE1_CAMERAS.map(c=>({...c}));
+    checkpoint = {...STAGE1_CHECKPOINT};
+  }
+  recomputeMapDerived();
+}
+const STAGE1_MISSIONS = [
   {id:'wire', x:1150,y:180, r:16, done:false, label:'선 연결', color:'#e8d060', puzzleType:'wires'},
   {id:'card', x:500,y:900, r:16, done:false, label:'카드키 단말기', color:'#5ecbe8', puzzleType:'dial', target:[4,7,2]},
   {id:'cctv', x:1250,y:850, r:16, done:false, label:'CCTV 해킹', color:'#c586e8', puzzleType:'code', target:'1376'},
@@ -833,6 +860,8 @@ const missions = [
   {id:'pattern', x:1750,y:1200, r:16, done:false, label:'보안 패턴 암기', color:'#f0a860', puzzleType:'pattern'},
   {id:'breaker', x:400,y:700, r:16, done:false, label:'회로 차단기 재배선', color:'#ff9a5a', puzzleType:'breaker'}
 ];
+let missions = STAGE1_MISSIONS;
+recomputeMapDerived();
 let missionsComplete=false;
 let screenShake=0; // 처치/피격/폭발 시 화면 흔들림 강도 (매 프레임 감쇠)
 let discoveredCodes = {}; // 한 번 본 미션 코드를 계속 기억해서 화면에 유지 표시
@@ -903,7 +932,7 @@ function makeGuard(opts){
   };
 }
 
-function buildEnemyRoster(){
+function buildStage1EnemyRoster(){
 return [
   // ---- 순찰 경비 5명 (무기: 총/테이저 배정) ----
   makeGuard({x:350,y:440,state:'patrol',rank:'rookie',hair:'#3a2a1e',weapon:'taser',essential:true,
@@ -990,7 +1019,52 @@ return [
 ];
 }
 
-/* 난이도에 따라 적 구성을 다르게 필터링/구성 */
+function buildStage2EnemyRoster(){
+return [
+  // ---- 순찰 경비 (버디 페어 + 추가 인원) ----
+  makeGuard({x:80,y:80,state:'patrol',rank:'rookie',hair:'#3a2a1e',weapon:'taser',essential:true,
+    path:[{x:80,y:80},{x:1920,y:80},{x:1920,y:1420},{x:80,y:1420}], buddyId:1}),
+  makeGuard({x:1920,y:1420,state:'patrol',rank:'veteran',bandana:true,hair:'#555',weapon:'gun',essential:true,
+    path:[{x:1920,y:1420},{x:80,y:1420},{x:80,y:80},{x:1920,y:80}], buddyId:0}),
+  makeGuard({x:450,y:450,state:'patrol',rank:'rookie',hair:'#4a3a28',weapon:'gun',
+    path:[{x:450,y:450},{x:600,y:450},{x:600,y:1050},{x:450,y:1050}]}),
+  makeGuard({x:700,y:500,state:'patrol',rank:'rookie',hair:'#555',weapon:'taser',
+    path:[{x:700,y:500},{x:1300,y:500},{x:1300,y:1000},{x:700,y:1000}]}),
+  makeGuard({x:1750,y:750,state:'patrol',rank:'rookie',hair:'#2a2015',weapon:'gun',
+    path:[{x:1750,y:750},{x:1750,y:1050},{x:1450,y:1050},{x:1450,y:750}]}),
+  makeGuard({x:1350,y:400,state:'patrol',rank:'rookie',hair:'#333',weapon:'baton',
+    path:[{x:1350,y:400},{x:1900,y:400},{x:1900,y:600},{x:1350,y:600}]}),
+
+  // ---- 나무 그늘에서 쉬는 정원사들 ----
+  makeGuard({x:550,y:900,angle:0,state:'idle',activity:'sleep',visionRange:50,visionAngle:80,hair:'#4a3a28'}),
+  makeGuard({x:1200,y:1000,angle:1.5,state:'idle',activity:'eat',visionRange:50,visionAngle:80,hair:'#555'}),
+  makeGuard({x:1600,y:550,angle:-1,state:'idle',activity:'eat',visionRange:50,visionAngle:80,bandana:true}),
+  makeGuard({x:900,y:1400,angle:2,state:'idle',activity:'chat',visionRange:75,visionAngle:90,hair:'#3a2a1e'}),
+  makeGuard({x:1700,y:1300,angle:-2.4,state:'idle',activity:'chat',visionRange:75,visionAngle:90,hair:'#333'}),
+  makeGuard({x:820,y:250,angle:0,state:'idle',activity:'read',visionRange:50,visionAngle:80,hair:'#555'}),
+
+  // ---- 경비견 ----
+  makeGuard({x:150,y:1150,state:'patrol',isDog:true,essential:true,
+    path:[{x:150,y:1150},{x:350,y:1150},{x:350,y:1400},{x:150,y:1400}]}),
+  makeGuard({x:1450,y:800,state:'patrol',isDog:true,
+    path:[{x:1450,y:750},{x:1750,y:750},{x:1750,y:1050},{x:1450,y:1050}]}),
+
+  // ---- 어려움 난이도 전용 추가 인원 (hardOnly) ----
+  Object.assign(makeGuard({x:600,y:450,state:'patrol',rank:'rookie',hair:'#4a3a28',weapon:'gun',
+    path:[{x:600,y:450},{x:450,y:450},{x:450,y:1050},{x:600,y:1050}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1300,y:1000,state:'patrol',rank:'veteran',bandana:true,hair:'#333',weapon:'baton',
+    path:[{x:1300,y:1000},{x:700,y:1000},{x:700,y:500},{x:1300,y:500}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1900,y:600,state:'patrol',isDog:true,
+    path:[{x:1900,y:600},{x:1350,y:600},{x:1350,y:400},{x:1900,y:400}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1450,y:1050,state:'patrol',rank:'rookie',hair:'#3a2a1e',weapon:'taser',
+    path:[{x:1450,y:1050},{x:1750,y:1050},{x:1750,y:750},{x:1450,y:750}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:350,y:1400,state:'patrol',isDog:true,
+    path:[{x:350,y:1400},{x:150,y:1400},{x:150,y:1150},{x:350,y:1150}]}), {hardOnly:true})
+];
+}
+function buildEnemyRoster(){
+  return currentStage===2 ? buildStage2EnemyRoster() : buildStage1EnemyRoster();
+}
 function applyDifficulty(roster, diff){
   let list = roster.filter(en => !en.hardOnly);
   if(diff==='easy'){
@@ -1009,10 +1083,108 @@ function applyDifficulty(roster, diff){
 let enemies = buildEnemyRoster();
 
 let corpses = [];
-let cameras = [
+const STAGE1_CAMERAS = [
   {x:1150,y:180,angle:Math.PI/2,visionRange:180,visionAngle:35,disabled:false,detectTimer:0},
   {x:1550,y:900,angle:0,visionRange:180,visionAngle:35,disabled:false,detectTimer:0}
 ];
+let cameras = STAGE1_CAMERAS.map(c=>({...c}));
+
+/* ===================== 스테이지 2: 저택 정원 ===================== */
+const STAGE2_WALLS = [
+  {x:0,y:0,w:WORLD_W,h:20},{x:0,y:0,w:20,h:WORLD_H},
+  {x:0,y:WORLD_H-20,w:WORLD_W,h:20},{x:WORLD_W-20,y:0,w:20,h:WORLD_H},
+  // 온실 (남쪽으로 출입구 개방)
+  {x:650,y:80,w:350,h:20},
+  {x:650,y:80,w:20,h:280},
+  {x:980,y:80,w:20,h:280},
+  // 정원사 창고 (남쪽으로 출입구 개방)
+  {x:100,y:1100,w:20,h:300},
+  {x:100,y:1100,w:320,h:20},
+  {x:400,y:1100,w:20,h:300},
+  // 장미정원 산울타리 미로 (북동쪽)
+  {x:1300,y:60,w:20,h:260},
+  {x:1300,y:300,w:280,h:20},
+  {x:1660,y:60,w:20,h:340},
+  {x:1500,y:60,w:20,h:140},
+  // 중앙 분수광장을 두르는 낮은 담장 (남쪽 트임)
+  {x:850,y:600,w:20,h:220},
+  {x:1150,y:600,w:20,h:220},
+  {x:850,y:600,w:320,h:20}
+];
+const STAGE2_DECOR = [
+  {type:'tree',x:150,y:250,r:22,solid:true,hideable:true},
+  {type:'tree',x:300,y:700,r:22,solid:true,hideable:true},
+  {type:'tree',x:550,y:900,r:22,solid:true,hideable:true},
+  {type:'tree',x:1100,y:1350,r:22,solid:true,hideable:true},
+  {type:'tree',x:1850,y:700,r:22,solid:true,hideable:true},
+  {type:'tree',x:1200,y:1000,r:22,solid:true,hideable:true},
+  {type:'tree',x:700,y:1300,r:22,solid:true,hideable:true},
+  {type:'tree',x:1900,y:300,r:22,solid:true,hideable:true},
+  {type:'tree',x:480,y:500,r:22,solid:true,hideable:true},
+  {type:'tree',x:1050,y:450,r:22,solid:true,hideable:true},
+  {type:'tree',x:1400,y:850,r:22,solid:true,hideable:true},
+  {type:'tree',x:1750,y:1400,r:22,solid:true,hideable:true},
+  {type:'tree',x:200,y:950,r:22,solid:true,hideable:true},
+  {type:'tree',x:900,y:1400,r:22,solid:true,hideable:true},
+  {type:'tree',x:1600,y:550,r:22,solid:true,hideable:true},
+  {type:'tree',x:1900,y:1150,r:22,solid:true,hideable:true},
+
+  {type:'fountain',x:1000,y:710,r:44,solid:true},
+  {type:'flowerbed',x:880,y:640,w:60,h:40,color:'#c85878'},
+  {type:'flowerbed',x:1060,y:640,w:60,h:40,color:'#d8a840'},
+  {type:'flowerbed',x:880,y:770,w:60,h:40,color:'#7858c8'},
+  {type:'flowerbed',x:1060,y:770,w:60,h:40,color:'#c85030'},
+
+  {type:'shedDoor',x:230,y:1395,w:40,h:10},
+  {type:'note',x:270,y:1250,w:22,h:14,text:'259',rot:-0.1,missionId:'shedlock'},
+  {type:'note',x:920,y:840,w:22,h:15,text:'4815',rot:0.12,missionId:'fountaincode'},
+
+  {type:'lampPost',x:700,y:150,r:9},
+  {type:'lampPost',x:900,y:150,r:9},
+  {type:'lampPost',x:150,y:1150,r:9},
+  {type:'lampPost',x:350,y:1150,r:9},
+  {type:'lampPost',x:1350,y:120,r:9},
+  {type:'lampPost',x:1600,y:120,r:9},
+  {type:'lampPost',x:1000,y:650,r:9},
+  {type:'lampPost',x:1000,y:780,r:9},
+
+  {type:'bench',x:1500,y:1200,w:80,h:20},
+  {type:'bench',x:1700,y:1300,w:80,h:20},
+  {type:'bench',x:1850,y:1200,w:80,h:20},
+  {type:'well',x:1450,y:1350,r:30,solid:true},
+  {type:'birdbath',x:600,y:1250,r:16,solid:true},
+
+  {type:'hedgeBush',x:400,y:300,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:600,y:600,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:1250,y:900,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:1600,y:900,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:300,y:1300,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:1850,y:500,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:1450,y:250,w:34,h:34,solid:true,hideable:true},
+  {type:'hedgeBush',x:1750,y:1000,w:34,h:34,solid:true,hideable:true},
+
+  {type:'pathstone',x:120,y:400,w:60,h:600,color:'#7a7060'},
+  {type:'pathstone',x:1900,y:400,w:60,h:600,color:'#7a7060'},
+
+  // 픽업 아이템
+  {type:'medkit',x:1750,y:900,w:22,h:16,solid:false},
+  {type:'supplycrate',x:250,y:900,w:26,h:22,solid:false},
+  {type:'battery',x:1450,y:900,w:16,h:22,solid:false},
+  {type:'lockedCabinet',x:230,y:1200,w:26,h:34,solid:true,locked:true}
+];
+const STAGE2_MISSIONS = [
+  {id:'greenhouse', x:820,y:220, r:16, done:false, label:'온실 관개 시스템', color:'#8fe098', puzzleType:'wires'},
+  {id:'shedlock', x:250,y:1250, r:16, done:false, label:'창고 자물쇠', color:'#5ecbe8', puzzleType:'dial', target:[2,5,9]},
+  {id:'fountaincode', x:1000,y:850, r:16, done:false, label:'분수 제어반', color:'#c586e8', puzzleType:'code', target:'4815'},
+  {id:'sprinkler', x:1480,y:180, r:16, done:false, label:'스프링클러 타이밍', color:'#e8d060', puzzleType:'timing'},
+  {id:'gardenlight', x:1700,y:1250, r:16, done:false, label:'정원 조명 패턴', color:'#f0a860', puzzleType:'pattern'},
+  {id:'generator', x:500,y:1250, r:16, done:false, label:'발전기 차단기', color:'#ff9a5a', puzzleType:'breaker'}
+];
+const STAGE2_CAMERAS = [
+  {x:820,y:110,angle:Math.PI/2,visionRange:180,visionAngle:35,disabled:false,detectTimer:0},
+  {x:1480,y:1300,angle:Math.PI,visionRange:180,visionAngle:35,disabled:false,detectTimer:0}
+];
+const STAGE2_CHECKPOINT = {x:120,y:120};
 let clouds = [];
 let bullets = [];
 let traps = [];
@@ -1058,8 +1230,58 @@ const THROW_COLORS = {
   glue:'rgba(120,220,120,0.9)', stun:'rgba(230,220,90,0.9)', decoy:'rgba(232,208,96,0.9)'
 };
 const keys = {};
-window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+window.addEventListener('keydown',e=>{
+  keys[e.key.toLowerCase()]=true;
+  // 입력창에 포커스가 있을 땐 게임 단축키를 무시 (이름 입력 등)
+  const tag = document.activeElement && document.activeElement.tagName;
+  if(tag==='INPUT' || tag==='TEXTAREA') return;
+  if(!gameStarted || pauseActive || puzzleActive) {
+    if(e.key==='Escape' && gameStarted && !puzzleActive){
+      document.getElementById('pauseBtn').click();
+    }
+    return;
+  }
+  const k = e.key.toLowerCase();
+  if(k==='e'){ tryInteract(); }
+  else if(k==='c' || k===' '){ e.preventDefault(); crouchHeld=!crouchHeld; }
+  else if(k==='q'){ if(!nvgActive && nvgCooldown<=0){ nvgActive=true; nvgTimer=10; playNVGSound(); } }
+  else if(k==='f'){ if(!thermalActive && thermalCooldown<=0){ thermalActive=true; thermalTimer=10; playThermalSound(); } }
+  else if(k==='tab'){ e.preventDefault(); openThrowPicker(); }
+  else if(k==='g'){
+    const type=lastThrowType;
+    if(charges[type]<=0){ showMsg(THROW_LABELS[type]+' 없음'); }
+    else { throwItem(type, player.aimAngle); }
+  }
+  else if(k==='r'){
+    const wdef = WEAPON_DEFS[player.weapon]||WEAPON_DEFS.pistol;
+    if(wdef.magSize && !player.reloading && (player.ammo[player.weapon]||0)<wdef.magSize) startReload();
+  }
+  else if(k==='escape'){ document.getElementById('pauseBtn').click(); }
+});
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+// 데스크톱: 마우스 커서 방향으로 항상 조준 (사격 조이스틱을 드래그 중이 아닐 때)
+let usingMouseAim = false;
+window.addEventListener('mousemove',e=>{
+  if(!gameStarted || player.hiddenIn || actionLock) return;
+  if(fireJoy.active) return; // 터치/드래그 조준 중엔 마우스 자동조준을 덮어쓰지 않음
+  usingMouseAim = true;
+  const playerScreenX = player.x - lastCamX, playerScreenY = player.y - lastCamY;
+  const dx = e.clientX - playerScreenX, dy = e.clientY - playerScreenY;
+  if(Math.hypot(dx,dy) > 4) player.aimAngle = Math.atan2(dy,dx);
+});
+window.addEventListener('touchstart',()=>{ usingMouseAim = false; }, {passive:true});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('mousedown',e=>{
+  if(!gameStarted || pauseActive || puzzleActive || player.hiddenIn || actionLock) return;
+  if(e.button===2){ tryMeleePunch(); return; } // 우클릭 = 근접 공격
+  if(fireJoy.active) return; // 이미 터치/드래그 발사 중이면 중복 처리 안 함
+  fireJoy.active=true; fireJoy.dragged=true; fireJoy.fireAccum=0;
+});
+window.addEventListener('mouseup',()=>{
+  if(fireJoy.active && fireJoy.dragged){
+    fireJoy.active=false; fireJoy.dragged=false; fireJoy.fireAccum=0;
+  }
+});
 
 const LIGHT_OFFSET = 24;
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
@@ -1068,7 +1290,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '3.8.1.0';
+const GAME_VERSION = '4.0.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7, hitTolerance:1.5}, normal:{vision:1, hear:1, alarm:1, hitTolerance:1}, hard:{vision:1.25, hear:1.3, alarm:1.4, hitTolerance:0.75} };
 function updateDiffStatsText(){
@@ -1502,6 +1724,32 @@ document.querySelectorAll('.diffBtn').forEach(btn=>{
   });
 });
 
+let selectedStage = 1;
+function isStage2Unlocked(){ return localStorage.getItem('stealthOpsStage2Unlocked')==='1'; }
+function updateStageButtons(){
+  const btn2 = document.getElementById('stageBtn2');
+  if(isStage2Unlocked()){
+    btn2.textContent = '스테이지 2 - 저택 정원';
+    btn2.classList.remove('stageLocked');
+  } else {
+    btn2.textContent = '스테이지 2 (잠김)';
+    btn2.classList.add('stageLocked');
+  }
+}
+updateStageButtons();
+document.querySelectorAll('.stageBtn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const stageNum = parseInt(btn.dataset.stage);
+    if(stageNum===2 && !isStage2Unlocked()){
+      showMsg('스테이지 1을 클리어하면 열려요');
+      return;
+    }
+    document.querySelectorAll('.stageBtn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedStage = stageNum;
+  });
+});
+
 /* ===================== 튜토리얼 ===================== */
 const TUTORIAL_STEPS = [
   {text:'좌측 조이스틱으로 이동해요. 살짝 당기면 걷고, 끝까지 당기면 뛰어요(발소리가 커짐).', highlight:['joyBase','joyStick']},
@@ -1550,14 +1798,18 @@ document.getElementById('tutorialSkip').addEventListener('click',()=>{
 function randomizeMissionCodes(){
   const dialTarget=[Math.floor(Math.random()*10),Math.floor(Math.random()*10),Math.floor(Math.random()*10)];
   const codeTarget=String(Math.floor(1000+Math.random()*9000));
-  const cardM = missions.find(m=>m.id==='card');
-  const cctvM = missions.find(m=>m.id==='cctv');
-  if(cardM) cardM.target = dialTarget;
-  if(cctvM) cctvM.target = codeTarget;
-  const noteA = decor.find(d=>d.type==='note' && d.text==='472');
-  const noteB = decor.find(d=>d.type==='note' && d.text==='1376');
-  if(noteA) noteA.text = dialTarget.join('');
-  if(noteB) noteB.text = codeTarget;
+  const dialM = missions.find(m=>m.puzzleType==='dial');
+  const codeM = missions.find(m=>m.puzzleType==='code');
+  if(dialM){
+    dialM.target = dialTarget;
+    const note = decor.find(d=>d.type==='note' && d.missionId===dialM.id);
+    if(note) note.text = dialTarget.join('');
+  }
+  if(codeM){
+    codeM.target = codeTarget;
+    const note = decor.find(d=>d.type==='note' && d.missionId===codeM.id);
+    if(note) note.text = codeTarget;
+  }
 }
 
 function randomizeFillerDecor(){
@@ -1577,6 +1829,7 @@ function beginGameplay(opts){
   if(opts.continueState && opts.continueState.difficulty){
     difficulty = opts.continueState.difficulty; // 이어하기는 저장 당시 난이도를 그대로 복원
   }
+  loadStageData((opts.continueState && opts.continueState.stage) || selectedStage || 1);
   player.speed = 2.4*UPGRADES.speed.effect(getUpgradeLv('speed'));
   player.maxHp = UPGRADES.hp.effect(getUpgradeLv('hp'));
   player.hp = player.maxHp;
@@ -1633,7 +1886,7 @@ function saveContinueState(){
   const elapsed = Math.floor((performance.now()-stats.startTime)/1000);
   const state = {
     missionsDone: missions.map(m=>m.done),
-    difficulty, elapsed, charges:{...charges}, playerName, savedAt: Date.now()
+    difficulty, elapsed, charges:{...charges}, playerName, savedAt: Date.now(), stage: currentStage
   };
   localStorage.setItem('stealthOpsContinue', JSON.stringify(state));
 }
@@ -2164,26 +2417,31 @@ function fireMove(x,y){
 const PUNCH_RANGE = 70;
 const PUNCH_COMBO_WINDOW = 900;
 let punchCombo = {count:0, lastTime:0};
+function tryMeleePunch(){
+  const nearEn = !caught && !puzzleActive && !actionLock ? findNearestMeleeEnemy(PUNCH_RANGE) : null;
+  if(nearEn){
+    const now = performance.now();
+    if(now - punchCombo.lastTime > PUNCH_COMBO_WINDOW) punchCombo.count = 0;
+    punchCombo.count++;
+    punchCombo.lastTime = now;
+    playPunchSound();
+    vibrate(25);
+    spawnText(nearEn.x, nearEn.y-20, punchCombo.count+'/3', '#ffcf6e');
+    if(punchCombo.count>=3){
+      performMeleeTakedown(nearEn);
+      punchCombo.count=0;
+    }
+    return true;
+  }
+  return false;
+}
 function fireEnd(){
   if(!fireJoy.active)return;
   const wasDragged = fireJoy.dragged;
   fireJoy.active=false; fireJoy.touchId=null; fireJoy.dragged=false; fireJoy.fireAccum=0;
   showFireHint();
   if(!wasDragged){
-    const nearEn = !caught && !puzzleActive && !actionLock ? findNearestMeleeEnemy(PUNCH_RANGE) : null;
-    if(nearEn){
-      const now = performance.now();
-      if(now - punchCombo.lastTime > PUNCH_COMBO_WINDOW) punchCombo.count = 0;
-      punchCombo.count++;
-      punchCombo.lastTime = now;
-      playPunchSound();
-      vibrate(25);
-      spawnText(nearEn.x, nearEn.y-20, punchCombo.count+'/3', '#ffcf6e');
-      if(punchCombo.count>=3){
-        performMeleeTakedown(nearEn);
-        punchCombo.count=0;
-      }
-    } else {
+    if(!tryMeleePunch()){
       handleFire(player.aimAngle); // 짧게 탭해도 현재 조준 방향으로 한 발 발사
     }
   }
@@ -2529,8 +2787,8 @@ function updatePlayer(dt){
   }
   player.crouch=crouchHeld;
 
-  // 사격 조이스틱을 조작 중이 아니면 조준 방향은 이동 방향을 따라감
-  if(!fireJoy.active){ player.aimAngle = player.angle; }
+  // 사격 조이스틱을 조작 중이 아니면 조준 방향은 이동 방향을 따라감 (단, 마우스로 조준 중인 데스크톱에서는 예외)
+  if(!fireJoy.active && !usingMouseAim){ player.aimAngle = player.angle; }
 
   if(moved>0){
     player.stepAccum += moved;
@@ -2861,13 +3119,10 @@ function respawn(){
 }
 function restartLevel(){
   discoveredCodes = {};
-  decor.forEach(d=>{ if(d.type==='medkit'||d.type==='supplycrate'||d.type==='battery') d.collected=false; });
-  decor.forEach(d=>{ if(d.type==='lockedCabinet') d.locked=true; });
-  cameras.forEach(c=>{ c.disabled=false; c.detectTimer=0; });
+  loadStageData(currentStage);
   enemies = applyDifficulty(buildEnemyRoster(), difficulty);
   enemies.forEach((e,i)=>e._id=i);
   corpses=[]; clouds=[]; bullets=[]; traps=[]; particles=[]; textParticles=[]; decoys=[];
-  missions.forEach(m=>m.done=false);
   missionsComplete=false;
   player.reloading=false; refillAllAmmo();
   stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0, sniperKills:0, dartSleeps:0, empDisables:0};
@@ -3314,6 +3569,7 @@ function completePuzzle(){
   if(missions.every(mm=>mm.done) && !missionsComplete){
     missionsComplete=true;
     clearContinueState();
+    if(currentStage===1) localStorage.setItem('stealthOpsStage2Unlocked','1');
     setTimeout(showResultScreen, 500);
   }
 }
@@ -3898,11 +4154,86 @@ function drawCorpse(c,camX,camY){
 function drawDecorItem(d,camX,camY){
   if(d.collected) return; // 회수된 픽업(구급상자/보급상자/배터리)은 더 이상 안 그림
   const x=d.x-camX, y=d.y-camY;
-  if(d.type!=='rug' && d.type!=='note' && d.w){
+  if(d.type!=='rug' && d.type!=='note' && d.type!=='pathstone' && d.type!=='flowerbed' && d.w){
     ctx.fillStyle='rgba(0,0,0,0.25)';
     ctx.fillRect(x+3,y+4,d.w,d.h);
   }
   switch(d.type){
+    case 'tree':
+      ctx.fillStyle='#5a3f28';ctx.fillRect(x-5,y,10,d.r*0.7);
+      ctx.fillStyle='#2f5a30';
+      ctx.beginPath();ctx.arc(x,y-d.r*0.55,d.r,0,7);ctx.fill();
+      ctx.fillStyle='#3f7a3f';
+      ctx.beginPath();ctx.arc(x-d.r*0.35,y-d.r*0.8,d.r*0.62,0,7);ctx.fill();
+      ctx.beginPath();ctx.arc(x+d.r*0.4,y-d.r*0.7,d.r*0.55,0,7);ctx.fill();
+      break;
+    case 'fountain':
+      ctx.fillStyle='#8a8578';ctx.beginPath();ctx.arc(x,y,d.r,0,7);ctx.fill();
+      ctx.strokeStyle='#5a564a';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle='#4a8fc0';ctx.beginPath();ctx.arc(x,y,d.r*0.72,0,7);ctx.fill();
+      ctx.fillStyle='#6ab0e0';ctx.beginPath();ctx.arc(x,y,d.r*0.72,0,7);
+      ctx.globalAlpha=0.5+Math.sin(simTime*3)*0.15; ctx.fill(); ctx.globalAlpha=1;
+      ctx.fillStyle='#9a9585';ctx.beginPath();ctx.arc(x,y,d.r*0.22,0,7);ctx.fill();
+      ctx.fillStyle='#cfeeff';
+      for(let i=0;i<4;i++){
+        const a=simTime*1.5+i*(Math.PI/2);
+        ctx.beginPath();ctx.arc(x+Math.cos(a)*d.r*0.4,y+Math.sin(a)*d.r*0.4,2.2,0,7);ctx.fill();
+      }
+      break;
+    case 'flowerbed':
+      ctx.fillStyle='#3a2f22';ctx.fillRect(x,y,d.w,d.h);
+      ctx.strokeStyle='#241c14';ctx.lineWidth=1.5;ctx.strokeRect(x,y,d.w,d.h);
+      ctx.fillStyle=d.color||'#c85878';
+      for(let i=0;i<8;i++){
+        const fx = x+6+(i%4)*(d.w-12)/3, fy = y+8+Math.floor(i/4)*(d.h-16);
+        ctx.beginPath();ctx.arc(fx,fy,4,0,7);ctx.fill();
+      }
+      break;
+    case 'shedDoor':
+      ctx.fillStyle='#6b4a2e';ctx.fillRect(x,y,d.w,d.h);
+      ctx.strokeStyle='#3a2818';ctx.lineWidth=1.5;ctx.strokeRect(x,y,d.w,d.h);
+      ctx.fillStyle='#241c14';ctx.beginPath();ctx.arc(x+d.w-6,y+d.h/2,1.8,0,7);ctx.fill();
+      break;
+    case 'lampPost':
+      ctx.fillStyle='#3a3a34';ctx.fillRect(x-2,y,4,d.r*2.4);
+      if(d.broken){
+        ctx.fillStyle='#444';
+        ctx.beginPath();ctx.arc(x,y-4,d.r*0.7,0,7);ctx.fill();
+        ctx.strokeStyle='#222';ctx.lineWidth=1;ctx.stroke();
+      } else {
+        ctx.fillStyle='#e8c878';
+        ctx.beginPath();ctx.arc(x,y-4,d.r*0.7,0,7);ctx.fill();
+        ctx.strokeStyle='#8a6a30';ctx.lineWidth=1;ctx.stroke();
+      }
+      break;
+    case 'well':
+      ctx.fillStyle='#8a8578';ctx.beginPath();ctx.arc(x,y,d.r,0,7);ctx.fill();
+      ctx.strokeStyle='#5a564a';ctx.lineWidth=2.5;ctx.stroke();
+      ctx.fillStyle='#1c2a22';ctx.beginPath();ctx.arc(x,y,d.r*0.6,0,7);ctx.fill();
+      ctx.strokeStyle='#3a3428';ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(x-d.r,y-d.r*0.3);ctx.lineTo(x-d.r*0.6,y-d.r*1.6);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+d.r,y-d.r*0.3);ctx.lineTo(x+d.r*0.6,y-d.r*1.6);ctx.stroke();
+      ctx.fillStyle='#6b4a2e';
+      ctx.beginPath();ctx.moveTo(x-d.r*0.9,y-d.r*1.5);ctx.lineTo(x+d.r*0.9,y-d.r*1.5);ctx.lineTo(x,y-d.r*2.2);ctx.closePath();ctx.fill();
+      break;
+    case 'birdbath':
+      ctx.fillStyle='#8a8578';ctx.fillRect(x-3,y,6,d.r*1.1);
+      ctx.beginPath();ctx.ellipse(x,y,d.r,d.r*0.6,0,0,7);ctx.fill();
+      ctx.fillStyle='#6ab0e0';ctx.beginPath();ctx.ellipse(x,y,d.r*0.72,d.r*0.42,0,0,7);ctx.fill();
+      break;
+    case 'hedgeBush':
+      ctx.fillStyle='#345c34';
+      ctx.beginPath();ctx.arc(x+d.w*0.3,y+d.h*0.5,d.w*0.42,0,7);ctx.fill();
+      ctx.beginPath();ctx.arc(x+d.w*0.7,y+d.h*0.4,d.w*0.4,0,7);ctx.fill();
+      ctx.fillStyle='#3f7040';
+      ctx.beginPath();ctx.arc(x+d.w*0.5,y+d.h*0.35,d.w*0.38,0,7);ctx.fill();
+      break;
+    case 'pathstone':
+      ctx.fillStyle=d.color||'#7a7060';
+      ctx.globalAlpha=0.55;
+      ctx.fillRect(x,y,d.w,d.h);
+      ctx.globalAlpha=1;
+      break;
     case 'lockedCabinet':
       ctx.fillStyle='#4a4238';ctx.fillRect(x,y,d.w,d.h);
       ctx.strokeStyle='#2a241c';ctx.lineWidth=1.5;ctx.strokeRect(x,y,d.w,d.h);
@@ -4308,10 +4639,17 @@ function drawCameras(camX,camY){
   }
 }
 function drawWorld(camX,camY){
-  ctx.fillStyle='#22251c';
-  ctx.fillRect(-camX,-camY,WORLD_W,WORLD_H);
-  ctx.fillStyle='#34382f';
-  for(const w of walls){ctx.fillRect(w.x-camX,w.y-camY,w.w,w.h);}
+  if(currentStage===2){
+    ctx.fillStyle='#1c2818'; // 어두운 잔디
+    ctx.fillRect(-camX,-camY,WORLD_W,WORLD_H);
+    ctx.fillStyle='#2a4a28'; // 산울타리(벽)
+    for(const w of walls){ctx.fillRect(w.x-camX,w.y-camY,w.w,w.h);}
+  } else {
+    ctx.fillStyle='#22251c';
+    ctx.fillRect(-camX,-camY,WORLD_W,WORLD_H);
+    ctx.fillStyle='#34382f';
+    for(const w of walls){ctx.fillRect(w.x-camX,w.y-camY,w.w,w.h);}
+  }
 
   drawDecor(camX,camY);
   drawCameras(camX,camY);
@@ -4496,9 +4834,11 @@ function drawWorld(camX,camY){
   }
 }
 
+let lastCamX=0, lastCamY=0;
 function render(){
   let camX = Math.max(0,Math.min(player.x-canvas.width/2, WORLD_W-canvas.width));
   let camY = Math.max(0,Math.min(player.y-canvas.height/2, WORLD_H-canvas.height));
+  lastCamX = camX; lastCamY = camY;
 
   if(caught){
     camX += (Math.random()-0.5)*6;
