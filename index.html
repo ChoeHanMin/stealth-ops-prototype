@@ -249,7 +249,7 @@
 <canvas id="game"></canvas>
 <div id="rotateOverlay" class="show">
   <div id="rotateIcon">📱</div>
-  <p>가로 모드에 최적화된 게임이에요. 화면을 옆으로 돌려서 플레이하면 더 편해요.</p>
+  <p id="pRotateHint">가로 모드에 최적화된 게임이에요. 화면을 옆으로 돌려서 플레이하면 더 편해요.</p>
   <div id="rotateCloseBtn">닫기</div>
 </div>
 <canvas id="minimap" width="120" height="88"></canvas>
@@ -272,7 +272,7 @@
 </div>
 <div class="modal" id="lockpickModal">
   <div class="modalBox" style="max-width:320px;">
-    <h2>자물쇠 따기</h2>
+    <h2 id="h2LockPick">자물쇠 따기</h2>
     <div style="font-size:12.5px;color:#bbb;margin-bottom:10px;">막대를 좌우로 밀어서 진동이 가장 강해지는 지점을 찾아보세요</div>
     <div id="lockpickTrack">
       <div id="lockpickHandle"></div>
@@ -299,11 +299,11 @@
   <div class="btn" id="btnCrouch">웅크리기</div>
 </div>
 
-<div id="throwBtn">투척물<br><span id="throwBtnItem">연막탄</span></div>
+<div id="throwBtn"><span id="throwBtnLabel">투척물</span><br><span id="throwBtnItem">연막탄</span></div>
 <div id="throwStick"></div>
 <div class="modal" id="throwPickerModal">
   <div class="modalBox" style="max-width:340px;">
-    <h2>투척물 선택</h2>
+    <h2 id="h2ThrowPicker">투척물 선택</h2>
     <div id="throwPickerGrid">
       <div class="pickerOpt" data-type="smoke" id="pick-smoke">연막탄</div>
       <div class="pickerOpt" data-type="grenade" id="pick-grenade">수류탄</div>
@@ -345,12 +345,14 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.2.0.0</div>
+  <div id="verText">Ver 4.3.0.0</div>
+
+  <div class="miniBtn" id="btnLangToggle" style="margin-bottom:10px;">🌐 한국어 / English</div>
 
   <div class="miniRow">
-    <div class="miniBtn diffBtn" data-diff="easy">쉬움</div>
-    <div class="miniBtn diffBtn active" data-diff="normal">보통</div>
-    <div class="miniBtn diffBtn" data-diff="hard">어려움</div>
+    <div class="miniBtn diffBtn" data-diff="easy" id="diffBtnEasy">쉬움</div>
+    <div class="miniBtn diffBtn active" data-diff="normal" id="diffBtnNormal">보통</div>
+    <div class="miniBtn diffBtn" data-diff="hard" id="diffBtnHard">어려움</div>
   </div>
   <div class="miniRow">
     <div class="miniBtn stageBtn active" data-stage="1" id="stageBtn1">스테이지 1</div>
@@ -369,7 +371,7 @@
 
 <div id="nameInputOverlay">
   <div id="nameInputBox">
-    <h2>요원 이름 입력</h2>
+    <h2 id="h2NameInput">요원 이름 입력</h2>
     <input type="text" id="playerNameInput" maxlength="10" placeholder="이름을 입력하세요" />
     <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
       <div class="closeBtn" id="btnNameCancel" style="background:transparent;border-color:#666;">취소</div>
@@ -392,8 +394,8 @@
 
 <div class="modal" id="howModal">
   <div class="modalBox">
-    <h2>플레이 방법</h2>
-    <ul>
+    <h2 id="h2HowTo">플레이 방법</h2>
+    <ul id="howToList">
       <li>좌측 하단 원형 조이스틱: 이동. 살짝 당기면 걷기(조용), 끝까지 당기면 뛰기(빠르지만 발소리 큼)</li>
       <li>우측 하단 원형 조이스틱(총 아이콘): 조준+사격. 이동 조이스틱과 완전히 독립적이라, 걸어가는 방향과 다른 방향으로 조준/사격 가능. 손을 떼는 순간 그 방향으로 발사됨</li>
       <li>상호작용 버튼(사격 조이스틱 위): 근접한 적 처치, 미션 단말기 상호작용, 시체 은닉, 은신처 진입/탈출</li>
@@ -427,51 +429,51 @@
 </div>
 <div class="modal" id="devModal">
   <div class="modalBox">
-    <h2>개발자</h2>
+    <h2 id="h2Dev">개발자</h2>
     <p>최한민<br>Computer Engineering &amp; Science, 한국외국어대학교</p>
-    <p>혼자 기획부터 개발까지 진행한 2D 탑다운 스텔스 게임 프로토타입입니다. 플레이해주셔서 감사합니다.</p>
+    <p id="pDevDesc">혼자 기획부터 개발까지 진행한 2D 탑다운 스텔스 게임 프로토타입입니다. 플레이해주셔서 감사합니다.</p>
   </div>
 </div>
 <div class="modal" id="settingsModal">
   <div class="modalBox">
-    <h2>설정</h2>
-    <div class="row"><label>효과음 볼륨</label><input type="range" id="sfxSlider" min="0" max="1" step="0.05" value="1"></div>
-    <div class="row"><label>배경음 볼륨</label><input type="range" id="bgmSlider" min="0" max="1" step="0.05" value="0.5"></div>
-    <div class="row"><label>조이스틱 민감도</label><input type="range" id="sensSlider" min="0.6" max="1.6" step="0.05" value="1"></div>
-    <div class="row"><label>버튼 크기</label><input type="range" id="btnSizeSlider" min="0.8" max="1.3" step="0.05" value="1"></div>
-    <div class="row"><label>왼손잡이 모드(조작 반전)</label>
+    <h2 id="h2Settings">설정</h2>
+    <div class="row"><label id="lblSfx">효과음 볼륨</label><input type="range" id="sfxSlider" min="0" max="1" step="0.05" value="1"></div>
+    <div class="row"><label id="lblBgm">배경음 볼륨</label><input type="range" id="bgmSlider" min="0" max="1" step="0.05" value="0.5"></div>
+    <div class="row"><label id="lblSens">조이스틱 민감도</label><input type="range" id="sensSlider" min="0.6" max="1.6" step="0.05" value="1"></div>
+    <div class="row"><label id="lblBtnSize">버튼 크기</label><input type="range" id="btnSizeSlider" min="0.8" max="1.3" step="0.05" value="1"></div>
+    <div class="row"><label id="lblLeftHand">왼손잡이 모드(조작 반전)</label>
       <div class="menuBtn" id="handToggle" style="width:80px;padding:8px 0;font-size:12px;margin:0;">OFF</div>
     </div>
-    <div class="row"><label>고대비/색약 모드</label>
+    <div class="row"><label id="lblContrast">고대비/색약 모드</label>
       <div class="menuBtn" id="contrastToggle" style="width:80px;padding:8px 0;font-size:12px;margin:0;">OFF</div>
     </div>
-    <div class="row"><label>저사양 모드</label>
+    <div class="row"><label id="lblLowSpec">저사양 모드</label>
       <div class="menuBtn" id="lowSpecToggle" style="width:80px;padding:8px 0;font-size:12px;margin:0;">OFF</div>
     </div>
-    <div class="row"><label>적 시야 표시</label>
+    <div class="row"><label id="lblShowVision">적 시야 표시</label>
       <div class="menuBtn" id="showVisionToggle" style="width:80px;padding:8px 0;font-size:12px;margin:0;">OFF</div>
     </div>
-    <div class="row"><label>순찰 경로 표시</label>
+    <div class="row"><label id="lblShowPatrol">순찰 경로 표시</label>
       <div class="menuBtn" id="showPatrolToggle" style="width:80px;padding:8px 0;font-size:12px;margin:0;">OFF</div>
     </div>
-    <div class="row"><label style="font-size:11.5px;opacity:0.8;">현재 난이도 수치</label>
+    <div class="row"><label id="lblDiffStats" style="font-size:11.5px;opacity:0.8;">현재 난이도 수치</label>
       <div id="diffStatsText" style="font-size:11px;color:#aaa;text-align:right;">-</div>
     </div>
-    <div class="row"><label>색약 모드</label>
+    <div class="row"><label id="lblColorblind">색약 모드</label>
       <div class="menuBtn" id="colorblindToggle" style="width:80px;padding:8px 0;font-size:12px;margin:0;">OFF</div>
     </div>
-    <div class="row"><label>큰 글씨</label>
+    <div class="row"><label id="lblLargeText">큰 글씨</label>
       <div class="menuBtn" id="largeTextToggle" style="width:80px;padding:8px 0;font-size:12px;margin:0;">OFF</div>
     </div>
-    <div class="row"><label>진동 세기</label>
+    <div class="row"><label id="lblVibe">진동 세기</label>
       <select id="vibeSelect" style="background:#222;color:#fff;border:1px solid #666;padding:6px;border-radius:6px;">
-        <option value="off">끄기</option>
-        <option value="weak">약하게</option>
-        <option value="normal" selected>보통</option>
-        <option value="strong">강하게</option>
+        <option value="off" id="optVibeOff">끄기</option>
+        <option value="weak" id="optVibeWeak">약하게</option>
+        <option value="normal" selected id="optVibeNormal">보통</option>
+        <option value="strong" id="optVibeStrong">강하게</option>
       </select>
     </div>
-    <div class="row"><label>언어 / Language</label>
+    <div class="row"><label id="lblLang">언어 / Language</label>
       <select id="langSelect" style="background:#222;color:#fff;border:1px solid #666;padding:6px;border-radius:6px;">
         <option value="ko">한국어</option>
         <option value="en">English</option>
@@ -482,7 +484,7 @@
 </div>
 <div class="modal" id="resultModal">
   <div class="modalBox">
-    <h2>미션 완료</h2>
+    <h2 id="h2Result">미션 완료</h2>
     <p id="resultBody"></p>
     <div id="achToast"></div>
     <div class="closeBtn" id="btnNextStage" style="display:none;background:rgba(120,200,120,0.25);border-color:rgba(120,220,120,0.7);margin-bottom:8px;">다음 스테이지로 이동</div>
@@ -491,13 +493,13 @@
 </div>
 <div class="modal" id="focusPauseModal">
   <div class="modalBox">
-    <h2>화면이 일시정지되었습니다</h2>
+    <h2 id="h2FocusPause">화면이 일시정지되었습니다</h2>
     <div class="menuBtn primary" id="btnFocusResume" style="width:100%;">계속하기</div>
   </div>
 </div>
 <div class="modal" id="pauseModal">
   <div class="modalBox">
-    <h2>일시정지</h2>
+    <h2 id="h2Pause">일시정지</h2>
     <div class="menuBtn" id="btnResume" style="width:100%;">계속하기</div>
     <div class="menuBtn" id="btnRestartFresh" style="width:100%;border-color:rgba(255,160,80,0.6);">처음부터 다시 시작</div>
     <div class="menuBtn" id="btnRestartCheckpoint" style="width:100%;">체크포인트에서 재시작</div>
@@ -508,7 +510,7 @@
 </div>
 <div class="modal" id="confirmRestartFreshModal">
   <div class="modalBox" style="max-width:300px;text-align:center;">
-    <h2 style="font-size:16px;">처음부터 다시 시작</h2>
+    <h2 id="h2ConfirmRestart" style="font-size:16px;">처음부터 다시 시작</h2>
     <p style="font-size:13px;color:#ddd;line-height:1.6;">지금까지의 진행사항은 저장되지 않습니다.<br>정말 다시 시작하시겠습니까?</p>
     <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;">
       <div class="menuBtn" id="btnConfirmRestartFreshYes" style="width:100px;border-color:rgba(255,110,110,0.6);">예</div>
@@ -518,22 +520,22 @@
 </div>
 <div class="modal" id="shopModal">
   <div class="modalBox">
-    <h2>상점</h2>
-    <p style="text-align:center;color:#999;font-size:12px;">정식 출시 이후 유료 예정 - 지금은 모두 무료(베타 테스트)로 미리보기만 가능해요</p>
+    <h2 id="h2Shop">상점</h2>
+    <p id="pShopNote" style="text-align:center;color:#999;font-size:12px;">정식 출시 이후 유료 예정 - 지금은 모두 무료(베타 테스트)로 미리보기만 가능해요</p>
     <div id="shopList"></div>
     <div class="closeBtn" id="closeShop">닫기</div>
   </div>
 </div>
 <div class="modal" id="achModal">
   <div class="modalBox">
-    <h2>업적</h2>
+    <h2 id="h2Ach">업적</h2>
     <div id="achList"></div>
     <div class="closeBtn" id="closeAch">닫기</div>
   </div>
 </div>
 <div class="modal" id="upgradeModal">
   <div class="modalBox">
-    <h2>요원 강화</h2>
+    <h2 id="h2Upgrade">요원 강화</h2>
     <div id="agentPointsText" style="margin-bottom:10px;font-size:14px;color:#ffd060;">포인트: 0</div>
     <div id="upgradeList"></div>
     <div class="closeBtn" id="closeUpgrade">닫기</div>
@@ -541,19 +543,16 @@
 </div>
 <div class="modal" id="historyModal">
   <div class="modalBox">
-    <h2>플레이 기록</h2>
+    <h2 id="h2History">플레이 기록</h2>
     <div id="historyList"></div>
     <div class="closeBtn" id="closeHistory">닫기</div>
   </div>
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 4.2.0.0)</h2>
+    <h2>업데이트 안내 (Ver 4.3.0.0)</h2>
     <ul>
-      <li>탄약 표시 위에 수동 재장전 버튼 추가</li>
-      <li>모든 난이도 적 수 추가 증가 (쉬움 20/보통 34/어려움 48명)</li>
-      <li>난이도별 적 사격 명중률 차등 - 쉬움은 명중률이 낮고, 어려움은 훨씬 정확해짐</li>
-      <li>비상벨이 울리는 동안 계속(약 3.5초마다) 근처 순찰 인원이 추가로 플레이어 쪽으로 압박해옴</li>
+      <li>영어 지원 추가! 시작화면의 "🌐 한국어/English" 버튼으로 언제든 전환 가능 - 튜토리얼, 스토리, 플레이 방법, 상점, 업적, 모든 메뉴가 번역됨</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -571,8 +570,8 @@
 
 <div class="modal" id="wireModal">
   <div class="modalBox">
-    <h2>전선 연결</h2>
-    <p style="text-align:center;">같은 색끼리 왼쪽-오른쪽을 순서대로 탭해서 연결하세요</p>
+    <h2 id="h2Wire">전선 연결</h2>
+    <p id="pWireHint" style="text-align:center;">같은 색끼리 왼쪽-오른쪽을 순서대로 탭해서 연결하세요</p>
     <div class="wireCols">
       <div id="wireLeft"></div>
       <div id="wireRight"></div>
@@ -583,8 +582,8 @@
 </div>
 <div class="modal" id="dialModal">
   <div class="modalBox">
-    <h2>카드키 단말기</h2>
-    <p style="text-align:center;">쪽지에 적힌 3자리 숫자를 맞추고 확인을 누르세요</p>
+    <h2 id="h2Dial">카드키 단말기</h2>
+    <p id="pDialHint" style="text-align:center;">쪽지에 적힌 3자리 숫자를 맞추고 확인을 누르세요</p>
     <div class="dialRow" id="dialRow"></div>
     <div class="puzzleErr" id="dialErr"></div>
     <div class="menuBtn" id="dialConfirm" style="width:100%;">확인</div>
@@ -593,8 +592,8 @@
 </div>
 <div class="modal" id="codeModal">
   <div class="modalBox">
-    <h2>CCTV 해킹</h2>
-    <p style="text-align:center;">쪽지에 적힌 4자리 코드를 입력하세요</p>
+    <h2 id="h2Code">CCTV 해킹</h2>
+    <p id="pCodeHint" style="text-align:center;">쪽지에 적힌 4자리 코드를 입력하세요</p>
     <div class="codeDisplay" id="codeDisplay">----</div>
     <div class="keypad" id="codeKeypad"></div>
     <div class="puzzleErr" id="codeErr"></div>
@@ -604,8 +603,8 @@
 
 <div class="modal" id="timingModal">
   <div class="modalBox">
-    <h2>전압 동기화</h2>
-    <p style="text-align:center;">초록 구간에서 정지 버튼을 눌러 전압을 맞추세요</p>
+    <h2 id="h2Timing">전압 동기화</h2>
+    <p id="pTimingHint" style="text-align:center;">초록 구간에서 정지 버튼을 눌러 전압을 맞추세요</p>
     <div id="timingTrack"><div id="timingZone"></div><div id="timingMarker"></div></div>
     <div class="menuBtn primary" id="timingStopBtn" style="width:100%;">정지</div>
     <p class="puzzleErr" id="timingErr"></p>
@@ -615,7 +614,7 @@
 
 <div class="modal" id="patternModal">
   <div class="modalBox">
-    <h2>보안 패턴 암기</h2>
+    <h2 id="h2Pattern">보안 패턴 암기</h2>
     <div id="patternGrid"></div>
     <p class="puzzleErr" id="patternErr">순서를 기억하세요...</p>
     <div class="closeBtn" id="patternCancel">취소</div>
@@ -624,7 +623,7 @@
 
 <div class="modal" id="breakerModal">
   <div class="modalBox">
-    <h2>회로 차단기 재배선</h2>
+    <h2 id="h2Breaker">회로 차단기 재배선</h2>
     <div id="breakerRow"></div>
     <p class="puzzleErr" id="breakerErr">차단기가 올라가는 순서를 기억하세요...</p>
     <div class="closeBtn" id="breakerCancel">취소</div>
@@ -1295,6 +1294,8 @@ let throwTypeLocked = false;
 let slowMoActive = false;
 const THROW_TYPES = ['smoke','grenade','claymore','glue','stun','decoy'];
 const THROW_LABELS = {smoke:'연막탄',grenade:'수류탄',claymore:'크레모아',glue:'끈끈이',stun:'기절탄',decoy:'유인물'};
+const THROW_LABELS_EN = {smoke:'Smoke',grenade:'Grenade',claymore:'Claymore',glue:'Glue Trap',stun:'Stun Grenade',decoy:'Decoy'};
+function throwLabel(type){ return settings.lang==='en' ? (THROW_LABELS_EN[type]||THROW_LABELS[type]) : THROW_LABELS[type]; }
 const THROW_COLORS = {
   smoke:'rgba(230,230,230,0.9)', grenade:'rgba(255,120,60,0.9)', claymore:'rgba(255,60,60,0.9)',
   glue:'rgba(120,220,120,0.9)', stun:'rgba(230,220,90,0.9)', decoy:'rgba(232,208,96,0.9)'
@@ -1364,17 +1365,21 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function enemyById(id){return enemies.find(e=>e._id===id);}
 enemies.forEach((e,i)=>e._id=i);
 
-let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:'ko', showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
+let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:(localStorage.getItem('stealthOpsLang')||'ko'), showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '4.2.0.0';
+const GAME_VERSION = '4.3.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7, hitTolerance:1.5, enemyAcc:0.55}, normal:{vision:1, hear:1, alarm:1, hitTolerance:1, enemyAcc:1}, hard:{vision:1.25, hear:1.3, alarm:1.4, hitTolerance:0.75, enemyAcc:1.35} };
 function updateDiffStatsText(){
   const el = document.getElementById('diffStatsText');
   if(!el) return;
   const m = DIFF_MUL[difficulty] || DIFF_MUL.normal;
-  const diffLabel = {easy:'쉬움',normal:'보통',hard:'어려움'}[difficulty] || difficulty;
-  el.textContent = diffLabel+' (시야×'+m.vision+' 청각×'+m.hear+' 경보×'+m.alarm+')';
+  const isEn = settings.lang==='en';
+  const diffLabel = isEn ? ({easy:'Easy',normal:'Normal',hard:'Hard'}[difficulty]||difficulty)
+                          : ({easy:'쉬움',normal:'보통',hard:'어려움'}[difficulty]||difficulty);
+  el.textContent = isEn
+    ? diffLabel+' (Vision×'+m.vision+' Hearing×'+m.hear+' Alarm×'+m.alarm+')'
+    : diffLabel+' (시야×'+m.vision+' 청각×'+m.hear+' 경보×'+m.alarm+')';
 }
 const INVESTIGATE_BARKS = ['뭐지?','누구 있나?','...?'];
 const SEARCH_BARKS = ['게 누구야!','침입자다!','거기 서!'];
@@ -1383,6 +1388,10 @@ const IDLE_RADIO_BARKS = ['이상 없음','...치직... 여기도 조용함','�
 const EXEC_MESSAGES = [
   '다음엔 더 조용히 움직여보자','들켰을 뿐, 실패는 아니야','한 번 더 도전해봐','완벽한 잠입은 연습이 필요해',
   '방심은 금물, 다시 한번!','괜찮아, 요원은 실수에서 배운다'
+];
+const EXEC_MESSAGES_EN = [
+  'Try moving more quietly next time','Getting spotted isn\'t failure','Give it another shot','A perfect infiltration takes practice',
+  'Stay sharp, try again!','It\'s okay - every agent learns from mistakes'
 ];
 const DAMAGE_MUL = { easy:0.6, normal:1, hard:1.4 };
 
@@ -1804,11 +1813,12 @@ let selectedStage = 1;
 function isStage2Unlocked(){ return localStorage.getItem('stealthOpsStage2Unlocked')==='1'; }
 function updateStageButtons(){
   const btn2 = document.getElementById('stageBtn2');
+  const isEn = settings.lang==='en';
   if(isStage2Unlocked()){
-    btn2.textContent = '스테이지 2 - 저택 정원';
+    btn2.textContent = isEn ? 'Stage 2 - Manor Garden' : '스테이지 2 - 저택 정원';
     btn2.classList.remove('stageLocked');
   } else {
-    btn2.textContent = '스테이지 2 (잠김)';
+    btn2.textContent = isEn ? 'Stage 2 (Locked)' : '스테이지 2 (잠김)';
     btn2.classList.add('stageLocked');
   }
 }
@@ -1827,18 +1837,38 @@ document.querySelectorAll('.stageBtn').forEach(btn=>{
 });
 
 /* ===================== 튜토리얼 ===================== */
-const TUTORIAL_STEPS = [
-  {text:'좌측 조이스틱으로 이동해요. 살짝 당기면 걷고, 끝까지 당기면 뛰어요(발소리가 커짐).', highlight:['joyBase','joyStick']},
-  {text:'웅크리기 버튼을 누르면 몸을 낮춰요. 이동은 느려지지만 발각이 잘 안 되고, 침대·소파·책상·장롱 등 앞에서 웅크린 채 상호작용하면 그 안에 완전히 숨을 수 있어요 (실루엣만 살짝 보임).', highlight:['btns']},
-  {text:'우측 조이스틱(사격)을 드래그해서 조준하고 손을 떼면 그 방향으로 발사돼요. 이동과 완전히 독립적이라 걸으면서 다른 방향도 조준할 수 있어요. 짧게 탭하면 한 발, 드래그한 채 있으면 연발돼요. 무기마다 탄창이 있고, 다 쓰면 자동으로 재장전돼요.', highlight:['fireBase','fireStick']},
-  {text:'상호작용 버튼(사격 조이스틱 좌측 노란 버튼)으로 근접한 적 처치, 미션, 시체 은닉, 은신처 진입/탈출, 비상벨 끄기를 해요. 비상벨을 꺼도 한동안은 경비들이 예민한 상태(경계 태세)로 남아있어요.', highlight:['interactBtn']},
-  {text:'적은 여러 종류예요 - 테이저를 든 경비(맞으면 잠시 마비), 총을 든 경비(맞으면 체크포인트로), 삼단봉 경비(원거리 공격은 없지만 매우 빠르게 추격), 경비견(냄새와 발소리로 감지). 정면에서 처치하면 빠르지만 비명이 나고, 뒤에서 처치하면 조용해요.', highlight:null},
-  {text:'"투척물" 버튼을 탭하면 종류 선택창이 떠요. 원하는 걸 고른 다음, 다시 버튼을 눌러서 원하는 방향으로 드래그하고 손을 떼면 그 방향으로 던져져요.', highlight:['throwBtn']},
-  {text:'야간투시(초록 버튼)는 어두운 곳을 밝게, 열화상(주황 버튼)은 벽 너머의 적까지 보여줘요. 각각 10초간 지속되고 15초 재사용 대기시간이 있어요. 배터리 픽업을 먹으면 대기시간이 바로 초기화돼요.', highlight:['miniAbilityBtns']},
-  {text:'집안 곳곳에 6개의 미션(전선 연결, 다이얼 자물쇠, 키패드, 타이밍 맞추기, 패턴 암기, 회로 차단기)이 있어요. 미션 지점 근처에서 상호작용하면 미니게임이 시작돼요. 전부 완료해야 클리어돼요.', highlight:null},
-  {text:'다이얼이나 키패드 미션의 암호는 근처 책상이나 협탁 위의 "쪽지"에 적혀있어요. 쪽지 근처에 한 번이라도 가면 암호가 화면 위쪽에 계속 표시되니 미리 확인해두세요.', highlight:null},
-  {text:'화면 오른쪽 위 미니맵으로 최근에 본 적(색깔별 상태)과 미션 위치를 확인하세요. 노란 화살표는 가장 가까운 미완료 미션 방향을 가리켜요. ⏸ 버튼으로 언제든 일시정지할 수 있어요.', highlight:['minimap']}
+const TUTORIAL_HIGHLIGHTS = [
+  ['joyBase','joyStick'], ['btns'], ['fireBase','fireStick'], ['interactBtn'], null,
+  ['throwBtn'], ['miniAbilityBtns'], null, null, ['minimap']
 ];
+const TUTORIAL_TEXT_KO = [
+  '좌측 조이스틱으로 이동해요. 살짝 당기면 걷고, 끝까지 당기면 뛰어요(발소리가 커짐).',
+  '웅크리기 버튼을 누르면 몸을 낮춰요. 이동은 느려지지만 발각이 잘 안 되고, 침대·소파·책상·장롱 등 앞에서 웅크린 채 상호작용하면 그 안에 완전히 숨을 수 있어요 (실루엣만 살짝 보임).',
+  '우측 조이스틱(사격)을 드래그해서 조준하고 손을 떼면 그 방향으로 발사돼요. 이동과 완전히 독립적이라 걸으면서 다른 방향도 조준할 수 있어요. 짧게 탭하면 한 발, 드래그한 채 있으면 연발돼요. 무기마다 탄창이 있고, 다 쓰면 자동으로 재장전돼요.',
+  '상호작용 버튼(사격 조이스틱 좌측 노란 버튼)으로 근접한 적 처치, 미션, 시체 은닉, 은신처 진입/탈출, 비상벨 끄기를 해요. 비상벨을 꺼도 한동안은 경비들이 예민한 상태(경계 태세)로 남아있어요.',
+  '적은 여러 종류예요 - 테이저를 든 경비(맞으면 잠시 마비), 총을 든 경비(맞으면 체크포인트로), 삼단봉 경비(원거리 공격은 없지만 매우 빠르게 추격), 경비견(냄새와 발소리로 감지). 정면에서 처치하면 빠르지만 비명이 나고, 뒤에서 처치하면 조용해요.',
+  '"투척물" 버튼을 탭하면 종류 선택창이 떠요. 원하는 걸 고른 다음, 다시 버튼을 눌러서 원하는 방향으로 드래그하고 손을 떼면 그 방향으로 던져져요.',
+  '야간투시(초록 버튼)는 어두운 곳을 밝게, 열화상(주황 버튼)은 벽 너머의 적까지 보여줘요. 각각 10초간 지속되고 15초 재사용 대기시간이 있어요. 배터리 픽업을 먹으면 대기시간이 바로 초기화돼요.',
+  '집안 곳곳에 6개의 미션(전선 연결, 다이얼 자물쇠, 키패드, 타이밍 맞추기, 패턴 암기, 회로 차단기)이 있어요. 미션 지점 근처에서 상호작용하면 미니게임이 시작돼요. 전부 완료해야 클리어돼요.',
+  '다이얼이나 키패드 미션의 암호는 근처 책상이나 협탁 위의 "쪽지"에 적혀있어요. 쪽지 근처에 한 번이라도 가면 암호가 화면 위쪽에 계속 표시되니 미리 확인해두세요.',
+  '화면 오른쪽 위 미니맵으로 최근에 본 적(색깔별 상태)과 미션 위치를 확인하세요. 노란 화살표는 가장 가까운 미완료 미션 방향을 가리켜요. ⏸ 버튼으로 언제든 일시정지할 수 있어요.'
+];
+const TUTORIAL_TEXT_EN = [
+  'Use the left joystick to move. A slight pull walks (quiet); a full pull sprints (fast but loud footsteps).',
+  'The crouch button lowers your body. You move slower but are harder to spot. Crouch near a bed, sofa, desk, or wardrobe and interact to hide completely inside it (only a faint silhouette shows).',
+  'Drag the right joystick (fire) to aim and release to shoot that direction. It\'s fully independent from movement, so you can aim one way while walking another. A quick tap fires once; holding fires repeatedly. Each weapon has a magazine that auto-reloads when empty.',
+  'The interact button (yellow button left of the fire joystick) is used to take down nearby enemies, interact with missions, hide bodies, enter/exit hiding spots, and disable alarms. Guards stay on edge for a while even after you silence the alarm.',
+  'Enemies come in several types - taser guards (stun on hit), gun guards (send you back to checkpoint), baton guards (no ranged attack but chase very fast), and guard dogs (detect by smell and footsteps). A frontal takedown is fast but causes a scream; a takedown from behind is silent.',
+  'Tap the "Throwables" button to open the type picker. Pick one, then press the button again, drag toward your target direction, and release to throw it that way.',
+  'Night vision (green button) brightens dark areas; thermal vision (orange button) reveals enemies through walls. Each lasts 10 seconds with a 15-second cooldown. Picking up a battery instantly resets the cooldown.',
+  'There are 6 missions scattered through the level (wire connection, dial lock, keypad, timing sync, pattern memory, circuit breaker). Interact near a mission point to start its mini-game. You must complete all of them to clear the level.',
+  'Codes for dial/keypad missions are written on notes near desks or nightstands. Get close to a note once and the code stays shown at the top of the screen from then on.',
+  'Use the minimap in the top-right to track recently seen enemies (color-coded by state) and mission locations. The yellow arrow points toward the nearest unfinished mission. You can pause anytime with the ⏸ button.'
+];
+function getTutorialSteps(){
+  const arr = (settings.lang==='en') ? TUTORIAL_TEXT_EN : TUTORIAL_TEXT_KO;
+  return arr.map((text,i)=>({text, highlight:TUTORIAL_HIGHLIGHTS[i]}));
+}
 let tutorialStep=0;
 let tutorialHighlightEls=[];
 function clearTutorialHighlight(){
@@ -1847,13 +1877,14 @@ function clearTutorialHighlight(){
 }
 function showTutorialStep(){
   clearTutorialHighlight();
-  if(tutorialStep>=TUTORIAL_STEPS.length){
+  const steps = getTutorialSteps();
+  if(tutorialStep>=steps.length){
     document.getElementById('tutorialOverlay').style.display='none';
     localStorage.setItem('stealthOpsTutorialSeen','1');
     return;
   }
-  const step = TUTORIAL_STEPS[tutorialStep];
-  document.getElementById('tutorialProgress').textContent = (tutorialStep+1)+' / '+TUTORIAL_STEPS.length;
+  const step = steps[tutorialStep];
+  document.getElementById('tutorialProgress').textContent = (tutorialStep+1)+' / '+steps.length;
   document.getElementById('tutorialText').textContent = step.text;
   document.getElementById('tutorialOverlay').style.display='flex';
   if(step.highlight){
@@ -1972,7 +2003,16 @@ function hasContinueState(){ return !!localStorage.getItem('stealthOpsContinue')
 let playerName = localStorage.getItem('stealthOpsPlayerName') || '';
 const STORY_SLIDES = [];
 function buildStorySlides(name){
-  const n = name || '요원';
+  const n = name || (settings.lang==='en' ? 'Agent' : '요원');
+  if(settings.lang==='en'){
+    return [
+      {mood:'calm', text:'Former government black-ops agent '+n+'.\nHe had left it all behind,\nliving a quiet life as an ordinary father.', dialogue:''},
+      {mood:'family', text:'The memories of war stayed locked away in a drawer.\nEvery day as a good father\nwas all he needed.', dialogue:'"Dad! When\'s dinner?"'},
+      {mood:'shock', text:'But one night,\nold enemies who bore him a grudge\njoined forces and stormed his home.', dialogue:'"Son!!!"'},
+      {mood:'determined', text:'The boy was gone. All that remained\nwas a broken door and cold silence.\nHe woke something that had slept for a long time.', dialogue:'"Dad\'s... coming for you."'},
+      {mood:'armed', text:n+' picked up a weapon once again.\nTo get his son back, and to expose who did this —\nhe heads for their hideout.', dialogue:''}
+    ];
+  }
   return [
     {mood:'calm', text:'전직 국가비밀요원 '+n+'.\n그는 모든 걸 내려놓고,\n평범한 가장으로 조용히 살아가고 있었다.', dialogue:''},
     {mood:'family', text:'전장의 기억은 서랍 깊숙이 넣어둔 채,\n그는 그저 좋은 아빠로 살아가는 하루하루가\n더없이 소중했다.', dialogue:'"아빠! 저녁 언제 먹어요?"'},
@@ -2062,7 +2102,7 @@ document.getElementById('btnNameCancel').addEventListener('click',()=>{
 });
 document.getElementById('btnNameConfirm').addEventListener('click',()=>{
   const val = document.getElementById('playerNameInput').value.trim();
-  playerName = val || '요원';
+  playerName = val || (settings.lang==='en' ? 'Agent' : '요원');
   localStorage.setItem('stealthOpsPlayerName', playerName);
   document.getElementById('nameInputOverlay').style.display='none';
   clearContinueState();
@@ -2111,7 +2151,14 @@ document.getElementById('btnSizeSlider').addEventListener('input',e=>{
   document.getElementById('btns').style.transformOrigin='bottom right';
 });
 document.getElementById('vibeSelect').addEventListener('change',e=>{settings.vibeLevel=e.target.value;});
-document.getElementById('langSelect').addEventListener('change',e=>{settings.lang=e.target.value; applyLanguage(); });
+document.getElementById('langSelect').addEventListener('change',e=>{settings.lang=e.target.value; localStorage.setItem('stealthOpsLang', settings.lang); applyLanguage(); });
+document.getElementById('btnLangToggle').addEventListener('click',()=>{
+  settings.lang = settings.lang==='en' ? 'ko' : 'en';
+  localStorage.setItem('stealthOpsLang', settings.lang);
+  const sel = document.getElementById('langSelect');
+  if(sel) sel.value = settings.lang;
+  applyLanguage();
+});
 document.getElementById('contrastToggle').addEventListener('click',()=>{
   settings.highContrast=!settings.highContrast;
   document.getElementById('contrastToggle').textContent = settings.highContrast?'ON':'OFF';
@@ -2260,6 +2307,37 @@ document.getElementById('btnExecHome').addEventListener('click',()=>{
 
 /* ===================== 업적 / 기록 ===================== */
 /* ===================== 상점 (실제 장착 가능, 사운드/사거리/정확도 반영) ===================== */
+const SHOP_WEAPONS_EN = {
+  pistol:{name:'Suppressed Pistol (Default)', desc:'The quietest, most balanced starter weapon. Always free.'},
+  minigun:{name:'Minigun', desc:'Overwhelming fire rate. Low accuracy, best at short-to-mid range.'},
+  taserGun:{name:'Taser Gun', desc:'Non-lethal. Stuns on hit instead of killing. Weak but nearly silent.'},
+  crossbow:{name:'Crossbow', desc:'Very quiet and accurate, but slow to fire. Great for long-range picks.'},
+  shotgun:{name:'Shotgun', desc:'Devastating up close; accuracy drops off fast at range.'},
+  sniper:{name:'Sniper Rifle', desc:'Longest range and best accuracy of any weapon, but fires very slowly. Suppressed for long-range stealth kills.'},
+  smg:{name:'SMG', desc:'Slower than the minigun but much quieter automatic fire. Great for fast mid-range takedowns.'},
+  poisonDart:{name:'Poison Dart Gun', desc:'Non-lethal. Puts targets to sleep for a very long time (far longer than the taser), almost silently.'},
+  empGun:{name:'EMP Gun', desc:'Special utility weapon that deals no damage to enemies. Instantly disables security cameras from range.'}
+};
+const ACHIEVEMENTS_EN = {
+  noAlarm:{name:'Like a Shadow', desc:'Clear without ever being detected'},
+  noCaught:{name:'Flawless Infiltration', desc:'Clear without ever being caught'},
+  ghostKill:{name:'Ghost\'s Touch', desc:'Clear without firing a single shot'},
+  gunslinger:{name:'Sharpshooter', desc:'Take down 3+ enemies with ranged gunfire only'},
+  speedrun:{name:'Speedrun', desc:'Clear in under 3 minutes'},
+  sniperMaster:{name:'Sniper Ace', desc:'Take down 3+ enemies with the sniper rifle'},
+  dartTamer:{name:'Dart Tamer', desc:'Put 3+ enemies to sleep with the poison dart gun'},
+  empSpecialist:{name:'EMP Specialist', desc:'Disable 2+ cameras with the EMP gun'}
+};
+const UPGRADES_EN = { speed:'Move Speed', hp:'Max HP', stealth:'Stealth Bonus', throwCap:'Throwable Capacity' };
+const MISSION_LABELS_EN = {
+  wire:'Wire Connection', card:'Keycard Terminal', cctv:'CCTV Hack', timing:'Voltage Sync',
+  pattern:'Security Pattern Memory', breaker:'Circuit Breaker Rewiring',
+  greenhouse:'Greenhouse Irrigation', shedlock:'Shed Padlock', fountaincode:'Fountain Control Panel',
+  sprinkler:'Sprinkler Timing', gardenlight:'Garden Light Pattern', generator:'Generator Breaker'
+};
+function missionLabel(m){
+  return settings.lang==='en' ? (MISSION_LABELS_EN[m.id]||m.label) : m.label;
+}
 const SHOP_WEAPONS = [
   {key:'pistol', name:'소음기 권총 (기본)', desc:'가장 조용하고 균형 잡힌 기본 화기. 항상 무료', dmg:45, acc:75, rate:50},
   {key:'minigun', name:'미니건', desc:'초당 발사속도가 압도적인 연사형 화기. 대신 정확도가 낮아 근~중거리에서 유리함', dmg:60, acc:35, rate:95},
@@ -2288,15 +2366,19 @@ const WEAPON_ICONS = {
 };
 function renderShop(){
   const list=document.getElementById('shopList');
+  const isEn = settings.lang==='en';
   list.innerHTML = SHOP_WEAPONS.map(w=>{
-    const label = player.weapon===w.key ? '장착됨' : (w.key==='pistol' ? '장착하기' : '장착하기 (베타 무료)');
+    const enData = SHOP_WEAPONS_EN[w.key]||{};
+    const wname = isEn ? (enData.name||w.name) : w.name;
+    const wdesc = isEn ? (enData.desc||w.desc) : w.desc;
+    const label = player.weapon===w.key ? (isEn?'EQUIPPED':'장착됨') : (w.key==='pistol' ? (isEn?'EQUIP':'장착하기') : (isEn?'EQUIP (Free Beta)':'장착하기 (베타 무료)'));
     return '<div class="shopCard">'+
       '<div style="text-align:center;padding:6px 0;">'+(WEAPON_ICONS[w.key]||'')+'</div>'+
-      '<div class="shopCardHead"><b>'+w.name+'</b><span class="shopFreeTag">무료 (베타 테스트)</span></div>'+
-      '<div class="shopDesc">'+w.desc+'</div>'+
-      gaugeBar('피해량',w.dmg,'#e05050')+
-      gaugeBar('정확도',w.acc,'#5ecbe8')+
-      gaugeBar('연사력',w.rate,'#e8d060')+
+      '<div class="shopCardHead"><b>'+wname+'</b><span class="shopFreeTag">'+(isEn?'FREE (Beta Test)':'무료 (베타 테스트)')+'</span></div>'+
+      '<div class="shopDesc">'+wdesc+'</div>'+
+      gaugeBar(isEn?'Damage':'피해량',w.dmg,'#e05050')+
+      gaugeBar(isEn?'Accuracy':'정확도',w.acc,'#5ecbe8')+
+      gaugeBar(isEn?'Fire Rate':'연사력',w.rate,'#e8d060')+
       '<div class="closeBtn" data-weapon="'+w.key+'" style="margin-top:10px;'+
         (player.weapon===w.key?'background:rgba(255,205,110,0.3);border-color:#ffcf6e;':'')+'">'+
         label+'</div>'+
@@ -2305,7 +2387,9 @@ function renderShop(){
   list.querySelectorAll('[data-weapon]').forEach(btn=>{
     btn.addEventListener('click',()=>{
       player.weapon = btn.dataset.weapon;
-      showMsg((WEAPON_DEFS[player.weapon]||WEAPON_DEFS.pistol).name+' 장착');
+      const enData = SHOP_WEAPONS_EN[player.weapon]||{};
+      const wdef = WEAPON_DEFS[player.weapon]||WEAPON_DEFS.pistol;
+      showMsg((isEn ? (enData.name||wdef.name) : wdef.name) + (isEn?' equipped':' 장착'));
       renderShop();
     });
   });
@@ -2319,28 +2403,34 @@ document.getElementById('closeShop').addEventListener('click',()=>{document.getE
 document.getElementById('btnAch').addEventListener('click',()=>{
   const unlocked = JSON.parse(localStorage.getItem('stealthOpsAch')||'[]');
   const list = document.getElementById('achList');
+  const isEn = settings.lang==='en';
   list.innerHTML = ACHIEVEMENTS.map(a=>{
     const got = unlocked.includes(a.id);
+    const enData = ACHIEVEMENTS_EN[a.id]||{};
+    const aname = isEn ? (enData.name||a.name) : a.name;
+    const adesc = isEn ? (enData.desc||a.desc) : a.desc;
     return '<div style="padding:8px 0;border-bottom:1px solid #333;opacity:'+(got?1:0.4)+'">'+
-      '<b style="color:'+(got?'#ffcf6e':'#999')+'">'+(got?'✓ ':'🔒 ')+a.name+'</b>'+
-      '<div style="font-size:12px;color:#bbb;">'+a.desc+'</div></div>';
+      '<b style="color:'+(got?'#ffcf6e':'#999')+'">'+(got?'✓ ':'🔒 ')+aname+'</b>'+
+      '<div style="font-size:12px;color:#bbb;">'+adesc+'</div></div>';
   }).join('');
   document.getElementById('achModal').style.display='flex';
 });
 document.getElementById('closeAch').addEventListener('click',()=>{document.getElementById('achModal').style.display='none';});
 
 function renderUpgradeShop(){
-  document.getElementById('agentPointsText').textContent = '포인트: '+getAgentPoints();
+  const isEn = settings.lang==='en';
+  document.getElementById('agentPointsText').textContent = (isEn?'Points: ':'포인트: ')+getAgentPoints();
   const list = document.getElementById('upgradeList');
   list.innerHTML = Object.keys(UPGRADES).map(key=>{
     const u = UPGRADES[key];
     const lv = getUpgradeLv(key);
     const maxed = lv>=u.maxLv;
     const cost = maxed ? '-' : u.cost(lv);
+    const uname = isEn ? (UPGRADES_EN[key]||u.name) : u.name;
     return '<div style="padding:10px 0;border-bottom:1px solid #333;display:flex;justify-content:space-between;align-items:center;">'+
-      '<div><b>'+u.name+'</b><div style="font-size:12px;color:#bbb;">Lv.'+lv+' / '+u.maxLv+'</div></div>'+
+      '<div><b>'+uname+'</b><div style="font-size:12px;color:#bbb;">Lv.'+lv+' / '+u.maxLv+'</div></div>'+
       '<div class="menuBtn" data-upg="'+key+'" style="width:90px;padding:8px 0;font-size:12px;margin:0;'+(maxed?'opacity:0.4;':'')+'">'+
-      (maxed?'최대':cost+'P')+'</div></div>';
+      (maxed?(isEn?'MAX':'최대'):cost+'P')+'</div></div>';
   }).join('');
   document.querySelectorAll('[data-upg]').forEach(el=>{
     el.addEventListener('click',()=>{
@@ -2349,7 +2439,7 @@ function renderUpgradeShop(){
       const lv = getUpgradeLv(key);
       if(lv>=u.maxLv) return;
       const cost = u.cost(lv);
-      if(getAgentPoints()<cost){ showMsg('포인트가 부족해요'); return; }
+      if(getAgentPoints()<cost){ showMsg(settings.lang==='en'?'Not enough points':'포인트가 부족해요'); return; }
       setAgentPoints(getAgentPoints()-cost);
       setUpgradeLv(key, lv+1);
       renderUpgradeShop();
@@ -2379,26 +2469,206 @@ document.getElementById('btnHistory').addEventListener('click',()=>{
 document.getElementById('closeHistory').addEventListener('click',()=>{document.getElementById('historyModal').style.display='none';});
 
 /* ===================== 영어 로컬라이제이션 (일부 UI) ===================== */
-const I18N = {
-  en:{
-    startSub:'2D TOP-DOWN INFILTRATION PROTOTYPE',
-    btnStart:'START GAME', btnHow:'HOW TO PLAY', btnAch:'ACHIEVEMENTS', btnHistory:'HISTORY', btnDev:'DEVELOPER',
-    stateInfil:'Infiltrating', stateAlert:'⚠ Alert / Searching', stateOnGuard:'On Guard', stateExec:'Executed'
-  },
-  ko:{
-    startSub:'2D TOP-DOWN INFILTRATION PROTOTYPE',
-    btnStart:'게임 시작', btnHow:'플레이 방법', btnAch:'업적', btnHistory:'기록', btnDev:'개발자',
-    stateInfil:'잠입중', stateAlert:'⚠ 경계/수색중', stateOnGuard:'경계 태세', stateExec:'처형됨'
-  }
+
+const HOWTO_KO = [
+  '좌측 하단 원형 조이스틱: 이동. 살짝 당기면 걷기(조용), 끝까지 당기면 뛰기(빠르지만 발소리 큼)',
+  '우측 하단 원형 조이스틱(총 아이콘): 조준+사격. 이동 조이스틱과 완전히 독립적이라, 걸어가는 방향과 다른 방향으로 조준/사격 가능. 손을 떼는 순간 그 방향으로 발사됨',
+  '상호작용 버튼(사격 조이스틱 위): 근접한 적 처치, 미션 단말기 상호작용, 시체 은닉, 은신처 진입/탈출',
+  '적이 아주 가까이 오면 사격 조이스틱이 "격투"로 바뀜 - 그 자리에서 3번 짧게 탭하면(연타) 적을 제압함',
+  '기본 시야는 조준 방향 기준 손전등 형태 - 정면은 넓고 밝게, 후방은 좁고 어둡게, 멀수록 점점 어두워짐',
+  '웅크리기: 이동이 느려지지만 은신에 유리. 좁은 환기구는 웅크려야 통과. 책상/식탁 등 앞에서 웅크린 채 조준-상호작용하면 안에 숨을 수 있음',
+  '초록 레이저(플레이어만 보임)가 조준 방향을 알려줌. 못 맞혀도 총알이 근처를 스치면 높은 확률로 적이 눈치챔',
+  '투척물 버튼을 그냥 탭하면 종류 선택창(연막탄/수류탄/크레모아/끈끈이/기절탄/유인물)이 뜸 - 원하는 걸 고르면 그걸로 장착됨. 이후 투척물 버튼을 눌러서 원하는 방향으로 드래그한 뒤 손을 떼면 장착된 투척물이 그 방향으로 던져짐',
+  '미션 암호가 적힌 쪽지(테이블 등) 근처에 가면 체력바 아래에 "코드: XXXX"로 미리 표시됨',
+  '맵 곳곳에 구급상자(체력 회복), 보급상자(투척물 +2), 배터리(야간투시·열화상 즉시 재사용) 픽업이 있음 - 가까이 가서 상호작용으로 사용',
+  '감시 카메라가 있는 구역도 있음 - 시야에 오래 걸리면 알람이 울리니 웅크리거나 근접해서 무력화할 것',
+  '잠긴 캐비닛을 상호작용하면 진동 세기로 위치를 찾는 자물쇠 따기 미니게임이 뜸 - 성공하면 요원 포인트 보너스',
+  '체력이 0이 되기 직전, 체크포인트당 딱 한 번 화면을 탭해서 탈출할 수 있는 위기 찬스가 옴',
+  '클리어할 때마다 요원 포인트를 얻어서 시작화면의 "요원 강화"에서 이동속도·최대체력·은신 보너스·투척물 소지량을 영구 강화할 수 있음',
+  '스테이지 1(저택)을 클리어하면 스테이지 2(저택 정원)가 해금됨 - 나무·화단·분수대 뒤에 숨을 수 있는 야외 맵',
+  '경비장(★ 표시된 베테랑)을 처치하면 근처 동료들이 동요함 - 미니맵에서도 금색 테두리로 구분됨',
+  '연막탄: 뭉게구름처럼 넓게 퍼져 시야 차단 · 기절탄: 범위 내 적 5초 무력화 · 수류탄: 명중 시 즉사하지만 폭발음으로 전역 알람 발생 · 크레모아: 던지지 않고 그 자리에 바로 설치되며(방향만 조준), 근처에 적이 오면 자동 폭발 · 끈끈이: 밟은 적을 한동안 못 움직이게 함(감지는 계속함)',
+  '정면 기습(칼) 처치는 비명을 질러 근처 적이 조사하러 옴 - 후방 조르기는 완전히 조용함',
+  '야간투시경: 10초간 화면 전체가 또렷하게 보임(녹색 톤), 이후 재사용 대기시간 필요',
+  '열화상: 10초간 적의 위치가 벽 너머에서도 빛나 보임. 야간투시경과 동시 사용 가능',
+  '경비견은 벽/각도 상관없이 냄새로 근접한 플레이어를 감지함, 발소리도 훨씬 잘 들음 - 조심할 것',
+  '총에 맞거나 경비견에게 물리면 체력(HP)이 깎임 - 한 방에 죽지 않고 체력이 0이 되면 체크포인트로 되돌아감. 테이저는 맞으면 체력 대신 잠시 마비됨. 난이도가 낮을수록 받는 피해가 적음',
+  '삼단봉 경비는 원거리 공격은 없지만 발각 시 훨씬 빠르게 쫓아오며, 붙잡히면 체력이 빠르게 깎임',
+  '시작화면 \'상점\'에서 무기를 장착할 수 있음(전부 베타 무료) - 무기마다 사거리·정확도·연사력·소리가 다름',
+  '난이도(쉬움/보통/어려움)에 따라 등장하는 경비 수가 달라짐',
+  '침대/책상 위에 놓인 쪽지에 암호가 적혀있음(매 판마다 랜덤) - 해당 단말기 미션에서 그 숫자를 입력',
+  '시체를 다른 적이 발견하면 알람. 발각되면 수색 시작, 잡히면 체크포인트에서 재시작',
+  '일시정지 버튼(⏸)으로 언제든 멈출 수 있음',
+];
+const HOWTO_EN = [
+  'Bottom-left joystick: movement. A light pull walks (quiet); a full pull sprints (fast but loud footsteps)',
+  'Bottom-right joystick (gun icon): aim + fire. Fully independent from movement, so you can aim/fire in a different direction than you\'re walking. Releasing fires that direction',
+  'Interact button (above the fire joystick): take down nearby enemies, use mission terminals, hide bodies, enter/exit hiding spots',
+  'If an enemy gets very close, the fire joystick switches to "Melee" - tap it 3 times quickly on the spot to take them down',
+  'Your base vision is flashlight-shaped based on aim direction - wide and bright in front, narrow and dark behind, dimming with distance',
+  'Crouch: slower movement but better stealth. Narrow vents require crouching to pass. Crouch and interact in front of desks/tables etc. to hide inside them',
+  'A green laser (visible only to you) shows your aim direction. Even a near-miss shot has a high chance of alerting nearby enemies',
+  'Simply tapping the throwable button opens a type picker (smoke/grenade/claymore/glue/stun/decoy) - pick one to equip it. Then press the button again, drag in your target direction, and release to throw it',
+  'Getting near a note with a mission code (on a table etc.) shows "Code: XXXX" under your health bar in advance',
+  'Medkits (heal HP), supply crates (+2 throwables), and batteries (instantly reset NVG/thermal cooldown) are scattered around the map - get close and interact to use them',
+  'Some areas have security cameras - staying in view too long triggers an alarm, so crouch past them or disable them up close',
+  'Interacting with a locked cabinet starts a lockpicking mini-game guided by vibration intensity - success grants a bonus of Agent Points',
+  'Right before your HP hits zero, you get one chance per checkpoint to tap the screen and narrowly escape',
+  'Clearing a level earns Agent Points, which you can spend on the start screen\'s "Agent Upgrades" to permanently boost move speed, max HP, stealth bonus, and throwable capacity',
+  'Clearing Stage 1 (the manor) unlocks Stage 2 (the manor garden) - an outdoor map where you can hide behind trees, flowerbeds, and the fountain',
+  'Taking down a squad leader (a veteran marked with ★) unsettles nearby allies - they\'re also marked with a gold outline on the minimap',
+  'Smoke grenade: billows out to block sightlines over a wide area · Stun grenade: disables enemies in range for 5 seconds · Grenade: instant kill on hit, but the blast triggers a global alarm · Claymore: not thrown - placed on the spot where you stand (only aim the direction), and auto-detonates when an enemy gets close · Glue trap: immobilizes anyone who steps on it for a while (they can still detect you)',
+  'A frontal takedown (knife) causes a scream that draws nearby enemies to investigate - a takedown from behind is completely silent',
+  'Night vision: makes the whole screen clearly visible (green tint) for 10 seconds, then needs to cool down',
+  'Thermal vision: reveals enemy positions glowing through walls for 10 seconds. Can be used together with night vision',
+  'Guard dogs detect you by smell regardless of walls or angle, and hear footsteps far better than humans - be careful',
+  'Getting shot or bitten by a dog drains your HP - you won\'t die in one hit, but hitting 0 HP sends you back to the checkpoint. A taser stuns you briefly instead of draining HP. Lower difficulties take less damage',
+  'Baton guards have no ranged attack, but chase much faster once they spot you, and drain your HP quickly if they catch you',
+  'You can equip weapons from the "Shop" on the start screen (all free during the beta) - each weapon differs in range, accuracy, fire rate, and noise',
+  'The number of guards that appear changes with difficulty (Easy/Normal/Hard)',
+  'Notes on beds/desks contain the code for that mission (randomized each run) - enter that number at the matching terminal',
+  'If another enemy finds a body, it triggers an alarm. Getting spotted starts a search; getting caught restarts you at the checkpoint',
+  'You can pause anytime with the ⏸ button'
+];
+
+function applyHowToPlayTranslation(){
+  const ul = document.getElementById('howToList');
+  if(!ul) return;
+  const arr = settings.lang==='en' ? HOWTO_EN : HOWTO_KO;
+  ul.innerHTML = arr.map(t=>'<li>'+t+'</li>').join('');
+}
+
+const STATE_LABELS = {
+  infil:{ko:'잠입중',en:'Infiltrating'},
+  alert:{ko:'⚠ 경계/수색중',en:'⚠ Alert / Searching'},
+  onGuard:{ko:'경계 태세',en:'On Guard'},
+  exec:{ko:'처형됨',en:'Executed'}
+};
+const STATIC_TEXT = {
+  rotateCloseBtn:{ko:'닫기',en:'Close'},
+  qteLabel:{ko:'위기! 탭해서 탈출!',en:'Danger! Tap to escape!'},
+  closeLockpick:{ko:'포기',en:'Give Up'},
+  btnNVG:{ko:'야간투시',en:'NVG'},
+  btnThermal:{ko:'열화상',en:'Thermal'},
+  btnCrouch:{ko:'웅크리기',en:'Crouch'},
+  closeThrowPicker:{ko:'닫기',en:'Close'},
+  fireGuide:{ko:'사격',en:'FIRE'},
+  fireStick:{ko:'사격',en:'FIRE'},
+  btnReload:{ko:'재장전',en:'Reload'},
+  execTitle:{ko:'처형됨',en:'Executed'},
+  btnExecCheckpoint:{ko:'체크포인트 재시작',en:'Restart at Checkpoint'},
+  btnExecLevel:{ko:'레벨 재시작',en:'Restart Level'},
+  btnExecHome:{ko:'홈 화면으로',en:'Go Home'},
+  loadingTip:{ko:'로딩 중...',en:'Loading...'},
+  diffBtnEasy:{ko:'쉬움',en:'Easy'},
+  diffBtnNormal:{ko:'보통',en:'Normal'},
+  diffBtnHard:{ko:'어려움',en:'Hard'},
+  stageBtn1:{ko:'스테이지 1',en:'Stage 1'},
+  btnStart:{ko:'게임 새로 하기',en:'New Game'},
+  btnContinue:{ko:'게임 이어하기',en:'Continue'},
+  btnHow:{ko:'플레이 방법',en:'How to Play'},
+  btnShop:{ko:'상점',en:'Shop'},
+  btnAch:{ko:'업적',en:'Achievements'},
+  btnUpgrade:{ko:'요원 강화',en:'Agent Upgrades'},
+  btnHistory:{ko:'기록',en:'History'},
+  btnDev:{ko:'개발자',en:'Developer'},
+  btnNameCancel:{ko:'취소',en:'Cancel'},
+  btnNameConfirm:{ko:'확인',en:'Confirm'},
+  btnStorySkip:{ko:'건너뛰기',en:'Skip'},
+  btnStoryNext:{ko:'다음',en:'Next'},
+  closeSettings:{ko:'닫기',en:'Close'},
+  btnNextStage:{ko:'다음 스테이지로 이동',en:'Go to Next Stage'},
+  closeResult:{ko:'확인',en:'OK'},
+  btnFocusResume:{ko:'계속하기',en:'Resume'},
+  btnResume:{ko:'계속하기',en:'Resume'},
+  btnRestartFresh:{ko:'처음부터 다시 시작',en:'Restart From Beginning'},
+  btnRestartCheckpoint:{ko:'체크포인트에서 재시작',en:'Restart at Checkpoint'},
+  btnPauseSettings:{ko:'설정',en:'Settings'},
+  btnPauseHow:{ko:'플레이 방법',en:'How to Play'},
+  btnGoHome:{ko:'홈 화면으로 나가기',en:'Exit to Home'},
+  btnConfirmRestartFreshYes:{ko:'예',en:'Yes'},
+  btnConfirmRestartFreshNo:{ko:'아니오',en:'No'},
+  closeShop:{ko:'닫기',en:'Close'},
+  closeAch:{ko:'닫기',en:'Close'},
+  closeUpgrade:{ko:'닫기',en:'Close'},
+  closeHistory:{ko:'닫기',en:'Close'},
+  closeWhatsNew:{ko:'확인',en:'OK'},
+  tutorialSkip:{ko:'건너뛰기',en:'Skip'},
+  tutorialNext:{ko:'다음',en:'Next'},
+  wireCancel:{ko:'취소',en:'Cancel'},
+  dialConfirm:{ko:'확인',en:'Confirm'},
+  dialCancel:{ko:'취소',en:'Cancel'},
+  codeCancel:{ko:'취소',en:'Cancel'},
+  timingStopBtn:{ko:'정지',en:'Stop'},
+  timingCancel:{ko:'취소',en:'Cancel'},
+  patternErr:{ko:'순서를 기억하세요...',en:'Memorize the order...'},
+  patternCancel:{ko:'취소',en:'Cancel'},
+  breakerErr:{ko:'차단기가 올라가는 순서를 기억하세요...',en:'Memorize the breaker order...'},
+  breakerCancel:{ko:'취소',en:'Cancel'},
+  h2LockPick:{ko:'자물쇠 따기',en:'Lockpicking'},
+  h2ThrowPicker:{ko:'투척물 선택',en:'Select Throwable'},
+  h2NameInput:{ko:'요원 이름 입력',en:'Enter Agent Name'},
+  h2HowTo:{ko:'플레이 방법',en:'How to Play'},
+  h2Dev:{ko:'개발자',en:'Developer'},
+  h2Settings:{ko:'설정',en:'Settings'},
+  h2Result:{ko:'미션 완료',en:'Mission Complete'},
+  h2FocusPause:{ko:'화면이 일시정지되었습니다',en:'Game Paused'},
+  h2Pause:{ko:'일시정지',en:'Paused'},
+  h2ConfirmRestart:{ko:'처음부터 다시 시작',en:'Restart From Beginning'},
+  h2Shop:{ko:'상점',en:'Shop'},
+  h2Ach:{ko:'업적',en:'Achievements'},
+  h2Upgrade:{ko:'요원 강화',en:'Agent Upgrades'},
+  h2History:{ko:'플레이 기록',en:'Play History'},
+  h2Wire:{ko:'전선 연결',en:'Wire Connection'},
+  h2Dial:{ko:'카드키 단말기',en:'Keycard Terminal'},
+  h2Code:{ko:'CCTV 해킹',en:'CCTV Hack'},
+  h2Timing:{ko:'전압 동기화',en:'Voltage Sync'},
+  h2Pattern:{ko:'보안 패턴 암기',en:'Security Pattern'},
+  h2Breaker:{ko:'회로 차단기 재배선',en:'Circuit Breaker Rewiring'},
+  pRotateHint:{ko:'가로 모드에 최적화된 게임이에요. 화면을 옆으로 돌려서 플레이하면 더 편해요.',en:'This game is optimized for landscape mode. Rotate your screen for a better experience.'},
+  pDevDesc:{ko:'혼자 기획부터 개발까지 진행한 2D 탑다운 스텔스 게임 프로토타입입니다. 플레이해주셔서 감사합니다.',en:'A 2D top-down stealth game prototype designed and developed solo. Thanks for playing.'},
+  pShopNote:{ko:'정식 출시 이후 유료 예정 - 지금은 모두 무료(베타 테스트)로 미리보기만 가능해요',en:'Will be paid after full release - everything is free to preview during this beta test.'},
+  pWireHint:{ko:'같은 색끼리 왼쪽-오른쪽을 순서대로 탭해서 연결하세요',en:'Tap matching colors on the left and right, in order, to connect them'},
+  pDialHint:{ko:'쪽지에 적힌 3자리 숫자를 맞추고 확인을 누르세요',en:'Match the 3-digit number from the note and press Confirm'},
+  pCodeHint:{ko:'쪽지에 적힌 4자리 코드를 입력하세요',en:'Enter the 4-digit code from the note'},
+  pTimingHint:{ko:'초록 구간에서 정지 버튼을 눌러 전압을 맞추세요',en:'Press Stop while the bar is in the green zone to match the voltage'},
+  lblSfx:{ko:'효과음 볼륨',en:'SFX Volume'},
+  lblBgm:{ko:'배경음 볼륨',en:'Music Volume'},
+  lblSens:{ko:'조이스틱 민감도',en:'Joystick Sensitivity'},
+  lblBtnSize:{ko:'버튼 크기',en:'Button Size'},
+  lblLeftHand:{ko:'왼손잡이 모드(조작 반전)',en:'Left-Handed Mode (mirrored)'},
+  lblContrast:{ko:'고대비/색약 모드',en:'High Contrast Mode'},
+  lblLowSpec:{ko:'저사양 모드',en:'Low-Spec Mode'},
+  lblShowVision:{ko:'적 시야 표시',en:'Show Enemy Vision'},
+  lblShowPatrol:{ko:'순찰 경로 표시',en:'Show Patrol Paths'},
+  lblDiffStats:{ko:'현재 난이도 수치',en:'Current Difficulty Stats'},
+  lblColorblind:{ko:'색약 모드',en:'Colorblind Mode'},
+  lblLargeText:{ko:'큰 글씨',en:'Large Text'},
+  lblVibe:{ko:'진동 세기',en:'Vibration Strength'},
+  optVibeOff:{ko:'끄기',en:'Off'},
+  optVibeWeak:{ko:'약하게',en:'Weak'},
+  optVibeNormal:{ko:'보통',en:'Normal'},
+  optVibeStrong:{ko:'강하게',en:'Strong'},
+  throwBtnLabel:{ko:'투척물',en:'Throwable'},
+  startSub:{ko:'2D TOP-DOWN INFILTRATION PROTOTYPE',en:'2D TOP-DOWN INFILTRATION PROTOTYPE'}
 };
 function applyLanguage(){
-  const t = I18N[settings.lang] || I18N.ko;
-  document.getElementById('startSub').textContent = t.startSub;
-  document.getElementById('btnStart').textContent = t.btnStart;
-  document.getElementById('btnHow').textContent = t.btnHow;
-  document.getElementById('btnAch').textContent = t.btnAch;
-  document.getElementById('btnHistory').textContent = t.btnHistory;
-  document.getElementById('btnDev').textContent = t.btnDev;
+  const lang = settings.lang==='en' ? 'en' : 'ko';
+  for(const id in STATIC_TEXT){
+    const el = document.getElementById(id);
+    if(el) el.textContent = STATIC_TEXT[id][lang];
+  }
+  updateStageButtons();
+  updateThrowBtnItemLabel();
+  THROW_TYPES.forEach(t=>{
+    const el = document.getElementById('pick-'+t);
+    if(el) el.textContent = throwLabel(t);
+  });
+  const langBtn = document.getElementById('btnLangToggle');
+  if(langBtn) langBtn.textContent = '🌐 ' + (lang==='en' ? 'English / 한국어' : '한국어 / English');
+  const nameInput = document.getElementById('playerNameInput');
+  if(nameInput) nameInput.placeholder = lang==='en' ? 'Enter your name' : '이름을 입력하세요';
+  applyHowToPlayTranslation();
 }
 
 /* ===================== 가상 조이스틱 (이동) ===================== */
@@ -2577,7 +2847,7 @@ let throwDragged=false;
 let lastThrowType='smoke';
 function updateThrowBtnItemLabel(){
   const el=document.getElementById('throwBtnItem');
-  if(el) el.textContent = THROW_LABELS[lastThrowType]+' '+(charges[lastThrowType]!==undefined?charges[lastThrowType]:'');
+  if(el) el.textContent = throwLabel(lastThrowType)+' '+(charges[lastThrowType]!==undefined?charges[lastThrowType]:'');
 }
 function openThrowPicker(){
   document.getElementById('throwPickerModal').style.display='flex';
@@ -3174,7 +3444,7 @@ function triggerCaught(){
   caught=true; execTimer=1.6; execAwaitingChoice=false;
   stats.caughtCount++;
   vibrate([100,50,100]);
-  document.getElementById('execSub').textContent = EXEC_MESSAGES[Math.floor(Math.random()*EXEC_MESSAGES.length)];
+  document.getElementById('execSub').textContent = (settings.lang==='en'?EXEC_MESSAGES_EN:EXEC_MESSAGES)[Math.floor(Math.random()*EXEC_MESSAGES.length)];
   document.getElementById('execOverlay').style.display='flex';
   document.getElementById('execButtons').style.display='none';
 }
@@ -3670,8 +3940,8 @@ function completePuzzle(){
   for(let i=0;i<14;i++){
     particles.push({x:m.x,y:m.y,vx:(Math.random()-0.5)*4,vy:(Math.random()-0.5)*4,life:35,color:m.color});
   }
-  spawnText(m.x,m.y-20, m.label+' 완료','#ffe27a');
-  showMsg(m.label+' 완료!');
+  spawnText(m.x,m.y-20, missionLabel(m)+(settings.lang==='en'?' Complete':' 완료'),'#ffe27a');
+  showMsg(missionLabel(m)+(settings.lang==='en'?' complete!':' 완료!'));
   missionPunchTimer=0.35;
   if(missions.every(mm=>mm.done) && !missionsComplete){
     missionsComplete=true;
@@ -5530,8 +5800,8 @@ function loopBody(dt){
       }
     }
 
-    const t = I18N[settings.lang] || I18N.ko;
-    document.getElementById('stateText').textContent = caught?t.stateExec:(alarmRaised?t.stateAlert:(alertLevel>0.02?t.stateOnGuard:t.stateInfil));
+    const lang = settings.lang==='en' ? 'en' : 'ko';
+    document.getElementById('stateText').textContent = caught?STATE_LABELS.exec[lang]:(alarmRaised?STATE_LABELS.alert[lang]:(alertLevel>0.02?STATE_LABELS.onGuard[lang]:STATE_LABELS.infil[lang]));
     {
       const ammoEl = document.getElementById('ammoText');
       const reloadBtn = document.getElementById('btnReload');
@@ -5565,7 +5835,8 @@ function loopBody(dt){
     });
     {
       const isFightMode = !!findNearestMeleeEnemy(PUNCH_RANGE);
-      const label = isFightMode ? '격투' : '사격';
+      const isEn = settings.lang==='en';
+      const label = isFightMode ? (isEn?'MELEE':'격투') : (isEn?'FIRE':'사격');
       document.getElementById('fireGuide').textContent = label;
       if(!fireJoy.active) document.getElementById('fireStick').textContent = label;
     }
@@ -5573,6 +5844,12 @@ function loopBody(dt){
   }
 }
 requestAnimationFrame(loop);
+
+{
+  const sel = document.getElementById('langSelect');
+  if(sel) sel.value = settings.lang;
+  applyLanguage();
+}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
