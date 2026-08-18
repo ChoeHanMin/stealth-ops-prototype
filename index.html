@@ -33,6 +33,8 @@
   #alarmVignette{position:fixed;inset:0;pointer-events:none;display:none;z-index:36;
        box-shadow:inset 0 0 90px 30px rgba(255,200,20,0.45);animation:alarm-pulse 0.9s ease-in-out infinite;}
   @keyframes alarm-pulse{0%,100%{opacity:0.3;}50%{opacity:0.85;}}
+  #blackoutTint{position:fixed;inset:0;pointer-events:none;display:none;z-index:35;
+       background:rgba(0,0,10,0.55);}
   #qteOverlay{position:fixed;inset:0;background:rgba(80,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:90;}
   #qteBox{display:flex;flex-direction:column;align-items:center;gap:14px;}
   #qteLabel{color:#fff;font-size:20px;font-weight:900;letter-spacing:1px;text-shadow:0 2px 6px rgba(0,0,0,0.7);}
@@ -110,6 +112,8 @@
        box-shadow:0 2px 4px rgba(0,0,0,0.3);}
   #btnNVG{background:linear-gradient(160deg,rgba(120,220,140,0.5),rgba(60,150,90,0.35));border-color:rgba(160,255,180,0.7);}
   #btnThermal{background:linear-gradient(160deg,rgba(255,150,80,0.5),rgba(200,90,30,0.35));border-color:rgba(255,180,120,0.7);}
+  #btnDash{background:linear-gradient(160deg,rgba(150,180,255,0.5),rgba(80,100,220,0.35));border-color:rgba(170,190,255,0.7);}
+  #btnDash.dashCooling{opacity:0.4;}
 
   #throwBtn{position:fixed;right:168px;bottom:188px;width:84px;height:84px;border-radius:50%;
        background:radial-gradient(circle at 35% 30%,rgba(230,220,120,0.4),rgba(180,160,60,0.18));
@@ -275,6 +279,7 @@
 <div id="hurtVignette"></div>
 <div id="lowHpVignette"></div>
 <div id="alarmVignette"></div>
+<div id="blackoutTint"></div>
 <div id="qteOverlay">
   <div id="qteBox">
     <div id="qteLabel">위기! 탭해서 탈출!</div>
@@ -305,6 +310,7 @@
 <div id="miniAbilityBtns">
   <div class="miniBtn2" id="btnNVG">야간투시</div>
   <div class="miniBtn2" id="btnThermal">열화상</div>
+  <div class="miniBtn2" id="btnDash">대시</div>
 </div>
 <div id="btns">
   <div class="btn" id="btnCrouch">웅크리기</div>
@@ -356,7 +362,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.4.1.0</div>
+  <div id="verText">Ver 4.5.0.0</div>
 
   <div class="miniBtn" id="btnLangToggle" style="margin-bottom:10px;">🌐 한국어 / English</div>
 
@@ -369,6 +375,12 @@
     <div class="miniBtn stageBtn active" data-stage="1" id="stageBtn1">스테이지 1</div>
     <div class="miniBtn stageBtn stageLocked" data-stage="2" id="stageBtn2">스테이지 2 (잠김)</div>
     <div class="miniBtn stageBtn stageLocked" data-stage="3" id="stageBtn3">스테이지 3 (잠김)</div>
+  </div>
+  <div class="miniRow">
+    <div class="miniBtn" id="btnHardcoreToggle" style="width:100%;">🔥 하드코어 모드: OFF (체크포인트 없음)</div>
+  </div>
+  <div class="miniRow" id="dailyChallengeRow">
+    <div class="miniBtn" id="btnDailyChallenge" style="width:100%;">📅 데일리 챌린지</div>
   </div>
 
   <div class="menuBtn primary" id="btnStart">게임 새로 하기</div>
@@ -563,10 +575,15 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 4.4.1.0)</h2>
+    <h2>업데이트 안내 (Ver 4.5.0.0)</h2>
     <ul>
-      <li>보스전 도중 잡혀서 체크포인트 재시작하면 보스가 다시 잠들어버리던 버그 수정 - 이제 계속 활성 상태 유지</li>
-      <li>미션을 다 끝낸 상태(보스전 시작 직전)로 저장한 뒤 "이어하기"로 불러오면 보스가 영원히 안 나타나던 심각한 버그 수정</li>
+      <li>보스를 처치하면 엔딩 컷씬이 나오도록 추가 (아들과 재회하는 마무리 스토리)</li>
+      <li>대시 스킬 추가 - 짧은 시간 무적+가속 이동 (쿨다운 8초)</li>
+      <li>연속 처치 스트릭 시스템 - 안 들키고 연달아 처치하면 보너스 포인트</li>
+      <li>정전(블랙아웃) 랜덤 이벤트 - 가끔 조명이 꺼지며 적 시야가 크게 줄어듦</li>
+      <li>데일리 챌린지 모드 추가 - 매일 다른 지정 무기로 도전, 첫 클리어 시 보너스 포인트</li>
+      <li>하드코어 모드 추가 - 체크포인트 없이 플레이, 클리어 시 보너스 포인트</li>
+      <li>신규 적 "저격수" 추가 (어려움 난이도) - 장거리에서 경고 후 강력한 한 발을 쏨</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -1056,7 +1073,9 @@ return [
   Object.assign(makeGuard({x:1450,y:1250,state:'patrol',isDog:true,
     path:[{x:950,y:1050},{x:950,y:1450},{x:1950,y:1450},{x:1950,y:1050}]}), {hardOnly:true}),
   Object.assign(makeGuard({x:1150,y:360,state:'patrol',rank:'veteran',bandana:true,hair:'#333',weapon:'gun',
-    path:[{x:1050,y:120},{x:1300,y:120},{x:1300,y:600},{x:1050,y:600}]}), {hardOnly:true})
+    path:[{x:1050,y:120},{x:1300,y:120},{x:1300,y:600},{x:1050,y:600}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1950,y:60,state:'idle',angle:Math.PI,rank:'veteran',bandana:true,hair:'#222',weapon:'sniperRifle',
+    visionRange:520,visionAngle:50,shootRange:520}), {hardOnly:true})
 ];
 }
 
@@ -1108,7 +1127,9 @@ return [
   Object.assign(makeGuard({x:1350,y:500,state:'patrol',rank:'rookie',hair:'#2a2015',weapon:'gun',
     path:[{x:1350,y:400},{x:1900,y:400},{x:1900,y:600},{x:1350,y:600}]}), {hardOnly:true}),
   Object.assign(makeGuard({x:525,y:750,state:'patrol',rank:'veteran',bandana:true,hair:'#555',weapon:'gun',
-    path:[{x:450,y:450},{x:600,y:450},{x:600,y:1050},{x:450,y:1050}]}), {hardOnly:true})
+    path:[{x:450,y:450},{x:600,y:450},{x:600,y:1050},{x:450,y:1050}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:1900,y:80,state:'idle',angle:Math.PI/2,rank:'veteran',bandana:true,hair:'#222',weapon:'sniperRifle',
+    visionRange:520,visionAngle:50,shootRange:520}), {hardOnly:true})
 ];
 }
 function buildStage3EnemyRoster(){
@@ -1150,7 +1171,9 @@ return [
   Object.assign(makeGuard({x:1900,y:400,state:'patrol',isDog:true,
     path:[{x:1900,y:600},{x:1550,y:600},{x:1550,y:200},{x:1900,y:200}]}), {hardOnly:true}),
   Object.assign(makeGuard({x:1300,y:1300,state:'patrol',rank:'rookie',hair:'#3a2a1e',weapon:'gun',
-    path:[{x:1300,y:1420},{x:950,y:1420},{x:950,y:1050},{x:1300,y:1050}]}), {hardOnly:true})
+    path:[{x:1300,y:1420},{x:950,y:1420},{x:950,y:1050},{x:1300,y:1050}]}), {hardOnly:true}),
+  Object.assign(makeGuard({x:80,y:80,state:'idle',angle:0,rank:'veteran',bandana:true,hair:'#222',weapon:'sniperRifle',
+    visionRange:520,visionAngle:50,shootRange:520}), {hardOnly:true})
 ];
 }
 function buildEnemyRoster(){
@@ -1383,10 +1406,18 @@ let bullets = [];
 let traps = [];
 let alarmRaised = false;
 let alarmPulseTimer = 0;
+function bumpStreak(){
+  stats.streak = (stats.streak||0)+1;
+  stats.maxStreak = Math.max(stats.maxStreak||0, stats.streak);
+  if(stats.streak>=3){
+    spawnText(player.x,player.y-40, stats.streak+tr('연속 처치!',' Kill Streak!'), '#ffd060');
+  }
+}
 function raiseAlarm(){
   if(alarmRaised) return;
   alarmRaised = true;
   alarmPulseTimer = 3.5;
+  stats.streak = 0;
   triggerAlarmReinforcements();
 }
 function triggerAlarmReinforcements(){
@@ -1493,7 +1524,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:(localStorage.getItem('stealthOpsLang')||'ko'), showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '4.4.1.0';
+const GAME_VERSION = '4.5.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7, hitTolerance:1.5, enemyAcc:0.55}, normal:{vision:1, hear:1, alarm:1, hitTolerance:1, enemyAcc:1}, hard:{vision:1.25, hear:1.3, alarm:1.4, hitTolerance:0.75, enemyAcc:1.35} };
 function updateDiffStatsText(){
@@ -1533,7 +1564,7 @@ const DAMAGE_MUL = { easy:0.6, normal:1, hard:1.4 };
 let qteActive=false, qteTimer=0;
 const QTE_WINDOW = {easy:4, normal:3, hard:2.2};
 function damagePlayer(amount, sourceX, sourceY){
-  if(caught || player.hp<=0 || qteActive || player.invuln) return;
+  if(caught || player.hp<=0 || qteActive || player.invuln || player.dashInvuln) return;
   const dmg = amount * (DAMAGE_MUL[difficulty]||1);
   const newHp = player.hp - dmg;
   playPlayerPainSound();
@@ -1659,6 +1690,8 @@ function saveRunHistory(rec){
 
 /* 야간투시/열화상 */
 let nvgActive=false, nvgTimer=0, nvgCooldown=0;
+let dashActive=false, dashTimer=0, dashCooldown=0;
+let blackoutActive=false, blackoutTimer=0, blackoutEventTimer=45+Math.random()*40;
 let thermalActive=false, thermalTimer=0, thermalCooldown=0;
 
 /* ===================== 오디오 ===================== */
@@ -1767,6 +1800,9 @@ function playHiss(){ playNoise(0.55, 0.14, 3200, 'highpass'); }
 function playSmokeHiss(){
   playNoise(0.7, 0.17, 3000, 'highpass');
   playNoiseSweep(0.55, 0.11, 1800, 3600, 'bandpass');
+}
+function playDashSound(){
+  playNoiseSweep(0.22, 0.2, 1200, 3000, 'bandpass');
 }
 function playNVGSound(){
   if(!audioCtx)return;
@@ -1949,6 +1985,37 @@ document.querySelectorAll('.diffBtn').forEach(btn=>{
 });
 
 let selectedStage = 1;
+let hardcoreMode = false;
+let dailyChallengeActive = false;
+document.getElementById('btnHardcoreToggle').addEventListener('click',()=>{
+  hardcoreMode = !hardcoreMode;
+  const isEn = settings.lang==='en';
+  document.getElementById('btnHardcoreToggle').textContent = '🔥 ' + tr('하드코어 모드: ','Hardcore Mode: ') + (hardcoreMode?'ON':'OFF') + tr(' (체크포인트 없음)',' (no checkpoint)');
+});
+function todaySeedString(){
+  const d = new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+function dailySeedNumber(){
+  const s = todaySeedString();
+  let h=0; for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i))>>>0; }
+  return h;
+}
+document.getElementById('btnDailyChallenge').addEventListener('click',()=>{
+  const claimed = localStorage.getItem('stealthOpsDailyClaimed');
+  const today = todaySeedString();
+  const seed = dailySeedNumber();
+  const weaponKeys = Object.keys(WEAPON_DEFS);
+  const featuredWeapon = weaponKeys[seed % weaponKeys.length];
+  dailyChallengeActive = true;
+  selectedStage = 1;
+  difficulty = 'hard';
+  clearContinueState();
+  beginGameplay({forceTutorial:false, dailyWeapon:featuredWeapon});
+  if(claimed===today){
+    showMsg(tr('오늘 챌린지는 이미 클리어했어요 (연습으로 계속 플레이 가능)','Already cleared today\'s challenge (playing for practice)'));
+  }
+});
 function isStage2Unlocked(){ return localStorage.getItem('stealthOpsStage2Unlocked')==='1'; }
 function updateStageButtons(){
   const btn2 = document.getElementById('stageBtn2');
@@ -2085,6 +2152,7 @@ function beginGameplay(opts){
   opts = opts || {};
   initAudio();
   gameStarted=true;
+  if(!opts.dailyWeapon) dailyChallengeActive = false;
   if(opts.continueState && opts.continueState.difficulty){
     difficulty = opts.continueState.difficulty; // 이어하기는 저장 당시 난이도를 그대로 복원
   }
@@ -2092,8 +2160,9 @@ function beginGameplay(opts){
   player.speed = 2.4*UPGRADES.speed.effect(getUpgradeLv('speed'));
   player.maxHp = UPGRADES.hp.effect(getUpgradeLv('hp'));
   player.hp = player.maxHp;
+  if(opts.dailyWeapon) player.weapon = opts.dailyWeapon;
   player.reloading=false; refillAllAmmo();
-  stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0, sniperKills:0, dartSleeps:0, empDisables:0};
+  stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0, sniperKills:0, dartSleeps:0, empDisables:0, streak:0, maxStreak:0};
   THROW_TYPES.forEach(t=>{ charges[t] = maxChargesFor(t); });
   discoveredCodes = {};
   randomizeMissionCodes();
@@ -2109,6 +2178,8 @@ function beginGameplay(opts){
     if(d.type==='lockedCabinet') d.locked=true;
   });
   alarmRaised=false; alertLevel=0; actionLock=null; caught=false; missionsComplete=false;
+  blackoutActive=false; blackoutEventTimer=45+Math.random()*40;
+  dashActive=false; dashTimer=0; dashCooldown=0; player.dashInvuln=false;
   missions.forEach(m=>m.done=false);
 
   if(opts.continueState){
@@ -2227,14 +2298,38 @@ function drawStoryPortrait(mood){
   else { g.moveTo(-6,-3); g.lineTo(6,-3); g.stroke(); }
   g.restore();
 }
-let storyStep=0, currentStorySlides=[];
+let storyStep=0, currentStorySlides=[], currentEndingSlides=[];
+let storyMode = 'intro';
+function buildEndingSlides(name){
+  const n = name || (settings.lang==='en' ? 'Agent' : '요원');
+  if(settings.lang==='en'){
+    return [
+      {mood:'determined', text:'The lab fell silent.\nWith the mastermind defeated,\n'+n+' finally had what he came for.', dialogue:''},
+      {mood:'shock', text:'Behind a reinforced door,\na small, frightened voice called out.\n"...Dad?"', dialogue:'"Dad?!"'},
+      {mood:'family', text:n+' broke the lock without a second thought\nand pulled his son into his arms,\ntighter than he ever had before.', dialogue:'"I told you I\'d come."'},
+      {mood:'calm', text:'The war was over.\nAnd this time, he wasn\'t going anywhere.\nJust a father, and his son, going home.', dialogue:''}
+    ];
+  }
+  return [
+    {mood:'determined', text:'연구소는 조용해졌다.\n배후를 쓰러뜨린 지금,\n'+n+'은(는) 마침내 원하던 것을 마주했다.', dialogue:''},
+    {mood:'shock', text:'굳게 닫힌 철문 너머로,\n작고 떨리는 목소리가 들려왔다.\n"...아빠?"', dialogue:'"아빠?!"'},
+    {mood:'family', text:n+'은(는) 망설임 없이 문을 뜯어내고\n그 어느 때보다 힘껏 아들을 끌어안았다.', dialogue:'"말했잖아, 데리러 온다고."'},
+    {mood:'calm', text:'긴 싸움은 끝났다.\n이번엔, 어디에도 가지 않을 것이다.\n그저 아빠와 아들, 함께 집으로.', dialogue:''}
+  ];
+}
 function showStorySlide(){
-  if(storyStep>=currentStorySlides.length){
+  const slides = storyMode==='ending' ? currentEndingSlides : currentStorySlides;
+  if(storyStep>=slides.length){
     document.getElementById('storyOverlay').style.display='none';
-    beginGameplay({forceTutorial:true});
+    if(storyMode==='ending'){
+      localStorage.setItem('stealthOpsEndingSeen','1');
+      setTimeout(showResultScreen, 200);
+    } else {
+      beginGameplay({forceTutorial:true});
+    }
     return;
   }
-  const slide = currentStorySlides[storyStep];
+  const slide = slides[storyStep];
   drawStoryPortrait(slide.mood);
   document.getElementById('storyText').textContent = slide.text;
   document.getElementById('storyDialogue').textContent = slide.dialogue || '';
@@ -2243,7 +2338,12 @@ function showStorySlide(){
 document.getElementById('btnStoryNext').addEventListener('click',()=>{ storyStep++; showStorySlide(); });
 document.getElementById('btnStorySkip').addEventListener('click',()=>{
   document.getElementById('storyOverlay').style.display='none';
-  beginGameplay({forceTutorial:true});
+  if(storyMode==='ending'){
+    localStorage.setItem('stealthOpsEndingSeen','1');
+    setTimeout(showResultScreen, 200);
+  } else {
+    beginGameplay({forceTutorial:true});
+  }
 });
 
 document.getElementById('btnStart').addEventListener('click',()=>{
@@ -2920,6 +3020,16 @@ document.getElementById('btnThermal').addEventListener('touchstart',e=>{
 document.getElementById('btnThermal').addEventListener('click',()=>{
   if(!thermalActive && thermalCooldown<=0){ thermalActive=true; thermalTimer=10; playThermalSound(); }
 });
+document.getElementById('btnDash').addEventListener('touchstart',e=>{ e.preventDefault(); tryDash(); });
+document.getElementById('btnDash').addEventListener('click',()=>{ tryDash(); });
+function tryDash(){
+  if(!gameStarted || caught || puzzleActive || pauseActive || actionLock || player.hiddenIn) return;
+  if(dashActive || dashCooldown>0) return;
+  dashActive=true; dashTimer=0.25; dashCooldown=8;
+  player.dashInvuln=true;
+  playDashSound();
+  vibrate(20);
+}
 
 /* ===================== 사격 조이스틱 (조준+발사, 이동과 독립) ===================== */
 const fireZone=document.getElementById('fireZone'),fireBase=document.getElementById('fireBase'),fireStick=document.getElementById('fireStick'),fireGuideEl=document.getElementById('fireGuide');
@@ -3336,7 +3446,7 @@ function updatePlayer(dt){
 
   // 짧게 당기면 걷기(느림/조용), 길게 당기면 뛰기(빠름/시끄러움)
   const pullSpeedMul = 0.5 + 0.5*clampedMag;
-  const spd = player.speed * pullSpeedMul * (crouchHeld?0.55:1);
+  const spd = player.speed * pullSpeedMul * (crouchHeld?0.55:1) * (dashActive?2.4:1);
   let moved=0;
   if(mag>0.15){
     player.angle=Math.atan2(my,mx);
@@ -3540,7 +3650,7 @@ function updateEnemy(en,dt){
       const smellRange = 95*DIFF_MUL[difficulty].vision*(1+0.3*alertLevel)*(player.crouch?0.7:1)*UPGRADES.stealth.effect(getUpgradeLv('stealth'));
       seen = dist<smellRange;
     } else {
-      let visRange=en.visionRange*DIFF_MUL[difficulty].vision*(1+0.3*alertLevel)*UPGRADES.stealth.effect(getUpgradeLv('stealth'));
+      let visRange=en.visionRange*DIFF_MUL[difficulty].vision*(1+0.3*alertLevel)*UPGRADES.stealth.effect(getUpgradeLv('stealth'))*(blackoutActive?0.4:1);
       if(player.crouch) visRange*=0.55;
       const inCone = dist<visRange && angleDiff(ang,en.angle) < (en.visionAngle*Math.PI/180);
       seen = inCone && hasLineOfSight(en.x,en.y,player.x,player.y);
@@ -3565,6 +3675,21 @@ function updateEnemy(en,dt){
       if(seen){en.target={x:player.x,y:player.y};en.searchTimer=6*DIFF_MUL[difficulty].alarm;}
     }
 
+    if(en.state==='search' && en.weapon==='sniperRifle' && seen && dist>150 && dist<en.shootRange){
+      en.shootCooldown -= dt;
+      if(en.shootCooldown<=1.0 && !en.sniperWarned){
+        en.sniperWarned = true;
+        spawnText(player.x,player.y-30,tr('저격 경고!','Sniper warning!'),'#ff3030');
+        playNoise(0.12,0.12,4200,'highpass');
+      }
+      if(en.shootCooldown<=0){
+        en.shootCooldown = 4.5; en.sniperWarned=false;
+        const acc = clamp((1 - dist/en.shootRange) * DIFF_MUL[difficulty].enemyAcc * 1.3, 0.3, 0.97);
+        bullets.push({x:en.x,y:en.y,tx:player.x,ty:player.y,t:0,dur:0.08});
+        playSniperShot(clamp(1-dist/700,0.3,1));
+        if(Math.random()<acc){ damagePlayer(50, en.x, en.y); spawnText(player.x,player.y-24,tr('저격당함!','Sniped!'),'#ff2020'); }
+      }
+    }
     if(en.state==='search' && (en.weapon==='gun'||en.weapon==='taser') && seen && dist>70 && dist<en.shootRange){
       en.shootCooldown -= dt;
       if(en.shootCooldown<=0){
@@ -3646,6 +3771,7 @@ function triggerCaught(){
 }
 function showExecButtons(){
   document.getElementById('execButtons').style.display='flex';
+  document.getElementById('btnExecCheckpoint').style.display = hardcoreMode ? 'none' : 'block';
 }
 function resetTouchStates(){
   // 주의: touchId와 active는 여기서 강제로 건드리지 않음! 재시작 시점에 손가락이 아직
@@ -3669,6 +3795,7 @@ function respawn(){
   player.hiddenIn=null;
   player.stunnedTimer=0;
   player.hp=player.maxHp; player.hurtFlash=0; player.usedQte=false; player.invuln=false;
+  player.dashInvuln=false; dashActive=false; dashTimer=0; dashCooldown=0;
   qteActive=false; qteTimer=0;
   document.getElementById('qteOverlay').style.display='none';
   player.crouch=false; crouchHeld=false;
@@ -3697,8 +3824,10 @@ function restartLevel(){
   enemies.forEach((e,i)=>e._id=i);
   corpses=[]; clouds=[]; bullets=[]; traps=[]; particles=[]; textParticles=[]; decoys=[];
   missionsComplete=false;
+  blackoutActive=false; blackoutEventTimer=45+Math.random()*40;
+  dashActive=false; dashTimer=0; dashCooldown=0; player.dashInvuln=false;
   player.reloading=false; refillAllAmmo();
-  stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0, sniperKills:0, dartSleeps:0, empDisables:0};
+  stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0, sniperKills:0, dartSleeps:0, empDisables:0, streak:0, maxStreak:0};
   THROW_TYPES.forEach(t=>{ charges[t] = maxChargesFor(t); });
   randomizeMissionCodes();
   randomizeFillerDecor();
@@ -3737,17 +3866,31 @@ function showResultScreen(){
   } else {
     bestLine = '<br>최고 기록: '+Math.floor(best/60)+'분 '+(best%60)+'초';
   }
-  const earnedPoints = 10 + stars*10;
+  const streakBonus = Math.max(0,(stats.maxStreak||0)-1)*5;
+  const hardcoreBonus = hardcoreMode ? 25 : 0;
+  let dailyBonus = 0;
+  if(dailyChallengeActive){
+    const today = todaySeedString();
+    if(localStorage.getItem('stealthOpsDailyClaimed')!==today){
+      localStorage.setItem('stealthOpsDailyClaimed', today);
+      dailyBonus = 30;
+    }
+  }
+  const earnedPoints = 10 + stars*10 + streakBonus + hardcoreBonus + dailyBonus;
   setAgentPoints(getAgentPoints()+earnedPoints);
 
+  const isEn = settings.lang==='en';
+  const streakLine = (stats.maxStreak||0)>=2 ? ('<br>'+tr('최대 연속 처치: ','Best kill streak: ')+stats.maxStreak+tr('회 (+','x (+')+streakBonus+tr('P 보너스)','P bonus)')) : '';
+  const bonusLine = (hardcoreBonus||dailyBonus) ?
+    ('<br>'+(hardcoreBonus?tr('하드코어 보너스 +','Hardcore bonus +')+hardcoreBonus+'P ':'')+(dailyBonus?tr('데일리 챌린지 보너스 +','Daily challenge bonus +')+dailyBonus+'P':'')) : '';
   document.getElementById('resultBody').innerHTML =
-    '클리어 시간: '+mm+':'+ss+'<br>'+
-    '발각 횟수: '+stats.detections+'회<br>'+
-    '체포당한 횟수: '+stats.caughtCount+'회<br>'+
-    '기습 처치(칼): '+stats.knifeKills+' / 은밀 조르기: '+stats.chokeKills+' / 원거리 사격: '+stats.gunKills+'<br>'+
-    '플레이 스타일: <b style="color:'+styleColor+'">'+styleGrade+'</b><br>'+
-    '평가: '+'★'.repeat(stars)+'☆'.repeat(3-stars)+
-    '<br><b style="color:#ffd060">요원 포인트 +'+earnedPoints+'</b> (총 '+getAgentPoints()+')'+
+    tr('클리어 시간: ','Clear time: ')+mm+':'+ss+'<br>'+
+    tr('발각 횟수: ','Times detected: ')+stats.detections+tr('회','')+'<br>'+
+    tr('체포당한 횟수: ','Times caught: ')+stats.caughtCount+tr('회','')+'<br>'+
+    tr('기습 처치(칼): ','Knife takedowns: ')+stats.knifeKills+tr(' / 은밀 조르기: ',' / Silent chokes: ')+stats.chokeKills+tr(' / 원거리 사격: ',' / Ranged kills: ')+stats.gunKills+streakLine+bonusLine+'<br>'+
+    tr('플레이 스타일: ','Play style: ')+'<b style="color:'+styleColor+'">'+styleGrade+'</b><br>'+
+    tr('평가: ','Rating: ')+'★'.repeat(stars)+'☆'.repeat(3-stars)+
+    '<br><b style="color:#ffd060">'+tr('요원 포인트 +','Agent Points +')+earnedPoints+'</b> ('+tr('총 ','total ')+getAgentPoints()+')'+
     bestLine;
 
   const clears = parseInt(localStorage.getItem('stealthOpsClears')||'0')+1;
@@ -4087,11 +4230,13 @@ function performMeleeTakedown(en){
     actionLock={type:'knife',enemy:en,hitAngle:toPlayerAngle+Math.PI};
     showMsg(tr('정면 기습 처치!','Frontal takedown!'));
     stats.knifeKills++;
+    bumpStreak();
   } else {
     en.dieType='choke'; en.dieTimer=0.6; en.dieTotal=0.6;
     actionLock={type:'choke',enemy:en};
     showMsg(tr('은밀 조르기 처치','Silent choke takedown'));
     stats.chokeKills++;
+    bumpStreak();
   }
   vibrate(30);
   checkLeaderDeath(en);
@@ -5604,7 +5749,7 @@ function render(){
     fogCtx.save();
     fogCtx.globalCompositeOperation='destination-out';
     for(const lp of lamps){
-      if(lp.broken) continue;
+      if(lp.broken || blackoutActive) continue;
       fogCtx.beginPath();fogCtx.arc(lp.x-camX,lp.y-camY,55,0,7);fogCtx.fill();
     }
     fogCtx.restore();
@@ -5616,7 +5761,7 @@ function render(){
     ctx.save();
     ctx.globalCompositeOperation='lighter';
     for(const lp of lamps){
-      if(lp.broken) continue;
+      if(lp.broken || blackoutActive) continue;
       ctx.save();
       ctx.beginPath();ctx.arc(lp.x-camX,lp.y-camY,55,0,7);ctx.clip();
       const g2=ctx.createRadialGradient(lp.x-camX,lp.y-camY,2,lp.x-camX,lp.y-camY,55);
@@ -5915,6 +6060,31 @@ function loopBody(dt){
       showMsg(tr('재장전 완료','Reload complete'));
     }
   }
+  if(gameStarted && !pauseActive && !puzzleActive && !caught){
+    if(dashActive){
+      dashTimer -= dt;
+      if(dashTimer<=0){ dashActive=false; player.dashInvuln=false; }
+    }
+    if(dashCooldown>0) dashCooldown -= dt;
+
+    if(blackoutActive){
+      blackoutTimer -= dt;
+      if(blackoutTimer<=0){
+        blackoutActive=false;
+        showMsg(tr('전력이 복구됐다','Power restored'));
+      }
+    } else {
+      blackoutEventTimer -= dt;
+      if(blackoutEventTimer<=0){
+        blackoutActive=true;
+        blackoutTimer=9+Math.random()*4;
+        blackoutEventTimer=60+Math.random()*50;
+        showMsg(tr('정전! 시야가 완전히 달라졌다','Blackout! Visibility has changed'));
+        playNoise(0.3,0.2,200,'lowpass');
+        vibrate([40,40,40]);
+      }
+    }
+  }
   if(gameStarted && !pauseActive){
     updateAbilities(dt);
   }
@@ -5988,8 +6158,14 @@ function loopBody(dt){
             missionsComplete = true;
             clearContinueState();
             localStorage.setItem('stealthOpsStage3Cleared','1');
-            showMsg(tr('보스 처치! 스테이지 클리어!','Boss defeated! Stage cleared!'));
-            setTimeout(showResultScreen, 800);
+            showMsg(tr('보스 처치!','Boss defeated!'));
+            setTimeout(()=>{
+              storyMode = 'ending';
+              currentEndingSlides = buildEndingSlides(playerName);
+              storyStep = 0;
+              document.getElementById('hud').style.display='none';
+              showStorySlide();
+            }, 800);
           }
           if(!en.isDog && !wasBoss && Math.random()<0.22){
             if(Math.random()<0.5){
@@ -6030,6 +6206,10 @@ function loopBody(dt){
     hpBar.style.background = hpPct>50 ? '#4ac96a' : (hpPct>25 ? '#e0a030' : '#e03030');
     document.getElementById('hpBarPct').textContent = Math.round(hpPct)+'%';
     {
+      const dashBtn = document.getElementById('btnDash');
+      dashBtn.classList.toggle('dashCooling', dashCooldown>0);
+    }
+    {
       const boss = enemies.find(e=>e.isBoss && e.state!=='dying');
       const bossWrap = document.getElementById('bossHpWrap');
       if(boss && bossSpawned){
@@ -6041,6 +6221,7 @@ function loopBody(dt){
     }
     document.getElementById('lowHpVignette').style.display = (hpPct>0 && hpPct<=25) ? 'block' : 'none';
     document.getElementById('alarmVignette').style.display = alarmRaised ? 'block' : 'none';
+    document.getElementById('blackoutTint').style.display = blackoutActive ? 'block' : 'none';
 
     if(player.hurtFlash>0){
       player.hurtFlash = Math.max(0, player.hurtFlash - dt);
