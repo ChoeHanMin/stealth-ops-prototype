@@ -35,6 +35,11 @@
   @keyframes alarm-pulse{0%,100%{opacity:0.3;}50%{opacity:0.85;}}
   #blackoutTint{position:fixed;inset:0;pointer-events:none;display:none;z-index:35;
        background:rgba(0,0,10,0.55);}
+  #goldenTimeBadge{position:fixed;top:10px;right:14px;display:none;z-index:45;
+       background:rgba(255,215,80,0.25);border:1.5px solid rgba(255,225,120,0.8);border-radius:8px;
+       padding:4px 10px;color:#ffe27a;font-size:12px;font-weight:900;text-shadow:0 1px 3px rgba(0,0,0,0.9);
+       animation:golden-pulse 0.7s ease-in-out infinite;}
+  @keyframes golden-pulse{0%,100%{opacity:0.7;transform:scale(1);}50%{opacity:1;transform:scale(1.08);}}
   #qteOverlay{position:fixed;inset:0;background:rgba(80,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:90;}
   #qteBox{display:flex;flex-direction:column;align-items:center;gap:14px;}
   #qteLabel{color:#fff;font-size:20px;font-weight:900;letter-spacing:1px;text-shadow:0 2px 6px rgba(0,0,0,0.7);}
@@ -188,6 +193,8 @@
   #startTitle{color:#f0e6c8;font-size:38px;font-weight:900;letter-spacing:6px;text-shadow:0 3px 10px #000;margin-bottom:6px;}
   #startSub{color:#c9c2a0;font-size:12px;letter-spacing:3px;margin-bottom:8px;opacity:0.8;}
   #verText{color:#8a8470;font-size:11px;letter-spacing:1px;margin-bottom:26px;}
+  #loginStreakBox{background:rgba(255,205,110,0.12);border:1.5px solid rgba(255,205,110,0.4);border-radius:10px;
+       padding:8px 14px;margin-bottom:14px;text-align:center;color:#ffd76a;font-size:12px;font-weight:bold;max-width:280px;}
   @media (max-height:420px){
     #startTitle{font-size:26px;margin-bottom:2px;}
     #startSub{font-size:10px;margin-bottom:4px;}
@@ -280,6 +287,7 @@
 <div id="lowHpVignette"></div>
 <div id="alarmVignette"></div>
 <div id="blackoutTint"></div>
+<div id="goldenTimeBadge">✨ x2</div>
 <div id="qteOverlay">
   <div id="qteBox">
     <div id="qteLabel">위기! 탭해서 탈출!</div>
@@ -362,7 +370,9 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.5.0.0</div>
+  <div id="verText">Ver 4.6.0.0</div>
+
+  <div id="loginStreakBox" style="display:none;"></div>
 
   <div class="miniBtn" id="btnLangToggle" style="margin-bottom:10px;">🌐 한국어 / English</div>
 
@@ -390,6 +400,7 @@
   <div class="menuBtn" id="btnAch">업적</div>
   <div class="menuBtn" id="btnUpgrade">요원 강화</div>
   <div class="menuBtn" id="btnHistory">기록</div>
+  <div class="menuBtn" id="btnIntelArchive">📁 정보 파일</div>
   <div class="menuBtn" id="btnDev">개발자</div>
 </div>
 
@@ -558,6 +569,13 @@
     <div class="closeBtn" id="closeAch">닫기</div>
   </div>
 </div>
+<div class="modal" id="intelModal">
+  <div class="modalBox">
+    <h2 id="h2Intel">정보 파일</h2>
+    <div id="intelList"></div>
+    <div class="closeBtn" id="closeIntel">닫기</div>
+  </div>
+</div>
 <div class="modal" id="upgradeModal">
   <div class="modalBox">
     <h2 id="h2Upgrade">요원 강화</h2>
@@ -575,15 +593,13 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 4.5.0.0)</h2>
+    <h2>업데이트 안내 (Ver 4.6.0.0)</h2>
     <ul>
-      <li>보스를 처치하면 엔딩 컷씬이 나오도록 추가 (아들과 재회하는 마무리 스토리)</li>
-      <li>대시 스킬 추가 - 짧은 시간 무적+가속 이동 (쿨다운 8초)</li>
-      <li>연속 처치 스트릭 시스템 - 안 들키고 연달아 처치하면 보너스 포인트</li>
-      <li>정전(블랙아웃) 랜덤 이벤트 - 가끔 조명이 꺼지며 적 시야가 크게 줄어듦</li>
-      <li>데일리 챌린지 모드 추가 - 매일 다른 지정 무기로 도전, 첫 클리어 시 보너스 포인트</li>
-      <li>하드코어 모드 추가 - 체크포인트 없이 플레이, 클리어 시 보너스 포인트</li>
-      <li>신규 적 "저격수" 추가 (어려움 난이도) - 장거리에서 경고 후 강력한 한 발을 쏨</li>
+      <li>연속 출석 보상 추가 - 매일 접속하면 스트릭이 쌓이고 보너스 포인트 지급 (최대 7일치)</li>
+      <li>무기 숙련도 시스템 추가 - 무기별 누적 처치 수에 따라 재장전 속도·명중 판정이 좋아짐 (최대 Lv.4)</li>
+      <li>숨겨진 정보 파일 6개 추가 - 스테이지별로 2개씩 숨겨진 배후 세력 문서를 찾아 모으면 뒷이야기가 열림 (시작화면 "📁 정보 파일")</li>
+      <li>황금 시간 랜덤 이벤트 추가 - 가끔 발생하며, 그 동안 처치 시 즉시 보너스 포인트 지급</li>
+      <li>결과화면에 포인트 카운트업 애니메이션 추가</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -855,7 +871,9 @@ const STAGE1_DECOR = [
   {type:'medkit',x:960,y:850,w:22,h:16,solid:false},
   {type:'supplycrate',x:1750,y:900,w:26,h:22,solid:false},
   {type:'battery',x:400,y:1200,w:16,h:22,solid:false},
-  {type:'lockedCabinet',x:1000,y:500,w:26,h:34,solid:true,locked:true}
+  {type:'lockedCabinet',x:1000,y:500,w:26,h:34,solid:true,locked:true},
+  {type:'intel',x:1850,y:1350,w:20,h:16,intelId:'s1_a'},
+  {type:'intel',x:120,y:850,w:20,h:16,intelId:'s1_b'}
 ];
 let walls = STAGE1_WALLS, decor = STAGE1_DECOR;
 let furnitureSolids, solidRects, visionBlockRects, lamps, hidingSpots, hideableFurn;
@@ -913,6 +931,29 @@ let puzzleActive=null;
 
 function getAgentPoints(){ return parseInt(localStorage.getItem('stealthOpsAgentPoints')||'0'); }
 function setAgentPoints(v){ localStorage.setItem('stealthOpsAgentPoints', Math.max(0,v)); }
+function dateStr(d){ return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function checkLoginStreak(){
+  const today = dateStr(new Date());
+  const yesterday = dateStr(new Date(Date.now()-86400000));
+  const lastLogin = localStorage.getItem('stealthOpsLastLoginDate');
+  let streak = parseInt(localStorage.getItem('stealthOpsLoginStreak')||'0');
+  const box = document.getElementById('loginStreakBox');
+  if(lastLogin===today){
+    // 오늘 이미 보상 받음 - 현재 스트릭만 은은하게 표시
+    if(streak>0){
+      box.style.display='block';
+      box.textContent = tr('🔥 오늘 접속 완료! ('+streak+'일 연속)','🔥 Checked in today! ('+streak+'-day streak)');
+    }
+    return;
+  }
+  streak = (lastLogin===yesterday) ? streak+1 : 1;
+  localStorage.setItem('stealthOpsLoginStreak', streak);
+  localStorage.setItem('stealthOpsLastLoginDate', today);
+  const bonus = Math.min(streak,7)*5;
+  setAgentPoints(getAgentPoints()+bonus);
+  box.style.display='block';
+  box.textContent = tr('🔥 '+streak+'일 연속 출석! +'+bonus+'P','🔥 '+streak+'-day login streak! +'+bonus+'P');
+}
 function getUpgradeLv(key){ return parseInt(localStorage.getItem('stealthOpsUpg_'+key)||'0'); }
 function setUpgradeLv(key,v){ localStorage.setItem('stealthOpsUpg_'+key, v); }
 const UPGRADES = {
@@ -929,9 +970,70 @@ function startReload(){
   if(player.reloading) return;
   const wdef = WEAPON_DEFS[player.weapon] || WEAPON_DEFS.pistol;
   player.reloading = true;
-  player.reloadTimer = wdef.reloadTime||1.2;
+  player.reloadTimer = (wdef.reloadTime||1.2) * masteryReloadMul(player.weapon);
   showMsg(tr('재장전 중...','Reloading...'));
   playReloadSound();
+}
+const INTEL_DOCS = {
+  s1_a: {
+    title:{ko:'인사 기록 - 조각 1',en:'Personnel File - Fragment 1'},
+    text:{ko:'"...계약자는 전직 정보요원으로, 실전 경험이 풍부함. 가족 관계를 이용한 접근이 가장 효율적일 것으로 판단됨..."',
+          en:'"...The subject is a former intelligence operative with extensive field experience. Leveraging his family ties is judged the most efficient approach..."'}
+  },
+  s1_b: {
+    title:{ko:'무전 기록 - 조각 2',en:'Radio Log - Fragment 2'},
+    text:{ko:'"침입 완료. 저항은 예상보다 거셌으나 아이는 확보했다. 본거지로 이송한다. 배후에겐 전달했다고만 해."',
+          en:'"Breach complete. Resistance was heavier than expected, but the target is secured. Moving him to the hideout. Just tell the client it\'s handled."'}
+  },
+  s2_a: {
+    title:{ko:'정원사의 메모 - 조각 3',en:'Gardener\'s Note - Fragment 3'},
+    text:{ko:'"이 저택은 그냥 은신처가 아니다. 지하로 이어지는 통로가 있다는 소문이 있다. 아무도 그쪽은 안 물어보는 게 좋아."',
+          en:'"This estate isn\'t just a hideout. Rumor is there\'s a passage leading underground. Best not to ask about it."'}
+  },
+  s2_b: {
+    title:{ko:'감시 일지 - 조각 4',en:'Surveillance Log - Fragment 4'},
+    text:{ko:'"목표가 예상보다 훨씬 위험하다. 이미 절반이 당했다. 본부에 병력 추가 요청함."',
+          en:'"The target is far more dangerous than briefed. We\'ve already lost half the team. Requesting reinforcements from command."'}
+  },
+  s3_a: {
+    title:{ko:'연구소 브리핑 - 조각 5',en:'Lab Briefing - Fragment 5'},
+    text:{ko:'"실험은 아이와 무관하다. 그저 협상 카드일 뿐. 배후는 처음부터 아이를 돌려줄 생각이 없었다."',
+          en:'"The experiments have nothing to do with the boy. He was only ever leverage. The mastermind never intended to return him."'}
+  },
+  s3_b: {
+    title:{ko:'마지막 메시지 - 조각 6',en:'Final Message - Fragment 6'},
+    text:{ko:'"만약 이걸 읽고 있다면, 넌 이미 여기까지 온 것이다. 아이는 지하 가장 깊은 곳에 있다. 서둘러."',
+          en:'"If you\'re reading this, you\'ve already made it this far. He\'s being held in the deepest level below. Hurry."'}
+  }
+};
+function getFoundIntel(){ return JSON.parse(localStorage.getItem('stealthOpsIntelFound')||'[]'); }
+function isIntelFound(id){ return getFoundIntel().includes(id); }
+function markIntelFound(id){
+  const found = getFoundIntel();
+  if(!found.includes(id)){ found.push(id); localStorage.setItem('stealthOpsIntelFound', JSON.stringify(found)); }
+}
+const MASTERY_THRESHOLDS = [0, 10, 25, 50]; // 레벨 1~4 도달 누적 처치 수
+function getMasteryKills(weaponKey){ return parseInt(localStorage.getItem('stealthOpsMastery_'+weaponKey)||'0'); }
+function getMasteryLevel(weaponKey, kills){
+  if(kills===undefined) kills = getMasteryKills(weaponKey);
+  let lv=1;
+  for(let i=1;i<MASTERY_THRESHOLDS.length;i++){ if(kills>=MASTERY_THRESHOLDS[i]) lv=i+1; }
+  return lv;
+}
+function masteryReloadMul(weaponKey){ return 1 - (getMasteryLevel(weaponKey)-1)*0.08; }
+function masteryToleranceMul(weaponKey){ return 1 + (getMasteryLevel(weaponKey)-1)*0.1; }
+function addMasteryKill(weaponKey){
+  if(!WEAPON_DEFS[weaponKey]) return;
+  const before = getMasteryLevel(weaponKey);
+  const kills = getMasteryKills(weaponKey)+1;
+  localStorage.setItem('stealthOpsMastery_'+weaponKey, kills);
+  const after = getMasteryLevel(weaponKey, kills);
+  if(after>before){
+    const wname = WEAPON_DEFS[weaponKey].name;
+    spawnText(player.x, player.y-46, wname+tr(' 숙련도 Lv.'+after+'!',' Mastery Lv.'+after+'!'), '#ffd060');
+    showMsg(tr('무기 숙련도 상승!','Weapon mastery increased!'));
+    vibrate(25);
+  }
 }
 
 const WEAPON_DEFS = {
@@ -1325,7 +1427,9 @@ const STAGE2_DECOR = [
   {type:'tree',x:600,y:1400,r:22,solid:true,hideable:true},
   {type:'hedgeBush',x:1000,y:900,w:34,h:34,solid:true,hideable:true},
   {type:'hedgeBush',x:500,y:1350,w:34,h:34,solid:true,hideable:true},
-  {type:'hedgeBush',x:1800,y:300,w:34,h:34,solid:true,hideable:true}
+  {type:'hedgeBush',x:1800,y:300,w:34,h:34,solid:true,hideable:true},
+  {type:'intel',x:1900,y:1450,w:20,h:16,intelId:'s2_a'},
+  {type:'intel',x:1850,y:300,w:20,h:16,intelId:'s2_b'}
 ];
 const STAGE2_MISSIONS = [
   {id:'greenhouse', x:820,y:220, r:16, done:false, label:'온실 관개 시스템', color:'#8fe098', puzzleType:'wires'},
@@ -1385,7 +1489,9 @@ const STAGE3_DECOR = [
   {type:'medkit',x:1100,y:400,w:22,h:16,solid:false},
   {type:'supplycrate',x:300,y:750,w:26,h:22,solid:false},
   {type:'battery',x:1850,y:1200,w:16,h:22,solid:false},
-  {type:'lockedCabinet',x:440,y:1250,w:26,h:34,solid:true,locked:true}
+  {type:'lockedCabinet',x:440,y:1250,w:26,h:34,solid:true,locked:true},
+  {type:'intel',x:1850,y:650,w:20,h:16,intelId:'s3_a'},
+  {type:'intel',x:280,y:900,w:20,h:16,intelId:'s3_b'}
 ];
 const STAGE3_MISSIONS = [
   {id:'servermain', x:760,y:220, r:16, done:false, label:'서버 메인프레임', color:'#8fe098', puzzleType:'wires'},
@@ -1412,6 +1518,12 @@ function bumpStreak(){
   if(stats.streak>=3){
     spawnText(player.x,player.y-40, stats.streak+tr('연속 처치!',' Kill Streak!'), '#ffd060');
   }
+  awardGoldenBonus(player.x, player.y);
+}
+function awardGoldenBonus(x,y){
+  if(!goldenTimeActive) return;
+  setAgentPoints(getAgentPoints()+5);
+  spawnText(x,y-56, '✨+5P', '#ffe27a');
 }
 function raiseAlarm(){
   if(alarmRaised) return;
@@ -1524,7 +1636,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:(localStorage.getItem('stealthOpsLang')||'ko'), showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '4.5.0.0';
+const GAME_VERSION = '4.6.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7, hitTolerance:1.5, enemyAcc:0.55}, normal:{vision:1, hear:1, alarm:1, hitTolerance:1, enemyAcc:1}, hard:{vision:1.25, hear:1.3, alarm:1.4, hitTolerance:0.75, enemyAcc:1.35} };
 function updateDiffStatsText(){
@@ -1671,6 +1783,19 @@ const ACHIEVEMENTS = [
   {id:'gardenFlawless', name:'완벽한 정원 침투', desc:'스테이지 2를 체포당하지 않고 클리어', check:s=>currentStage===2 && s.caughtCount===0},
   {id:'natureLover', name:'자연의 벗', desc:'스테이지 2에서 5회 이상 은신처를 활용', check:s=>currentStage===2 && (s.hideCount||0)>=5}
 ];
+function animateCountUp(elId, from, to, duration){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const start = performance.now();
+  function step(now){
+    const t = Math.min(1, (now-start)/duration);
+    const eased = 1-Math.pow(1-t, 3);
+    const val = Math.round(from + (to-from)*eased);
+    el.textContent = val;
+    if(t<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 function checkAchievements(s, elapsed){
   const unlocked = JSON.parse(localStorage.getItem('stealthOpsAch')||'[]');
   const newly=[];
@@ -1692,6 +1817,7 @@ function saveRunHistory(rec){
 let nvgActive=false, nvgTimer=0, nvgCooldown=0;
 let dashActive=false, dashTimer=0, dashCooldown=0;
 let blackoutActive=false, blackoutTimer=0, blackoutEventTimer=45+Math.random()*40;
+let goldenTimeActive=false, goldenTimeTimer=0, goldenTimeEventTimer=70+Math.random()*50;
 let thermalActive=false, thermalTimer=0, thermalCooldown=0;
 
 /* ===================== 오디오 ===================== */
@@ -2179,6 +2305,7 @@ function beginGameplay(opts){
   });
   alarmRaised=false; alertLevel=0; actionLock=null; caught=false; missionsComplete=false;
   blackoutActive=false; blackoutEventTimer=45+Math.random()*40;
+  goldenTimeActive=false; goldenTimeEventTimer=70+Math.random()*50;
   dashActive=false; dashTimer=0; dashCooldown=0; player.dashInvuln=false;
   missions.forEach(m=>m.done=false);
 
@@ -2641,9 +2768,15 @@ function renderShop(){
     const wname = isEn ? (enData.name||w.name) : w.name;
     const wdesc = isEn ? (enData.desc||w.desc) : w.desc;
     const label = player.weapon===w.key ? (isEn?'EQUIPPED':'장착됨') : (w.key==='pistol' ? (isEn?'EQUIP':'장착하기') : (isEn?'EQUIP (Free Beta)':'장착하기 (베타 무료)'));
+    const mLv = getMasteryLevel(w.key);
+    const mKills = getMasteryKills(w.key);
+    const nextThresh = MASTERY_THRESHOLDS[mLv] !== undefined ? MASTERY_THRESHOLDS[mLv] : null;
+    const masteryLine = '<div style="font-size:11px;color:#8fd0ff;margin:2px 0 4px;">'+tr('숙련도 ','Mastery ')+'Lv.'+mLv+'/4'+
+      (nextThresh!==null ? ' ('+mKills+'/'+nextThresh+')' : ' MAX')+'</div>';
     return '<div class="shopCard">'+
       '<div style="text-align:center;padding:6px 0;">'+(WEAPON_ICONS[w.key]||'')+'</div>'+
       '<div class="shopCardHead"><b>'+wname+'</b><span class="shopFreeTag">'+(isEn?'FREE (Beta Test)':'무료 (베타 테스트)')+'</span></div>'+
+      masteryLine+
       '<div class="shopDesc">'+wdesc+'</div>'+
       gaugeBar(isEn?'Damage':'피해량',w.dmg,'#e05050')+
       gaugeBar(isEn?'Accuracy':'정확도',w.acc,'#5ecbe8')+
@@ -2685,6 +2818,21 @@ document.getElementById('btnAch').addEventListener('click',()=>{
   document.getElementById('achModal').style.display='flex';
 });
 document.getElementById('closeAch').addEventListener('click',()=>{document.getElementById('achModal').style.display='none';});
+document.getElementById('btnIntelArchive').addEventListener('click',()=>{
+  const found = getFoundIntel();
+  const lang = settings.lang==='en' ? 'en' : 'ko';
+  const list = document.getElementById('intelList');
+  list.innerHTML = Object.keys(INTEL_DOCS).map(id=>{
+    const doc = INTEL_DOCS[id];
+    const got = found.includes(id);
+    return '<div style="padding:8px 0;border-bottom:1px solid #333;opacity:'+(got?1:0.4)+'">'+
+      '<b style="color:'+(got?'#c586e8':'#999')+'">'+(got?'📄 ':'🔒 ')+(got?doc.title[lang]:tr('미발견 정보 파일','Undiscovered document'))+'</b>'+
+      (got?('<div style="font-size:12px;color:#ccc;margin-top:4px;font-style:italic;">'+doc.text[lang]+'</div>'):'')+
+      '</div>';
+  }).join('') + '<div style="margin-top:10px;text-align:center;font-size:12px;color:#999;">'+found.length+' / '+Object.keys(INTEL_DOCS).length+' '+tr('발견됨','found')+'</div>';
+  document.getElementById('intelModal').style.display='flex';
+});
+document.getElementById('closeIntel').addEventListener('click',()=>{document.getElementById('intelModal').style.display='none';});
 
 function renderUpgradeShop(){
   const isEn = settings.lang==='en';
@@ -3825,6 +3973,7 @@ function restartLevel(){
   corpses=[]; clouds=[]; bullets=[]; traps=[]; particles=[]; textParticles=[]; decoys=[];
   missionsComplete=false;
   blackoutActive=false; blackoutEventTimer=45+Math.random()*40;
+  goldenTimeActive=false; goldenTimeEventTimer=70+Math.random()*50;
   dashActive=false; dashTimer=0; dashCooldown=0; player.dashInvuln=false;
   player.reloading=false; refillAllAmmo();
   stats={startTime:performance.now(), detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0, sniperKills:0, dartSleeps:0, empDisables:0, streak:0, maxStreak:0};
@@ -3890,8 +4039,10 @@ function showResultScreen(){
     tr('기습 처치(칼): ','Knife takedowns: ')+stats.knifeKills+tr(' / 은밀 조르기: ',' / Silent chokes: ')+stats.chokeKills+tr(' / 원거리 사격: ',' / Ranged kills: ')+stats.gunKills+streakLine+bonusLine+'<br>'+
     tr('플레이 스타일: ','Play style: ')+'<b style="color:'+styleColor+'">'+styleGrade+'</b><br>'+
     tr('평가: ','Rating: ')+'★'.repeat(stars)+'☆'.repeat(3-stars)+
-    '<br><b style="color:#ffd060">'+tr('요원 포인트 +','Agent Points +')+earnedPoints+'</b> ('+tr('총 ','total ')+getAgentPoints()+')'+
+    '<br><b style="color:#ffd060">'+tr('요원 포인트 +','Agent Points +')+'<span id="pointsCountUp">0</span></b> ('+tr('총 ','total ')+'<span id="totalPointsCountUp">'+(getAgentPoints()-earnedPoints)+'</span>)'+
     bestLine;
+  animateCountUp('pointsCountUp', 0, earnedPoints, 700);
+  animateCountUp('totalPointsCountUp', getAgentPoints()-earnedPoints, getAgentPoints(), 900);
 
   const clears = parseInt(localStorage.getItem('stealthOpsClears')||'0')+1;
   localStorage.setItem('stealthOpsClears', clears);
@@ -3945,7 +4096,7 @@ function handleFire(angle){
     setTimeout(()=>{ if(!player.reloading && (player.ammo[player.weapon]||0)<=0) startReload(); }, 250);
   }
   const range = wdef.range;
-  const tolerance = wdef.tolerance*Math.PI/180*(DIFF_MUL[difficulty].hitTolerance||1);
+  const tolerance = wdef.tolerance*Math.PI/180*(DIFF_MUL[difficulty].hitTolerance||1)*masteryToleranceMul(player.weapon);
   const pelletCount = wdef.pellets || 1;
   const spreadRad = (wdef.spread||0)*Math.PI/180;
   const ox=player.x, oy=player.y;
@@ -4029,6 +4180,7 @@ function handleFire(angle){
         playShortPain(0.6);
         spawnText(best.x,best.y-24, wdef.sleepTime? tr('수면!','Asleep!') : tr('마비!','Stunned!'),'#8fd0ff');
         if(player.weapon==='poisonDart') stats.dartSleeps=(stats.dartSleeps||0)+1;
+        addMasteryKill(player.weapon);
       } else {
         if(damageBossOrKill(best)) continue;
         best.state='dying';
@@ -4040,6 +4192,8 @@ function handleFire(angle){
             life: big?42:30, r: big?5:3, color: i%3===0?'#a01818':'#d43030'});
         }
         stats.gunKills++;
+        addMasteryKill(player.weapon);
+        awardGoldenBonus(best.x, best.y);
         if(player.weapon==='sniper') stats.sniperKills=(stats.sniperKills||0)+1;
         screenShake=Math.min(10, screenShake+4);
         checkLeaderDeath(best);
@@ -4125,6 +4279,19 @@ function tryInteract(){
         alertLevel=1;
         spawnText(alarmPanelD.x+alarmPanelD.w/2, alarmPanelD.y-14, tr('경보 해제됨','Alarm silenced'), '#8fd0ff');
         showMsg(tr('비상벨 정지 - 경비들이 한동안 경계 태세를 유지함','Alarm silenced - guards will stay on edge for a while'));
+        return true;
+      }
+    }
+  }
+
+  for(const d of decor){
+    if(d.type==='intel' && !isIntelFound(d.intelId)){
+      const dist=Math.hypot(player.x-d.x, player.y-d.y);
+      if(dist<42){
+        markIntelFound(d.intelId);
+        showMsg(tr('정보 파일 입수!','Intel document found!'));
+        spawnText(d.x,d.y-18,tr('+정보 파일','+Intel'),'#c586e8');
+        vibrate(20);
         return true;
       }
     }
@@ -5171,6 +5338,22 @@ function drawDecorItem(d,camX,camY){
       ctx.fillStyle='#6b5236';ctx.fillRect(x,y,d.w,d.h);
       ctx.strokeStyle='#3d2f20';ctx.lineWidth=1.5;ctx.strokeRect(x+3,y+d.h*0.45,d.w-6,d.h*0.4);
       break;
+    case 'intel': {
+      if(isIntelFound(d.intelId)) break;
+      const cx=x+d.w/2, cy=y+d.h/2;
+      const pulse = 0.5+Math.sin(simTime*4)*0.3;
+      ctx.save();
+      ctx.shadowColor='rgba(197,134,232,0.9)'; ctx.shadowBlur=8+pulse*6;
+      ctx.fillStyle='#e8d8f0';
+      ctx.fillRect(x,y,d.w,d.h);
+      ctx.strokeStyle='#c586e8';ctx.lineWidth=1.4;
+      ctx.strokeRect(x,y,d.w,d.h);
+      ctx.shadowBlur=0;
+      ctx.strokeStyle='#9a6ab0';ctx.lineWidth=0.8;
+      for(let i=0;i<3;i++){ ctx.beginPath();ctx.moveTo(x+3,y+4+i*4);ctx.lineTo(x+d.w-3,y+4+i*4);ctx.stroke(); }
+      ctx.restore();
+      break;
+    }
     case 'note': {
       const cx=x+d.w/2, cy=y+d.h/2;
       ctx.save();
@@ -6084,6 +6267,24 @@ function loopBody(dt){
         vibrate([40,40,40]);
       }
     }
+
+    if(goldenTimeActive){
+      goldenTimeTimer -= dt;
+      if(goldenTimeTimer<=0){
+        goldenTimeActive=false;
+        showMsg(tr('황금 시간 종료','Golden Time ended'));
+      }
+    } else {
+      goldenTimeEventTimer -= dt;
+      if(goldenTimeEventTimer<=0){
+        goldenTimeActive=true;
+        goldenTimeTimer=12+Math.random()*6;
+        goldenTimeEventTimer=70+Math.random()*60;
+        showMsg(tr('✨ 황금 시간! 포인트 2배!','✨ Golden Time! Points x2!'));
+        playNoise(0.15,0.18,2500,'bandpass');
+        vibrate([30,20,30,20,60]);
+      }
+    }
   }
   if(gameStarted && !pauseActive){
     updateAbilities(dt);
@@ -6222,6 +6423,7 @@ function loopBody(dt){
     document.getElementById('lowHpVignette').style.display = (hpPct>0 && hpPct<=25) ? 'block' : 'none';
     document.getElementById('alarmVignette').style.display = alarmRaised ? 'block' : 'none';
     document.getElementById('blackoutTint').style.display = blackoutActive ? 'block' : 'none';
+    document.getElementById('goldenTimeBadge').style.display = goldenTimeActive ? 'block' : 'none';
 
     if(player.hurtFlash>0){
       player.hurtFlash = Math.max(0, player.hurtFlash - dt);
@@ -6308,6 +6510,7 @@ requestAnimationFrame(loop);
   const sel = document.getElementById('langSelect');
   if(sel) sel.value = settings.lang;
   applyLanguage();
+  checkLoginStreak();
 }
 
 if('serviceWorker' in navigator){
