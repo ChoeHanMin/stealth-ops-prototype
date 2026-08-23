@@ -10,7 +10,7 @@
 <title>Stealth Ops Prototype</title>
 <style>
   html,body{margin:0;padding:0;overflow:hidden;background:#0a0a0f;font-family:sans-serif;touch-action:none;}
-  #game{display:block;background:#111;}
+  #game{transition:transform 0.18s ease-out;transform-origin:center center;display:block;background:#111;}
   #hud{position:fixed;top:8px;left:8px;right:8px;color:#eee;font-size:13px;pointer-events:none;text-shadow:0 1px 2px #000;display:none;}
   #detBarWrap{width:160px;height:10px;background:#333;border:1px solid #555;border-radius:4px;overflow:hidden;margin-top:4px;}
   #detBar{height:100%;width:0%;background:#e0a030;transition:width 0.1s;}
@@ -35,6 +35,7 @@
   @keyframes alarm-pulse{0%,100%{opacity:0.3;}50%{opacity:0.85;}}
   #blackoutTint{position:fixed;inset:0;pointer-events:none;display:none;z-index:35;
        background:rgba(0,0,10,0.55);}
+  #timeOfDayTint{position:fixed;inset:0;pointer-events:none;z-index:8;mix-blend-mode:multiply;}
   #goldenTimeBadge{position:fixed;top:10px;right:14px;display:none;z-index:45;
        background:rgba(255,215,80,0.25);border:1.5px solid rgba(255,225,120,0.8);border-radius:8px;
        padding:4px 10px;color:#ffe27a;font-size:12px;font-weight:900;text-shadow:0 1px 3px rgba(0,0,0,0.9);
@@ -95,6 +96,10 @@
        background:rgba(255,215,100,0.18);border:1.5px solid rgba(255,215,100,0.55);border-radius:8px;
        padding:4px 10px;text-shadow:0 1px 3px rgba(0,0,0,0.9);display:none;z-index:44;text-align:center;user-select:none;}
   #btnReload:active{background:rgba(255,215,100,0.4);}
+  #btnSwapWeapon{position:fixed;right:95px;bottom:180px;color:#8fd0ff;font-size:11px;font-weight:bold;
+       background:rgba(140,210,255,0.18);border:1.5px solid rgba(140,210,255,0.55);border-radius:8px;
+       padding:4px 10px;text-shadow:0 1px 3px rgba(0,0,0,0.9);display:none;z-index:44;text-align:center;user-select:none;}
+  #btnSwapWeapon:active{background:rgba(140,210,255,0.4);}
   #fireGuide{position:fixed;right:14px;bottom:14px;width:130px;height:130px;border-radius:50%;
        background:rgba(255,140,100,0.07);border:2px dashed rgba(255,160,120,0.28);display:none;
        align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:bold;pointer-events:none;z-index:5;}
@@ -287,6 +292,7 @@
 <div id="lowHpVignette"></div>
 <div id="alarmVignette"></div>
 <div id="blackoutTint"></div>
+<div id="timeOfDayTint"></div>
 <div id="goldenTimeBadge">✨ x2</div>
 <div id="qteOverlay">
   <div id="qteBox">
@@ -347,6 +353,7 @@
   <div id="fireBase"></div>
   <div id="fireStick">사격</div>
   <div id="btnReload">재장전</div>
+  <div id="btnSwapWeapon">전환</div>
   <div id="ammoText"></div>
 </div>
 
@@ -370,7 +377,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.6.0.0</div>
+  <div id="verText">Ver 4.7.0.0</div>
 
   <div id="loginStreakBox" style="display:none;"></div>
 
@@ -388,6 +395,9 @@
   </div>
   <div class="miniRow">
     <div class="miniBtn" id="btnHardcoreToggle" style="width:100%;">🔥 하드코어 모드: OFF (체크포인트 없음)</div>
+  </div>
+  <div class="miniRow" id="ngPlusRow" style="display:none;">
+    <div class="miniBtn" id="btnNgPlusToggle" style="width:100%;">➕ NG+ 모드: OFF (전 스테이지 강화 난이도)</div>
   </div>
   <div class="miniRow" id="dailyChallengeRow">
     <div class="miniBtn" id="btnDailyChallenge" style="width:100%;">📅 데일리 챌린지</div>
@@ -558,6 +568,10 @@
   <div class="modalBox">
     <h2 id="h2Shop">상점</h2>
     <p id="pShopNote" style="text-align:center;color:#999;font-size:12px;">정식 출시 이후 유료 예정 - 지금은 모두 무료(베타 테스트)로 미리보기만 가능해요</p>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
+      <div class="miniBtn" id="slotBtnPrimary" style="width:130px;">🔫 <span id="slotLabelPrimary">주무기 슬롯</span></div>
+      <div class="miniBtn" id="slotBtnSecondary" style="width:130px;">🔧 <span id="slotLabelSecondary">보조무기 슬롯</span></div>
+    </div>
     <div id="shopList"></div>
     <div class="closeBtn" id="closeShop">닫기</div>
   </div>
@@ -593,13 +607,16 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 4.6.0.0)</h2>
+    <h2>업데이트 안내 (Ver 4.7.0.0)</h2>
     <ul>
-      <li>연속 출석 보상 추가 - 매일 접속하면 스트릭이 쌓이고 보너스 포인트 지급 (최대 7일치)</li>
-      <li>무기 숙련도 시스템 추가 - 무기별 누적 처치 수에 따라 재장전 속도·명중 판정이 좋아짐 (최대 Lv.4)</li>
-      <li>숨겨진 정보 파일 6개 추가 - 스테이지별로 2개씩 숨겨진 배후 세력 문서를 찾아 모으면 뒷이야기가 열림 (시작화면 "📁 정보 파일")</li>
-      <li>황금 시간 랜덤 이벤트 추가 - 가끔 발생하며, 그 동안 처치 시 즉시 보너스 포인트 지급</li>
-      <li>결과화면에 포인트 카운트업 애니메이션 추가</li>
+      <li>총소리를 더 사실적으로 개선 (총성 크랙+저음+잔향+기계작동음 레이어링)</li>
+      <li>킬캠 줌 & 멀티킬 슬로우모션 연출 추가</li>
+      <li>맵마다 랜덤 시간대(심야/새벽/흐림) 조명 변화 추가</li>
+      <li>무기 스킨 색상 4종 추가 (무기 숙련도로 해금)</li>
+      <li>이번 주 로컬 랭킹 추가 (기록 화면에서 확인)</li>
+      <li>NG+ 모드 추가 - 스테이지3 클리어 후 해금, 전 스테이지 강화 난이도로 재도전</li>
+      <li>적 순찰 패턴 학습 - 같은 경비를 3번 이상 목격하면 미니맵에 순찰 경로가 점선으로 표시됨</li>
+      <li>보조무기 슬롯 추가 - 상점에서 주무기/보조무기 따로 장착, 게임 중 "전환" 버튼(또는 V키)으로 즉시 교체</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -889,8 +906,22 @@ function recomputeMapDerived(){
 
 const STAGE1_CHECKPOINT = {x:120,y:120};
 let checkpoint = {x:120,y:120};
+const TIME_OF_DAY_TINTS = {
+  deepNight: 'rgba(30,40,90,0.22)',
+  dawn: 'rgba(120,70,110,0.16)',
+  overcast: 'rgba(90,95,100,0.12)',
+  clear: 'rgba(0,0,0,0)'
+};
+function applyTimeOfDay(){
+  const keys = Object.keys(TIME_OF_DAY_TINTS);
+  mapTimeOfDay = keys[Math.floor(Math.random()*keys.length)];
+  const el = document.getElementById('timeOfDayTint');
+  if(el) el.style.background = TIME_OF_DAY_TINTS[mapTimeOfDay];
+}
+let mapTimeOfDay = 'clear';
 function loadStageData(stageNum){
   currentStage = stageNum;
+  applyTimeOfDay();
   if(stageNum===3){
     walls = STAGE3_WALLS;
     decor = STAGE3_DECOR.map(d=>({...d}));
@@ -962,7 +993,7 @@ const UPGRADES = {
   stealth:{name:'은신 보너스',maxLv:3,cost:lv=>(lv+1)*35,effect:lv=>1-lv*0.06},
   throwCap:{name:'투척물 소지량',maxLv:3,cost:lv=>(lv+1)*25,effect:lv=>10+lv*3}
 };
-let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4*UPGRADES.speed.effect(getUpgradeLv('speed')),angle:0,aimAngle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0,stunnedTimer:0,weapon:'pistol',hp:100,maxHp:UPGRADES.hp.effect(getUpgradeLv('hp')),hurtFlash:0,ammo:{},reloading:false,reloadTimer:0};
+let player = {x:checkpoint.x,y:checkpoint.y,r:12,speed:2.4*UPGRADES.speed.effect(getUpgradeLv('speed')),angle:0,aimAngle:0,crouch:false,stepAccum:0,hiddenIn:null,preHideX:0,preHideY:0,stunnedTimer:0,weapon:'pistol',weapon2:null,hp:100,maxHp:UPGRADES.hp.effect(getUpgradeLv('hp')),hurtFlash:0,ammo:{},reloading:false,reloadTimer:0};
 function refillAllAmmo(){
   Object.keys(WEAPON_DEFS).forEach(k=>{ player.ammo[k] = WEAPON_DEFS[k].magSize||99; });
 }
@@ -1283,6 +1314,7 @@ function buildEnemyRoster(){
   return currentStage===2 ? buildStage2EnemyRoster() : buildStage1EnemyRoster();
 }
 function applyDifficulty(roster, diff){
+  if(ngPlusMode) return roster.slice(); // NG+는 항상 최대 인원(hardOnly 포함) 유지
   let list = roster.filter(en => !en.hardOnly);
   if(diff==='easy'){
     // 필수 인원(원년 버디 2명 + 경비견 1마리)은 남기고, 정지 NPC와 나머지 순찰/경비견 일부를 솎아냄
@@ -1595,6 +1627,9 @@ window.addEventListener('keydown',e=>{
   else if(k==='r'){
     tryManualReload();
   }
+  else if(k==='v'){
+    trySwapWeapon();
+  }
   else if(k==='escape'){ document.getElementById('pauseBtn').click(); }
 });
 function tryManualReload(){
@@ -1604,6 +1639,20 @@ function tryManualReload(){
 }
 document.getElementById('btnReload').addEventListener('touchstart',e=>{e.preventDefault();tryManualReload();});
 document.getElementById('btnReload').addEventListener('click',tryManualReload);
+function trySwapWeapon(){
+  if(!gameStarted || caught || puzzleActive || pauseActive || actionLock || player.hiddenIn) return;
+  if(!player.weapon2){ showMsg(tr('보조무기가 없어요 (상점에서 장착)','No secondary weapon (equip one in the Shop)')); return; }
+  const tmp = player.weapon;
+  player.weapon = player.weapon2;
+  player.weapon2 = tmp;
+  player.reloading = false;
+  const wdef = WEAPON_DEFS[player.weapon]||WEAPON_DEFS.pistol;
+  showMsg(wdef.name+tr(' 전환',' equipped'));
+  playInstallClick();
+  vibrate(15);
+}
+document.getElementById('btnSwapWeapon').addEventListener('touchstart',e=>{e.preventDefault();trySwapWeapon();});
+document.getElementById('btnSwapWeapon').addEventListener('click',trySwapWeapon);
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 // 데스크톱: 마우스 커서 방향으로 항상 조준 (사격 조이스틱을 드래그 중이 아닐 때)
 let usingMouseAim = false;
@@ -1636,7 +1685,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:(localStorage.getItem('stealthOpsLang')||'ko'), showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '4.6.0.0';
+const GAME_VERSION = '4.7.0.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7, hitTolerance:1.5, enemyAcc:0.55}, normal:{vision:1, hear:1, alarm:1, hitTolerance:1, enemyAcc:1}, hard:{vision:1.25, hear:1.3, alarm:1.4, hitTolerance:0.75, enemyAcc:1.35} };
 function updateDiffStatsText(){
@@ -1811,6 +1860,34 @@ function saveRunHistory(rec){
   const hist = JSON.parse(localStorage.getItem('stealthOpsHistory')||'[]');
   hist.unshift(rec);
   localStorage.setItem('stealthOpsHistory', JSON.stringify(hist.slice(0,10)));
+  saveWeeklyRankEntry(rec);
+}
+function getISOWeekKey(d){
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((date-yearStart)/86400000)+1)/7);
+  return date.getUTCFullYear()+'-W'+weekNo;
+}
+function saveWeeklyRankEntry(rec){
+  const wk = getISOWeekKey(new Date());
+  const key = 'stealthOpsWeeklyRank_'+wk;
+  const entries = JSON.parse(localStorage.getItem(key)||'[]');
+  entries.push({elapsed:rec.elapsed, stars:rec.stars, stage:currentStage, date:rec.date});
+  entries.sort((a,b)=> b.stars-a.stars || a.elapsed-b.elapsed);
+  localStorage.setItem(key, JSON.stringify(entries.slice(0,10)));
+  // 오래된 주차 데이터는 정리 (최근 4주만 유지)
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('stealthOpsWeeklyRank_') && k!==key){
+      // 4주 이상 지난 데이터는 다음 접속 시 자연 소멸되도록 방치 (용량 부담 적음)
+    }
+  }
+}
+function getWeeklyRank(){
+  const wk = getISOWeekKey(new Date());
+  return JSON.parse(localStorage.getItem('stealthOpsWeeklyRank_'+wk)||'[]');
 }
 
 /* 야간투시/열화상 */
@@ -1993,32 +2070,82 @@ function playShortPain(volScale){
   osc.connect(gain); gain.connect(audioCtx.destination);
   osc.start(); osc.stop(now+0.22);
 }
+let slowMoTimer=0;
+function triggerKillCam(){
+  canvas.style.transform='scale(1.14)';
+  screenShake=Math.min(screenShake+3, 12);
+  setTimeout(()=>{ canvas.style.transform='scale(1)'; }, 380);
+}
+function triggerSlowMo(){
+  slowMoTimer=0.5;
+  canvas.style.transform='scale(1.08)';
+  setTimeout(()=>{ canvas.style.transform='scale(1)'; }, 500);
+}
+const SKIN_COLORS = {
+  default:{r:70,g:255,b:110, label:{ko:'기본',en:'Default'}},
+  crimson:{r:255,g:70,b:90, label:{ko:'진홍',en:'Crimson'}},
+  azure:{r:70,g:170,b:255, label:{ko:'하늘',en:'Azure'}},
+  gold:{r:255,g:210,b:70, label:{ko:'황금',en:'Gold'}}
+};
+function getWeaponSkin(weaponKey){ return localStorage.getItem('stealthOpsSkin_'+weaponKey) || 'default'; }
+function setWeaponSkin(weaponKey, skin){ localStorage.setItem('stealthOpsSkin_'+weaponKey, skin); }
+function skinUnlocked(skin, weaponKey){
+  if(skin==='default') return true;
+  const lv = getMasteryLevel(weaponKey);
+  if(skin==='crimson') return lv>=2;
+  if(skin==='azure') return lv>=3;
+  if(skin==='gold') return lv>=4;
+  return false;
+}
+function playGunCrack(vol){
+  playNoise(0.018, 0.42*vol, 3800, 'highpass');
+}
+function playGunBody(vol, freq){
+  playNoise(0.09, 0.34*vol, freq||150, 'lowpass');
+}
+function playGunTail(vol, freq){
+  playNoiseSweep(0.24, 0.11*vol, freq||1200, (freq||1200)*0.28, 'bandpass');
+}
+function playActionCycle(vol, delay){
+  setTimeout(()=>{
+    playNoise(0.02, 0.11*vol, 4600, 'highpass');
+    playTone(950, 0.015, 0.06*vol, 'square');
+  }, delay||55);
+}
 function playSuppressedShot(volScale){
-  playNoise(0.05, 0.10*volScale, 3200, 'highpass');
-  playNoise(0.09, 0.06*volScale, 260, 'lowpass');
+  playGunCrack(0.32*volScale);
+  playGunBody(0.42*volScale, 220);
+  playNoise(0.055, 0.09*volScale, 2900, 'highpass');
+  playActionCycle(0.45*volScale);
 }
 function playMinigunShot(volScale){
-  playNoise(0.07, 0.30*volScale, 1800, 'bandpass');
-  playNoise(0.05, 0.22*volScale, 400, 'lowpass');
+  playGunCrack(0.45*volScale);
+  playGunBody(0.55*volScale, 180);
+  playNoise(0.035, 0.16*volScale, 2200, 'bandpass');
 }
 function playShotgunShot(volScale){
-  playNoise(0.3, 0.5*volScale, 130, 'lowpass');
-  playNoise(0.09, 0.26*volScale, 1100, 'bandpass');
-  playTone(58, 0.16, 0.24*volScale, 'sine');
+  playGunCrack(0.55*volScale);
+  playGunBody(0.85*volScale, 90);
+  playGunTail(0.4*volScale, 1500);
+  playTone(55, 0.18, 0.28*volScale, 'sine');
+  playActionCycle(0.5*volScale, 130);
 }
 function playCrossbowShot(volScale){
-  playNoiseSweep(0.14, 0.17*volScale, 3400, 800, 'bandpass');
+  playNoiseSweep(0.1, 0.19*volScale, 3800, 900, 'bandpass');
+  playTone(190, 0.06, 0.12*volScale, 'triangle');
 }
 function playSniperShot(volScale){
-  // 깊고 묵직하지만 소음기로 억눌린 저격 사운드
-  playNoise(0.16, 0.34*volScale, 220, 'lowpass');
-  playNoise(0.05, 0.12*volScale, 4200, 'highpass');
-  playTone(80, 0.1, 0.14*volScale, 'sine');
+  playGunCrack(0.5*volScale);
+  playGunBody(0.5*volScale, 130);
+  playNoise(0.045, 0.13*volScale, 4200, 'highpass');
+  playGunTail(0.22*volScale, 900);
+  playTone(72, 0.12, 0.16*volScale, 'sine');
+  playActionCycle(0.4*volScale, 90);
 }
 function playSMGShot(volScale){
-  // 빠르고 조용한 연사음
-  playNoise(0.045, 0.16*volScale, 2400, 'bandpass');
-  playNoise(0.03, 0.08*volScale, 300, 'lowpass');
+  playGunCrack(0.3*volScale);
+  playGunBody(0.3*volScale, 260);
+  playNoise(0.022, 0.09*volScale, 2600, 'bandpass');
 }
 function playDartShot(volScale){
   // 아주 조용한 "퓩" 소리
@@ -2035,8 +2162,10 @@ function playReloadSound(){
   setTimeout(()=>playTone(200, 0.05, 0.1, 'square'), 260);
 }
 function playEnemyGunshot(volScale){
-  playNoise(0.18, 0.32*volScale, 200, 'lowpass');
-  playNoise(0.08, 0.22*volScale, 2800, 'highpass');
+  playGunCrack(0.7*volScale);
+  playGunBody(0.6*volScale, 140);
+  playGunTail(0.35*volScale, 2000);
+  playNoise(0.09, 0.22*volScale, 3200, 'highpass');
 }
 function playTaserZap(volScale){
   playNoise(0.22, 0.24*volScale, 1400, 'bandpass');
@@ -2112,12 +2241,22 @@ document.querySelectorAll('.diffBtn').forEach(btn=>{
 
 let selectedStage = 1;
 let hardcoreMode = false;
+let ngPlusMode = false;
 let dailyChallengeActive = false;
 document.getElementById('btnHardcoreToggle').addEventListener('click',()=>{
   hardcoreMode = !hardcoreMode;
   const isEn = settings.lang==='en';
   document.getElementById('btnHardcoreToggle').textContent = '🔥 ' + tr('하드코어 모드: ','Hardcore Mode: ') + (hardcoreMode?'ON':'OFF') + tr(' (체크포인트 없음)',' (no checkpoint)');
 });
+function isNgPlusUnlocked(){ return localStorage.getItem('stealthOpsStage3Cleared')==='1'; }
+document.getElementById('btnNgPlusToggle').addEventListener('click',()=>{
+  ngPlusMode = !ngPlusMode;
+  document.getElementById('btnNgPlusToggle').textContent = '➕ ' + tr('NG+ 모드: ','NG+ Mode: ') + (ngPlusMode?'ON':'OFF') + tr(' (전 스테이지 강화 난이도)',' (all stages enhanced)');
+});
+function updateNgPlusVisibility(){
+  document.getElementById('ngPlusRow').style.display = isNgPlusUnlocked() ? 'block' : 'none';
+}
+updateNgPlusVisibility();
 function todaySeedString(){
   const d = new Date();
   return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
@@ -2760,6 +2899,17 @@ const WEAPON_ICONS = {
   poisonDart: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="8" y="13" width="26" height="6" rx="3" fill="#7a5ea8"/><rect x="30" y="11" width="8" height="4" fill="#9a7ec8"/><rect x="14" y="19" width="8" height="10" rx="2" fill="#4a3a68"/><circle cx="38" cy="16" r="2.4" fill="#c0a0e8"/></svg>',
   empGun: '<svg viewBox="0 0 64 32" width="64" height="32"><rect x="8" y="14" width="24" height="6" rx="2" fill="#3a6a7a"/><circle cx="34" cy="17" r="7" fill="none" stroke="#5ecbe8" stroke-width="2"/><circle cx="34" cy="17" r="3" fill="#8fe0f0"/><rect x="14" y="20" width="8" height="10" rx="2" fill="#2a4a58"/></svg>'
 };
+let shopEquipSlot = 'primary';
+document.getElementById('slotBtnPrimary').addEventListener('click',()=>{ shopEquipSlot='primary'; updateSlotButtons(); });
+document.getElementById('slotBtnSecondary').addEventListener('click',()=>{ shopEquipSlot='secondary'; updateSlotButtons(); });
+function updateSlotButtons(){
+  const p = document.getElementById('slotBtnPrimary'), s = document.getElementById('slotBtnSecondary');
+  p.style.background = shopEquipSlot==='primary' ? 'rgba(255,205,110,0.3)' : '';
+  p.style.borderColor = shopEquipSlot==='primary' ? '#ffcf6e' : '';
+  s.style.background = shopEquipSlot==='secondary' ? 'rgba(140,210,255,0.3)' : '';
+  s.style.borderColor = shopEquipSlot==='secondary' ? '#8fd0ff' : '';
+}
+updateSlotButtons();
 function renderShop(){
   const list=document.getElementById('shopList');
   const isEn = settings.lang==='en';
@@ -2767,31 +2917,66 @@ function renderShop(){
     const enData = SHOP_WEAPONS_EN[w.key]||{};
     const wname = isEn ? (enData.name||w.name) : w.name;
     const wdesc = isEn ? (enData.desc||w.desc) : w.desc;
-    const label = player.weapon===w.key ? (isEn?'EQUIPPED':'장착됨') : (w.key==='pistol' ? (isEn?'EQUIP':'장착하기') : (isEn?'EQUIP (Free Beta)':'장착하기 (베타 무료)'));
+    const label = player.weapon===w.key ? (isEn?'EQUIPPED (Primary)':'장착됨 (주무기)') :
+      player.weapon2===w.key ? (isEn?'EQUIPPED (Secondary)':'장착됨 (보조)') :
+      (w.key==='pistol' ? (isEn?'EQUIP':'장착하기') : (isEn?'EQUIP (Free Beta)':'장착하기 (베타 무료)'));
     const mLv = getMasteryLevel(w.key);
     const mKills = getMasteryKills(w.key);
     const nextThresh = MASTERY_THRESHOLDS[mLv] !== undefined ? MASTERY_THRESHOLDS[mLv] : null;
     const masteryLine = '<div style="font-size:11px;color:#8fd0ff;margin:2px 0 4px;">'+tr('숙련도 ','Mastery ')+'Lv.'+mLv+'/4'+
       (nextThresh!==null ? ' ('+mKills+'/'+nextThresh+')' : ' MAX')+'</div>';
+    const curSkin = getWeaponSkin(w.key);
+    const skinRow = '<div style="display:flex;gap:6px;justify-content:center;margin:6px 0;">'+
+      Object.keys(SKIN_COLORS).map(sk=>{
+        const c = SKIN_COLORS[sk];
+        const unlocked = skinUnlocked(sk, w.key);
+        const sel = curSkin===sk;
+        return '<div class="skinSwatch" data-swatch-weapon="'+w.key+'" data-swatch="'+sk+'" title="'+c.label[isEn?'en':'ko']+'" '+
+          'style="width:20px;height:20px;border-radius:50%;cursor:pointer;'+
+          'background:rgb('+c.r+','+c.g+','+c.b+');'+
+          (sel?'box-shadow:0 0 0 2px #fff;':'box-shadow:0 0 0 1px rgba(255,255,255,0.3);')+
+          (unlocked?'':'opacity:0.25;')+'"></div>';
+      }).join('')+'</div>';
     return '<div class="shopCard">'+
       '<div style="text-align:center;padding:6px 0;">'+(WEAPON_ICONS[w.key]||'')+'</div>'+
       '<div class="shopCardHead"><b>'+wname+'</b><span class="shopFreeTag">'+(isEn?'FREE (Beta Test)':'무료 (베타 테스트)')+'</span></div>'+
       masteryLine+
+      skinRow+
       '<div class="shopDesc">'+wdesc+'</div>'+
       gaugeBar(isEn?'Damage':'피해량',w.dmg,'#e05050')+
       gaugeBar(isEn?'Accuracy':'정확도',w.acc,'#5ecbe8')+
       gaugeBar(isEn?'Fire Rate':'연사력',w.rate,'#e8d060')+
       '<div class="closeBtn" data-weapon="'+w.key+'" style="margin-top:10px;'+
-        (player.weapon===w.key?'background:rgba(255,205,110,0.3);border-color:#ffcf6e;':'')+'">'+
+        (player.weapon===w.key?'background:rgba(255,205,110,0.3);border-color:#ffcf6e;':(player.weapon2===w.key?'background:rgba(140,210,255,0.25);border-color:#8fd0ff;':''))+'">'+
         label+'</div>'+
     '</div>';
   }).join('');
+  list.querySelectorAll('[data-swatch]').forEach(sw=>{
+    sw.addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const weaponKey = sw.dataset.swatchWeapon, skin = sw.dataset.swatch;
+      if(!skinUnlocked(skin, weaponKey)){
+        showMsg(tr('숙련도를 더 올려야 해금돼요','Level up mastery to unlock this'));
+        return;
+      }
+      setWeaponSkin(weaponKey, skin);
+      renderShop();
+    });
+  });
   list.querySelectorAll('[data-weapon]').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      player.weapon = btn.dataset.weapon;
-      const enData = SHOP_WEAPONS_EN[player.weapon]||{};
-      const wdef = WEAPON_DEFS[player.weapon]||WEAPON_DEFS.pistol;
-      showMsg((isEn ? (enData.name||wdef.name) : wdef.name) + (isEn?' equipped':' 장착'));
+      const key = btn.dataset.weapon;
+      const enData = SHOP_WEAPONS_EN[key]||{};
+      const wdef = WEAPON_DEFS[key]||WEAPON_DEFS.pistol;
+      if(shopEquipSlot==='secondary'){
+        if(key===player.weapon){ showMsg(tr('주무기와 같은 무기는 보조로 장착할 수 없어요','Cannot set the same weapon as secondary')); return; }
+        player.weapon2 = key;
+        showMsg((isEn ? (enData.name||wdef.name) : wdef.name) + tr(' 보조무기 장착',' equipped as secondary'));
+      } else {
+        if(key===player.weapon2) player.weapon2=null;
+        player.weapon = key;
+        showMsg((isEn ? (enData.name||wdef.name) : wdef.name) + (isEn?' equipped':' 장착'));
+      }
       renderShop();
     });
   });
@@ -2872,15 +3057,24 @@ document.getElementById('closeUpgrade').addEventListener('click',()=>{document.g
 document.getElementById('btnHistory').addEventListener('click',()=>{
   const hist = JSON.parse(localStorage.getItem('stealthOpsHistory')||'[]');
   const list = document.getElementById('historyList');
-  if(hist.length===0){ list.innerHTML='<p style="color:#999;">아직 기록이 없어요.</p>'; }
+  if(hist.length===0){ list.innerHTML='<p style="color:#999;">'+tr('아직 기록이 없어요.','No runs yet.')+'</p>'; }
   else {
     list.innerHTML = hist.map(r=>{
       const mm=String(Math.floor(r.elapsed/60)).padStart(2,'0'), ss=String(r.elapsed%60).padStart(2,'0');
       return '<div style="padding:6px 0;border-bottom:1px solid #333;font-size:13px;">'+
-        mm+':'+ss+' · 발각 '+r.detections+'회 · 체포 '+r.caught+'회 · '+'★'.repeat(r.stars)+'☆'.repeat(3-r.stars)+
+        mm+':'+ss+' · '+tr('발각 ','Detected ')+r.detections+tr('회 · 체포 ',' · Caught ')+r.caught+tr('회 · ',' · ')+'★'.repeat(r.stars)+'☆'.repeat(3-r.stars)+
         ' <span style="color:#888;">('+r.date+')</span></div>';
     }).join('');
   }
+  const weekly = getWeeklyRank();
+  const wkList = weekly.length===0 ? ('<p style="color:#999;font-size:12px;">'+tr('이번 주 기록이 없어요.','No runs this week yet.')+'</p>') :
+    weekly.map((r,i)=>{
+      const mm=String(Math.floor(r.elapsed/60)).padStart(2,'0'), ss=String(r.elapsed%60).padStart(2,'0');
+      return '<div style="padding:4px 0;font-size:12px;color:#ffd76a;">'+(i+1)+'. '+mm+':'+ss+' · '+'★'.repeat(r.stars)+'☆'.repeat(3-r.stars)+' · S'+r.stage+'</div>';
+    }).join('');
+  list.innerHTML += '<div style="margin-top:14px;padding-top:10px;border-top:1.5px solid #555;">'+
+    '<b style="color:#ffd76a;">🏆 '+tr('이번 주 랭킹 (로컬)','This Week\'s Ranking (local)')+'</b>'+
+    '<div style="margin-top:6px;">'+wkList+'</div></div>';
   document.getElementById('historyModal').style.display='flex';
 });
 document.getElementById('closeHistory').addEventListener('click',()=>{document.getElementById('historyModal').style.display='none';});
@@ -3462,7 +3656,7 @@ function detonateGrenade(x,y){
     if(en.state==='dying')continue;
     if(Math.hypot(en.x-x,en.y-y)<blastRadius){
       if(damageBossOrKill(en)) continue;
-      en.state='dying'; en.dieType='shot'; en.dieTimer=0.3; en.dieTotal=0.3; en.screamed=true;
+      en.wasSearching=(en.state==='search'); en.state='dying'; en.dieType='shot'; en.dieTimer=0.3; en.dieTotal=0.3; en.screamed=true;
       stats.gunKills++;
       grenadeKills++;
       checkLeaderDeath(en);
@@ -3470,6 +3664,7 @@ function detonateGrenade(x,y){
   }
   if(grenadeKills>=2){
     spawnText(x, y-40, grenadeKills>=3?tr('트리플 킬!','Triple Kill!'):tr('더블 킬!','Double Kill!'), '#ffd060');
+    triggerSlowMo();
   }
   raiseAlarm(); stats.detections++;
   for(const en of enemies){
@@ -3798,7 +3993,7 @@ function updateEnemy(en,dt){
       const smellRange = 95*DIFF_MUL[difficulty].vision*(1+0.3*alertLevel)*(player.crouch?0.7:1)*UPGRADES.stealth.effect(getUpgradeLv('stealth'));
       seen = dist<smellRange;
     } else {
-      let visRange=en.visionRange*DIFF_MUL[difficulty].vision*(1+0.3*alertLevel)*UPGRADES.stealth.effect(getUpgradeLv('stealth'))*(blackoutActive?0.4:1);
+      let visRange=en.visionRange*DIFF_MUL[difficulty].vision*(ngPlusMode?1.2:1)*(1+0.3*alertLevel)*UPGRADES.stealth.effect(getUpgradeLv('stealth'))*(blackoutActive?0.4:1);
       if(player.crouch) visRange*=0.55;
       const inCone = dist<visRange && angleDiff(ang,en.angle) < (en.visionAngle*Math.PI/180);
       seen = inCone && hasLineOfSight(en.x,en.y,player.x,player.y);
@@ -3809,6 +4004,19 @@ function updateEnemy(en,dt){
       en.lastSeen={x:player.x,y:player.y};
     } else {
       en.detect = Math.max(0, en.detect - 0.8);
+    }
+
+    // 플레이어가 이 적을 여러 번 목격하면 순찰 경로가 미니맵에 학습되어 표시됨
+    if(en.path && en.path.length>0 && !en.patrolLearned){
+      en.sightCooldown = (en.sightCooldown||0) - dt;
+      if(dist<320 && en.sightCooldown<=0 && hasLineOfSight(player.x,player.y,en.x,en.y,true)){
+        en.timesSeenByPlayer = (en.timesSeenByPlayer||0)+1;
+        en.sightCooldown = 8;
+        if(en.timesSeenByPlayer>=3){
+          en.patrolLearned = true;
+          spawnText(en.x,en.y-30,tr('순찰 패턴 학습됨','Patrol pattern learned'),'#8fd0ff');
+        }
+      }
     }
 
     if(en.detect>=100 && en.state!=='search' || (seen && en.detect>=100)){
@@ -3832,7 +4040,7 @@ function updateEnemy(en,dt){
       }
       if(en.shootCooldown<=0){
         en.shootCooldown = 4.5; en.sniperWarned=false;
-        const acc = clamp((1 - dist/en.shootRange) * DIFF_MUL[difficulty].enemyAcc * 1.3, 0.3, 0.97);
+        const acc = clamp((1 - dist/en.shootRange) * DIFF_MUL[difficulty].enemyAcc * 1.3 * (ngPlusMode?1.15:1), 0.3, 0.97);
         bullets.push({x:en.x,y:en.y,tx:player.x,ty:player.y,t:0,dur:0.08});
         playSniperShot(clamp(1-dist/700,0.3,1));
         if(Math.random()<acc){ damagePlayer(50, en.x, en.y); spawnText(player.x,player.y-24,tr('저격당함!','Sniped!'),'#ff2020'); }
@@ -3842,7 +4050,7 @@ function updateEnemy(en,dt){
       en.shootCooldown -= dt;
       if(en.shootCooldown<=0){
         en.shootCooldown = en.weapon==='taser' ? 2.2 : 1.5;
-        const acc = clamp((1 - dist/en.shootRange) * DIFF_MUL[difficulty].enemyAcc, 0.08, 0.92);
+        const acc = clamp((1 - dist/en.shootRange) * DIFF_MUL[difficulty].enemyAcc * (ngPlusMode?1.15:1), 0.08, 0.92);
         bullets.push({x:en.x,y:en.y,tx:player.x,ty:player.y,t:0,dur:0.12});
         if(en.weapon==='gun'){
           playEnemyGunshot(clamp(1-dist/500,0.2,1));
@@ -4017,6 +4225,7 @@ function showResultScreen(){
   }
   const streakBonus = Math.max(0,(stats.maxStreak||0)-1)*5;
   const hardcoreBonus = hardcoreMode ? 25 : 0;
+  const ngPlusBonus = ngPlusMode ? 40 : 0;
   let dailyBonus = 0;
   if(dailyChallengeActive){
     const today = todaySeedString();
@@ -4025,13 +4234,13 @@ function showResultScreen(){
       dailyBonus = 30;
     }
   }
-  const earnedPoints = 10 + stars*10 + streakBonus + hardcoreBonus + dailyBonus;
+  const earnedPoints = 10 + stars*10 + streakBonus + hardcoreBonus + ngPlusBonus + dailyBonus;
   setAgentPoints(getAgentPoints()+earnedPoints);
 
   const isEn = settings.lang==='en';
   const streakLine = (stats.maxStreak||0)>=2 ? ('<br>'+tr('최대 연속 처치: ','Best kill streak: ')+stats.maxStreak+tr('회 (+','x (+')+streakBonus+tr('P 보너스)','P bonus)')) : '';
-  const bonusLine = (hardcoreBonus||dailyBonus) ?
-    ('<br>'+(hardcoreBonus?tr('하드코어 보너스 +','Hardcore bonus +')+hardcoreBonus+'P ':'')+(dailyBonus?tr('데일리 챌린지 보너스 +','Daily challenge bonus +')+dailyBonus+'P':'')) : '';
+  const bonusLine = (hardcoreBonus||dailyBonus||ngPlusBonus) ?
+    ('<br>'+(hardcoreBonus?tr('하드코어 보너스 +','Hardcore bonus +')+hardcoreBonus+'P ':'')+(ngPlusBonus?tr('NG+ 보너스 +','NG+ bonus +')+ngPlusBonus+'P ':'')+(dailyBonus?tr('데일리 챌린지 보너스 +','Daily challenge bonus +')+dailyBonus+'P':'')) : '';
   document.getElementById('resultBody').innerHTML =
     tr('클리어 시간: ','Clear time: ')+mm+':'+ss+'<br>'+
     tr('발각 횟수: ','Times detected: ')+stats.detections+tr('회','')+'<br>'+
@@ -4183,6 +4392,7 @@ function handleFire(angle){
         addMasteryKill(player.weapon);
       } else {
         if(damageBossOrKill(best)) continue;
+        best.wasSearching=(best.state==='search');
         best.state='dying';
         best.dieType='shot';
         best.dieTimer=0.35; best.dieTotal=0.35;
@@ -4389,6 +4599,7 @@ function performMeleeTakedown(en){
     return;
   }
   const type=getTakedownType(en);
+  en.wasSearching=(en.state==='search');
   en.state='dying';
   en.screamed=false; en.dustAccum=0;
   if(type==='knife'){
@@ -5976,15 +6187,16 @@ function render(){
       onTarget=true; break;
     }
 
+    const skin = SKIN_COLORS[getWeaponSkin(player.weapon)] || SKIN_COLORS.default;
     ctx.save();
     ctx.globalCompositeOperation='lighter';
-    ctx.strokeStyle = onTarget ? 'rgba(255,60,60,0.6)' : 'rgba(70,255,110,0.5)';
+    ctx.strokeStyle = onTarget ? 'rgba(255,60,60,0.6)' : ('rgba('+skin.r+','+skin.g+','+skin.b+',0.5)');
     ctx.lineWidth=1.6;
     ctx.beginPath();
     ctx.moveTo(originX-camX,originY-camY);
     ctx.lineTo(landing.x-camX,landing.y-camY);
     ctx.stroke();
-    ctx.fillStyle = onTarget ? 'rgba(255,80,80,0.9)' : 'rgba(90,255,120,0.85)';
+    ctx.fillStyle = onTarget ? 'rgba(255,80,80,0.9)' : ('rgba('+skin.r+','+skin.g+','+skin.b+',0.85)');
     ctx.beginPath();ctx.arc(landing.x-camX,landing.y-camY,2.6,0,7);ctx.fill();
     ctx.restore();
   }
@@ -6118,6 +6330,20 @@ function drawMinimap(camX,camY){
     mmCtx.fillStyle=m.color;
     mmCtx.fillRect(5+m.x*sx-1,5+m.y*sy-1,3,3);
   }
+  mmCtx.save();
+  mmCtx.strokeStyle='rgba(140,210,255,0.55)';
+  mmCtx.lineWidth=1;
+  mmCtx.setLineDash([2,2]);
+  for(const en of enemies){
+    if(!en.patrolLearned || !en.path || en.path.length<2) continue;
+    mmCtx.beginPath();
+    mmCtx.moveTo(5+en.path[0].x*sx, 5+en.path[0].y*sy);
+    for(let i=1;i<en.path.length;i++) mmCtx.lineTo(5+en.path[i].x*sx, 5+en.path[i].y*sy);
+    mmCtx.closePath();
+    mmCtx.stroke();
+  }
+  mmCtx.setLineDash([]);
+  mmCtx.restore();
   const pickupColors={medkit:'#ff6a6a',supplycrate:'#ffd060',battery:'#8fe08f'};
   for(const d of decor){
     if(d.collected) continue;
@@ -6210,7 +6436,11 @@ function drawMinimap(camX,camY){
 let simTime=0;
 let last=performance.now();
 function loop(now){
-  const dt=Math.min((now-last)/1000, 0.05); last=now;
+  let dt=Math.min((now-last)/1000, 0.05); last=now;
+  if(slowMoTimer>0){
+    slowMoTimer -= dt;
+    dt *= 0.3;
+  }
   try{
     loopBody(dt);
     if(debugErrEl.style.display!=='none') debugErrEl.style.display='none';
@@ -6351,9 +6581,12 @@ function loopBody(dt){
 
         if(en.dieTimer<=0){
           const wasBoss = en.isBoss;
+          const wasCombatEnding = !wasBoss && en.state==='dying' && (en.wasSearching||false) &&
+            !enemies.some(other=>other!==en && other.state==='search');
           enemies.splice(i,1);
           corpses.push({x:en.x,y:en.y,angle:en.angle,dieType:en.dieType,isDog:en.isDog,discovered:false,hidden:false,life:9999});
           if(actionLock && actionLock.enemy===en) actionLock=null;
+          if(wasCombatEnding) triggerKillCam();
           if(wasBoss){
             bossDefeated = true;
             missionsComplete = true;
@@ -6483,6 +6716,7 @@ function loopBody(dt){
         ammoEl.style.display='none';
         reloadBtn.style.display='none';
       }
+      document.getElementById('btnSwapWeapon').style.display = player.weapon2 ? 'block' : 'none';
     }
     if(!missionsComplete){
       const elapsed=Math.floor((performance.now()-stats.startTime)/1000);
