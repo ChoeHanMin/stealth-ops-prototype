@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0f">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
@@ -193,7 +193,7 @@
   }
 
   #startOverlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-       overflow-y:auto;padding:12px 0;
+       overflow-y:auto;padding:12px 0;padding-top:max(28px, env(safe-area-inset-top));
        background:rgba(6,6,10,0.62);z-index:50;}
   #startTitle{color:#f0e6c8;font-size:38px;font-weight:900;letter-spacing:6px;text-shadow:0 3px 10px #000;margin-bottom:6px;}
   #startSub{color:#c9c2a0;font-size:12px;letter-spacing:3px;margin-bottom:8px;opacity:0.8;}
@@ -212,8 +212,8 @@
   .menuBtn:active{background:rgba(255,205,110,0.25);}
   .menuBtn.primary{background:rgba(255,180,70,0.25);border-color:#ffcf6e;}
 
-  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:60;}
-  .modalBox{width:min(90vw,380px);background:#1b1d17;border:1px solid #4a4536;border-radius:10px;padding:22px;color:#eee;max-height:82vh;overflow:auto;}
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:60;overflow-y:auto;padding:16px 0;box-sizing:border-box;}
+  .modalBox{width:min(90vw,380px);background:#1b1d17;border:1px solid #4a4536;border-radius:10px;padding:22px;color:#eee;max-height:none;overflow:visible;margin:auto;}
   .modalBox h2{margin:0 0 14px;color:#ffcf6e;font-size:18px;letter-spacing:2px;}
   .modalBox p, .modalBox li{font-size:13.5px;line-height:1.7;color:#ddd;}
   .modalBox ul{padding-left:18px;margin:0 0 10px;}
@@ -377,7 +377,7 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.7.0.0</div>
+  <div id="verText">Ver 4.7.1.0</div>
 
   <div id="loginStreakBox" style="display:none;"></div>
 
@@ -440,6 +440,28 @@
 <div class="modal" id="howModal">
   <div class="modalBox">
     <h2 id="h2HowTo">플레이 방법</h2>
+    <div id="controlDiagram" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.04);border-radius:8px;">
+      <div style="text-align:center;width:64px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.4);margin:0 auto 4px;"></div>
+        <div id="cdMove" style="font-size:10px;color:#ccc;">이동</div>
+      </div>
+      <div style="text-align:center;width:64px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,140,100,0.3);border:1.5px solid rgba(255,160,120,0.6);margin:0 auto 4px;"></div>
+        <div id="cdFire" style="font-size:10px;color:#ccc;">사격</div>
+      </div>
+      <div style="text-align:center;width:64px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:rgba(140,180,255,0.2);border:1.5px solid rgba(160,190,255,0.5);margin:0 auto 4px;"></div>
+        <div id="cdCrouch" style="font-size:10px;color:#ccc;">웅크리기</div>
+      </div>
+      <div style="text-align:center;width:64px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:rgba(255,205,110,0.2);border:1.5px solid rgba(255,215,120,0.6);margin:0 auto 4px;"></div>
+        <div id="cdInteract" style="font-size:10px;color:#ccc;">상호작용</div>
+      </div>
+      <div style="text-align:center;width:64px;">
+        <div style="width:40px;height:40px;border-radius:8px;background:rgba(230,210,140,0.2);border:1.5px solid rgba(230,210,140,0.6);margin:0 auto 4px;"></div>
+        <div id="cdThrow" style="font-size:10px;color:#ccc;">투척물</div>
+      </div>
+    </div>
     <ul id="howToList">
       <li>좌측 하단 원형 조이스틱: 이동. 살짝 당기면 걷기(조용), 끝까지 당기면 뛰기(빠르지만 발소리 큼)</li>
       <li>우측 하단 원형 조이스틱(총 아이콘): 조준+사격. 이동 조이스틱과 완전히 독립적이라, 걸어가는 방향과 다른 방향으로 조준/사격 가능. 손을 떼는 순간 그 방향으로 발사됨</li>
@@ -471,6 +493,7 @@
       <li>시체를 다른 적이 발견하면 알람. 발각되면 수색 시작, 잡히면 체크포인트에서 재시작</li>
       <li>일시정지 버튼(⏸)으로 언제든 멈출 수 있음</li>
     </ul>
+    <div class="closeBtn" id="closeHow">닫기</div>
   </div>
 </div>
 <div class="modal" id="devModal">
@@ -478,6 +501,7 @@
     <h2 id="h2Dev">개발자</h2>
     <p>최한민<br>Computer Engineering &amp; Science, 한국외국어대학교</p>
     <p id="pDevDesc">혼자 기획부터 개발까지 진행한 2D 탑다운 스텔스 게임 프로토타입입니다. 플레이해주셔서 감사합니다.</p>
+    <div class="closeBtn" id="closeDev">닫기</div>
   </div>
 </div>
 <div class="modal" id="settingsModal">
@@ -564,6 +588,16 @@
     </div>
   </div>
 </div>
+<div class="modal" id="confirmExitHomeModal">
+  <div class="modalBox" style="max-width:300px;text-align:center;">
+    <h2 id="h2ConfirmExitHome" style="font-size:16px;">진행 중인 플레이를 나가시겠습니까?</h2>
+    <p id="pConfirmExitHome" style="font-size:13px;color:#ddd;line-height:1.6;">저장되지 않은 진행사항은 사라질 수 있어요.</p>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;">
+      <div class="menuBtn" id="btnConfirmExitHomeYes" style="width:100px;border-color:rgba(255,110,110,0.6);">예</div>
+      <div class="menuBtn" id="btnConfirmExitHomeNo" style="width:100px;">아니오</div>
+    </div>
+  </div>
+</div>
 <div class="modal" id="shopModal">
   <div class="modalBox">
     <h2 id="h2Shop">상점</h2>
@@ -607,16 +641,17 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 4.7.0.0)</h2>
+    <h2>업데이트 안내 (Ver 4.7.1.0)</h2>
     <ul>
-      <li>총소리를 더 사실적으로 개선 (총성 크랙+저음+잔향+기계작동음 레이어링)</li>
-      <li>킬캠 줌 & 멀티킬 슬로우모션 연출 추가</li>
-      <li>맵마다 랜덤 시간대(심야/새벽/흐림) 조명 변화 추가</li>
-      <li>무기 스킨 색상 4종 추가 (무기 숙련도로 해금)</li>
-      <li>이번 주 로컬 랭킹 추가 (기록 화면에서 확인)</li>
-      <li>NG+ 모드 추가 - 스테이지3 클리어 후 해금, 전 스테이지 강화 난이도로 재도전</li>
-      <li>적 순찰 패턴 학습 - 같은 경비를 3번 이상 목격하면 미니맵에 순찰 경로가 점선으로 표시됨</li>
-      <li>보조무기 슬롯 추가 - 상점에서 주무기/보조무기 따로 장착, 게임 중 "전환" 버튼(또는 V키)으로 즉시 교체</li>
+      <li>영어 모드에서 일부 한국어가 남아있던 문제 수정 (정보 파일, 상호작용 버튼, 미션/탄약 표시 등)</li>
+      <li>시작화면 제목이 상단에서 잘리던 문제 수정</li>
+      <li>"포인트 부족" 등 안내 메시지가 화면에 계속 남아있던 문제 수정</li>
+      <li>일시정지해도 미션 타이머가 계속 흐르던 문제 수정</li>
+      <li>일시정지 중 설정을 열면 화면이 안 바뀌는 것처럼 보이던 문제 수정</li>
+      <li>플레이 방법 등에서 뒤로가기 버튼을 누르면 앱이 종료되던 문제 수정</li>
+      <li>플레이 방법·개발자 화면에 닫기 버튼 추가, 조작 다이어그램 추가</li>
+      <li>가로모드에서 일시정지 카드 하단 버튼이 잘리던 문제 수정</li>
+      <li>홈 화면으로 나가기 전에 확인 메시지가 뜨도록 추가</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -1685,7 +1720,7 @@ enemies.forEach((e,i)=>e._id=i);
 
 let settings = {sfxVol:1, bgmVol:0.5, joySens:1, leftHanded:false, highContrast:false, lowSpec:false, btnScale:1, vibeLevel:'normal', lang:(localStorage.getItem('stealthOpsLang')||'ko'), showEnemyVision:false, showPatrolPaths:false, colorblind:false, largeText:false};
 let stats = {startTime:0, detections:0, caughtCount:0, knifeKills:0, chokeKills:0, gunKills:0};
-const GAME_VERSION = '4.7.0.0';
+const GAME_VERSION = '4.7.1.0';
 let difficulty = 'normal';
 const DIFF_MUL = { easy:{vision:0.75, hear:0.75, alarm:0.7, hitTolerance:1.5, enemyAcc:0.55}, normal:{vision:1, hear:1, alarm:1, hitTolerance:1, enemyAcc:1}, hard:{vision:1.25, hear:1.3, alarm:1.4, hitTolerance:0.75, enemyAcc:1.35} };
 function updateDiffStatsText(){
@@ -2443,6 +2478,7 @@ function beginGameplay(opts){
     if(d.type==='lockedCabinet') d.locked=true;
   });
   alarmRaised=false; alertLevel=0; actionLock=null; caught=false; missionsComplete=false;
+  pauseActive=false; pauseStartedAt=null;
   blackoutActive=false; blackoutEventTimer=45+Math.random()*40;
   goldenTimeActive=false; goldenTimeEventTimer=70+Math.random()*50;
   dashActive=false; dashTimer=0; dashCooldown=0; player.dashInvuln=false;
@@ -2665,11 +2701,24 @@ function showStartScreenMsg(text){
 }
 
 document.getElementById('btnHow').addEventListener('click',()=>{document.getElementById('howModal').style.display='flex';});
+document.getElementById('closeHow').addEventListener('click',()=>{
+  document.getElementById('howModal').style.display='none';
+  if(howOpenedFromPause){ howOpenedFromPause=false; document.getElementById('pauseModal').style.display='flex'; }
+});
+document.getElementById('closeDev').addEventListener('click',()=>{document.getElementById('devModal').style.display='none';});
 document.getElementById('btnDev').addEventListener('click',()=>{document.getElementById('devModal').style.display='flex';});
 document.getElementById('gearBtn').addEventListener('click',()=>{document.getElementById('settingsModal').style.display='flex'; updateDiffStatsText();});
 document.getElementById('howModal').addEventListener('click',e=>{if(e.target.id==='howModal')e.target.style.display='none';});
 document.getElementById('devModal').addEventListener('click',e=>{if(e.target.id==='devModal')e.target.style.display='none';});
-document.getElementById('closeSettings').addEventListener('click',()=>{document.getElementById('settingsModal').style.display='none';});
+let settingsOpenedFromPause = false;
+let howOpenedFromPause = false;
+document.getElementById('closeSettings').addEventListener('click',()=>{
+  document.getElementById('settingsModal').style.display='none';
+  if(settingsOpenedFromPause){
+    settingsOpenedFromPause = false;
+    document.getElementById('pauseModal').style.display='flex';
+  }
+});
 document.getElementById('closeResult').addEventListener('click',()=>{document.getElementById('resultModal').style.display='none';});
 
 document.getElementById('sfxSlider').addEventListener('input',e=>{settings.sfxVol=parseFloat(e.target.value);});
@@ -2805,10 +2854,27 @@ function doRestartFresh(){
 }
 document.getElementById('btnConfirmRestartFreshYes').addEventListener('touchstart',e=>{e.preventDefault();doRestartFresh();});
 document.getElementById('btnConfirmRestartFreshYes').addEventListener('click',doRestartFresh);
-document.getElementById('btnPauseSettings').addEventListener('click',()=>{document.getElementById('settingsModal').style.display='flex'; updateDiffStatsText();});
-document.getElementById('btnPauseHow').addEventListener('click',()=>{document.getElementById('howModal').style.display='flex';});
+document.getElementById('btnPauseSettings').addEventListener('click',()=>{
+  document.getElementById('pauseModal').style.display='none';
+  settingsOpenedFromPause = true;
+  document.getElementById('settingsModal').style.display='flex';
+  updateDiffStatsText();
+});
+document.getElementById('btnPauseHow').addEventListener('click',()=>{
+  document.getElementById('pauseModal').style.display='none';
+  howOpenedFromPause = true;
+  document.getElementById('howModal').style.display='flex';
+});
 document.getElementById('btnGoHome').addEventListener('click',()=>{
+  document.getElementById('pauseModal').style.display='none';
+  document.getElementById('confirmExitHomeModal').style.display='flex';
+});
+document.getElementById('btnConfirmExitHomeYes').addEventListener('click',()=>{
   location.reload();
+});
+document.getElementById('btnConfirmExitHomeNo').addEventListener('click',()=>{
+  document.getElementById('confirmExitHomeModal').style.display='none';
+  document.getElementById('pauseModal').style.display='flex';
 });
 function doExecCheckpoint(){
   try{ respawn(); }
@@ -3158,6 +3224,22 @@ const STATE_LABELS = {
   exec:{ko:'처형됨',en:'Executed'}
 };
 const STATIC_TEXT = {
+  cdMove:{ko:'이동',en:'Move'},
+  cdFire:{ko:'사격',en:'Fire'},
+  cdCrouch:{ko:'웅크리기',en:'Crouch'},
+  cdInteract:{ko:'상호작용',en:'Interact'},
+  cdThrow:{ko:'투척물',en:'Throwable'},
+  h2ConfirmExitHome:{ko:'진행 중인 플레이를 나가시겠습니까?',en:'Leave this run?'},
+  pConfirmExitHome:{ko:'저장되지 않은 진행사항은 사라질 수 있어요.',en:'Unsaved progress may be lost.'},
+  btnConfirmExitHomeYes:{ko:'예',en:'Yes'},
+  btnConfirmExitHomeNo:{ko:'아니오',en:'No'},
+  closeHow:{ko:'닫기',en:'Close'},
+  closeDev:{ko:'닫기',en:'Close'},
+  h2Intel:{ko:'정보 파일',en:'Intel Files'},
+  closeIntel:{ko:'닫기',en:'Close'},
+  btnIntelArchive:{ko:'📁 정보 파일',en:'📁 Intel Files'},
+  btnDash:{ko:'대시',en:'Dash'},
+  btnSwapWeapon:{ko:'전환',en:'Swap'},
   rotateCloseBtn:{ko:'닫기',en:'Close'},
   qteLabel:{ko:'위기! 탭해서 탈출!',en:'Danger! Tap to escape!'},
   closeLockpick:{ko:'포기',en:'Give Up'},
@@ -3281,6 +3363,14 @@ function applyLanguage(){
   if(langBtn) langBtn.textContent = '🌐 ' + (lang==='en' ? 'English / 한국어' : '한국어 / English');
   const nameInput = document.getElementById('playerNameInput');
   if(nameInput) nameInput.placeholder = lang==='en' ? 'Enter your name' : '이름을 입력하세요';
+  const interactEl = document.getElementById('interactBtn');
+  if(interactEl) interactEl.innerHTML = lang==='en' ? 'Interact' : '상호<br>작용';
+  const hcBtn = document.getElementById('btnHardcoreToggle');
+  if(hcBtn) hcBtn.textContent = '🔥 ' + tr('하드코어 모드: ','Hardcore Mode: ') + (hardcoreMode?'ON':'OFF') + tr(' (체크포인트 없음)',' (no checkpoint)');
+  const ngBtn = document.getElementById('btnNgPlusToggle');
+  if(ngBtn) ngBtn.textContent = '➕ ' + tr('NG+ 모드: ','NG+ Mode: ') + (ngPlusMode?'ON':'OFF') + tr(' (전 스테이지 강화 난이도)',' (all stages enhanced)');
+  const dailyBtn = document.getElementById('btnDailyChallenge');
+  if(dailyBtn) dailyBtn.textContent = tr('📅 데일리 챌린지','📅 Daily Challenge');
   applyHowToPlayTranslation();
 }
 
@@ -4636,8 +4726,15 @@ function performActionOrFire(angle){
   handleFire(angle);
 }
 
-let msgTimer=0;
-function showMsg(t){document.getElementById('msg').textContent=t;document.getElementById('msg').style.display='block';msgTimer=90;}
+let msgHideTimeout=null;
+function showMsg(t){
+  const el=document.getElementById('msg');
+  el.textContent=t;
+  el.style.display='block';
+  el.style.zIndex = gameStarted ? 10 : 60; // 시작화면/상점 등 모달 위에서 호출돼도 가려지지 않도록
+  clearTimeout(msgHideTimeout);
+  msgHideTimeout=setTimeout(()=>{ el.style.display='none'; }, 1500);
+}
 
 /* ===================== 미션 미니게임 ===================== */
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -6435,7 +6532,14 @@ function drawMinimap(camX,camY){
 /* ===================== 메인 루프 ===================== */
 let simTime=0;
 let last=performance.now();
+let pauseStartedAt=null;
 function loop(now){
+  if(pauseActive && pauseStartedAt===null){
+    pauseStartedAt = now;
+  } else if(!pauseActive && pauseStartedAt!==null){
+    stats.startTime += (now - pauseStartedAt);
+    pauseStartedAt = null;
+  }
   let dt=Math.min((now-last)/1000, 0.05); last=now;
   if(slowMoTimer>0){
     slowMoTimer -= dt;
@@ -6708,7 +6812,7 @@ function loopBody(dt){
           ammoEl.classList.add('reloading');
           reloadBtn.style.opacity='0.4';
         } else {
-          ammoEl.textContent='탄약 '+(player.ammo[player.weapon]||0)+' / '+wdef.magSize;
+          ammoEl.textContent=tr('탄약 ','Ammo ')+(player.ammo[player.weapon]||0)+' / '+wdef.magSize;
           ammoEl.classList.remove('reloading');
           reloadBtn.style.opacity = (player.ammo[player.weapon]||0)<wdef.magSize ? '1' : '0.5';
         }
@@ -6718,10 +6822,10 @@ function loopBody(dt){
       }
       document.getElementById('btnSwapWeapon').style.display = player.weapon2 ? 'block' : 'none';
     }
-    if(!missionsComplete){
+    if(!missionsComplete && !pauseActive){
       const elapsed=Math.floor((performance.now()-stats.startTime)/1000);
       const mm=String(Math.floor(elapsed/60)).padStart(2,'0'), ss=String(elapsed%60).padStart(2,'0');
-      document.getElementById('timerText').textContent = mm+':'+ss+' | 미션 '+missions.filter(m=>m.done).length+'/'+missions.length;
+      document.getElementById('timerText').textContent = mm+':'+ss+' | '+tr('미션 ','Mission ')+missions.filter(m=>m.done).length+'/'+missions.length;
     }
     updateThrowBtnItemLabel();
     THROW_TYPES.forEach(t=>{
@@ -6735,7 +6839,6 @@ function loopBody(dt){
       document.getElementById('fireGuide').textContent = label;
       if(!fireJoy.active) document.getElementById('fireStick').textContent = label;
     }
-    if(msgTimer>0){msgTimer--;if(msgTimer<=0)document.getElementById('msg').style.display='none';}
   }
 }
 requestAnimationFrame(loop);
@@ -6746,6 +6849,42 @@ requestAnimationFrame(loop);
   applyLanguage();
   checkLoginStreak();
 }
+
+/* ===================== 뒤로가기 시 앱 종료 대신 모달 닫기 ===================== */
+const BACK_CLOSEABLE_MODALS = ['howModal','devModal','settingsModal','shopModal','achModal','intelModal','upgradeModal','historyModal','pauseModal','whatsNewModal','confirmRestartFreshModal','confirmExitHomeModal'];
+function pushModalHistory(){
+  history.pushState({stealthOpsModal:true}, '');
+}
+window.addEventListener('popstate', ()=>{
+  for(const id of BACK_CLOSEABLE_MODALS){
+    const el = document.getElementById(id);
+    if(el && getComputedStyle(el).display !== 'none'){
+      el.style.display = 'none';
+      if(id==='settingsModal' && settingsOpenedFromPause){
+        settingsOpenedFromPause = false;
+        document.getElementById('pauseModal').style.display='flex';
+      }
+      if(id==='howModal' && howOpenedFromPause){
+        howOpenedFromPause = false;
+        document.getElementById('pauseModal').style.display='flex';
+      }
+      if(id==='confirmExitHomeModal'){
+        document.getElementById('pauseModal').style.display='flex';
+      }
+      return;
+    }
+  }
+});
+BACK_CLOSEABLE_MODALS.forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  let wasOpen = (getComputedStyle(el).display !== 'none');
+  new MutationObserver(()=>{
+    const isOpen = (getComputedStyle(el).display !== 'none');
+    if(isOpen && !wasOpen) pushModalHistory();
+    wasOpen = isOpen;
+  }).observe(el, {attributes:true, attributeFilter:['style']});
+});
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
