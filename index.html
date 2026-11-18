@@ -270,7 +270,7 @@
 <body>
 <canvas id="game"></canvas>
 <div id="rotateOverlay" class="show">
-  <div id="rotateIcon">📱</div>
+  <div id="rotateIcon">&#8635;</div>
   <p id="pRotateHint">가로 모드에 최적화된 게임이에요. 화면을 옆으로 돌려서 플레이하면 더 편해요.</p>
   <div id="rotateCloseBtn">닫기</div>
 </div>
@@ -293,7 +293,7 @@
 <div id="alarmVignette"></div>
 <div id="blackoutTint"></div>
 <div id="timeOfDayTint"></div>
-<div id="goldenTimeBadge">✨ x2</div>
+<div id="goldenTimeBadge">x2</div>
 <div id="qteOverlay">
   <div id="qteBox">
     <div id="qteLabel">위기! 탭해서 탈출!</div>
@@ -377,11 +377,11 @@
 <div id="startOverlay">
   <div id="startTitle">STEALTH OPS</div>
   <div id="startSub">2D TOP-DOWN INFILTRATION PROTOTYPE</div>
-  <div id="verText">Ver 4.7.2.0</div>
+  <div id="verText">Ver 4.9.2.0</div>
 
   <div id="loginStreakBox" style="display:none;"></div>
 
-  <div class="miniBtn" id="btnLangToggle" style="margin-bottom:10px;">🌐 한국어 / English</div>
+  <div class="miniBtn" id="btnLangToggle" style="margin-bottom:10px;">한국어 / English</div>
 
   <div class="miniRow">
     <div class="miniBtn diffBtn" data-diff="easy" id="diffBtnEasy">쉬움</div>
@@ -394,13 +394,13 @@
     <div class="miniBtn stageBtn stageLocked" data-stage="3" id="stageBtn3">스테이지 3 (잠김)</div>
   </div>
   <div class="miniRow">
-    <div class="miniBtn" id="btnHardcoreToggle" style="width:100%;">🔥 하드코어 모드: OFF (체크포인트 없음)</div>
+    <div class="miniBtn" id="btnHardcoreToggle" style="width:100%;">하드코어 모드: OFF (체크포인트 없음)</div>
   </div>
   <div class="miniRow" id="ngPlusRow" style="display:none;">
-    <div class="miniBtn" id="btnNgPlusToggle" style="width:100%;">➕ NG+ 모드: OFF (전 스테이지 강화 난이도)</div>
+    <div class="miniBtn" id="btnNgPlusToggle" style="width:100%;">NG+ 모드: OFF (전 스테이지 강화 난이도)</div>
   </div>
   <div class="miniRow" id="dailyChallengeRow">
-    <div class="miniBtn" id="btnDailyChallenge" style="width:100%;">📅 데일리 챌린지</div>
+    <div class="miniBtn" id="btnDailyChallenge" style="width:100%;">데일리 챌린지</div>
   </div>
 
   <div class="menuBtn primary" id="btnStart">게임 새로 하기</div>
@@ -410,7 +410,7 @@
   <div class="menuBtn" id="btnAch">업적</div>
   <div class="menuBtn" id="btnUpgrade">요원 강화</div>
   <div class="menuBtn" id="btnHistory">기록</div>
-  <div class="menuBtn" id="btnIntelArchive">📁 정보 파일</div>
+  <div class="menuBtn" id="btnIntelArchive">정보 파일</div>
   <div class="menuBtn" id="btnDev">개발자</div>
 </div>
 
@@ -603,8 +603,8 @@
     <h2 id="h2Shop">상점</h2>
     <p id="pShopNote" style="text-align:center;color:#999;font-size:12px;">정식 출시 이후 유료 예정 - 지금은 모두 무료(베타 테스트)로 미리보기만 가능해요</p>
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px;">
-      <div class="miniBtn" id="slotBtnPrimary" style="width:130px;">🔫 <span id="slotLabelPrimary">주무기 슬롯</span></div>
-      <div class="miniBtn" id="slotBtnSecondary" style="width:130px;">🔧 <span id="slotLabelSecondary">보조무기 슬롯</span></div>
+      <div class="miniBtn" id="slotBtnPrimary" style="width:130px;"><span id="slotLabelPrimary">주무기 슬롯</span></div>
+      <div class="miniBtn" id="slotBtnSecondary" style="width:130px;"><span id="slotLabelSecondary">보조무기 슬롯</span></div>
     </div>
     <div id="shopList"></div>
     <div class="closeBtn" id="closeShop">닫기</div>
@@ -641,10 +641,11 @@
 </div>
 <div class="modal" id="whatsNewModal">
   <div class="modalBox">
-    <h2>업데이트 안내 (Ver 4.7.2.0)</h2>
+    <h2>업데이트 안내 (Ver 4.9.2.0)</h2>
     <ul>
-      <li>앱을 다른 앱으로 전환했다가 돌아왔을 때 미션 타이머가 그 사이 흐른 시간만큼 밀리던 문제 수정</li>
-      <li>최종 보스 체력을 난이도별로 차등 적용 (쉬움 4 / 보통 6 / 어려움 8, NG+는 +2 추가)</li>
+      <li>총기와 수류탄 처치도 연속 처치 기록에 포함되도록 수정</li>
+      <li>발사 반동으로 낮은 장애물에 끼이던 가능성 수정</li>
+      <li>전반적인 안정성 점검</li>
     </ul>
     <div class="closeBtn" id="closeWhatsNew">확인</div>
   </div>
@@ -1001,7 +1002,7 @@ function checkLoginStreak(){
     // 오늘 이미 보상 받음 - 현재 스트릭만 은은하게 표시
     if(streak>0){
       box.style.display='block';
-      box.textContent = tr('🔥 오늘 접속 완료! ('+streak+'일 연속)','🔥 Checked in today! ('+streak+'-day streak)');
+      box.textContent = tr('오늘 접속 완료! ('+streak+'일 연속)','Checked in today! ('+streak+'-day streak)');
     }
     return;
   }
@@ -1011,7 +1012,7 @@ function checkLoginStreak(){
   const bonus = Math.min(streak,7)*5;
   setAgentPoints(getAgentPoints()+bonus);
   box.style.display='block';
-  box.textContent = tr('🔥 '+streak+'일 연속 출석! +'+bonus+'P','🔥 '+streak+'-day login streak! +'+bonus+'P');
+  box.textContent = tr(''+streak+'일 연속 출석! +'+bonus+'P',''+streak+'-day login streak! +'+bonus+'P');
 }
 function getUpgradeLv(key){ return parseInt(localStorage.getItem('stealthOpsUpg_'+key)||'0'); }
 function setUpgradeLv(key,v){ localStorage.setItem('stealthOpsUpg_'+key, v); }
@@ -1580,12 +1581,24 @@ function bumpStreak(){
   if(stats.streak>=3){
     spawnText(player.x,player.y-40, stats.streak+tr('연속 처치!',' Kill Streak!'), '#ffd060');
   }
+  if(stats.streak===3||stats.streak===5||stats.streak===8||stats.streak===12){
+    flashScreen('#ffd060',0.22,420);
+    shockRing(player.x,player.y,90,'#ffd060');
+    screenShake=Math.min(12,screenShake+4);
+    vibrate([20,30,40]);
+    if(stats.streak>=5) triggerSlowMo();
+  }
+  if(stats.streak>=3 && stats.streak%3===0){
+    const sb=Math.min(10,stats.streak);
+    setAgentPoints(getAgentPoints()+sb);
+    spawnText(player.x,player.y-58,'+'+sb+'P','#ffe27a');
+  }
   awardGoldenBonus(player.x, player.y);
 }
 function awardGoldenBonus(x,y){
   if(!goldenTimeActive) return;
   setAgentPoints(getAgentPoints()+5);
-  spawnText(x,y-56, '✨+5P', '#ffe27a');
+  spawnText(x,y-56, '+5P', '#ffe27a');
 }
 function raiseAlarm(){
   if(alarmRaised) return;
@@ -2101,6 +2114,44 @@ function playShortPain(volScale){
   osc.start(); osc.stop(now+0.22);
 }
 let slowMoTimer=0;
+let hitStopTimer=0; // 처치 순간 아주 짧은 정지(타격감)
+let muzzleFlash=null; // {x,y,a,life,size}
+let _flashEl=null;
+function flashScreen(color,alpha,ms){
+  try{
+    if(!_flashEl){
+      _flashEl=document.createElement('div');
+      _flashEl.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:40;opacity:0;';
+      document.body.appendChild(_flashEl);
+    }
+    _flashEl.style.transition='none';
+    _flashEl.style.background=color;
+    _flashEl.style.opacity=String(alpha);
+    void _flashEl.offsetWidth;
+    _flashEl.style.transition='opacity '+ms+'ms ease-out';
+    _flashEl.style.opacity='0';
+  }catch(e){}
+}
+function shockRing(x,y,maxR,color){
+  particles.push({x:x,y:y,vx:0,vy:0,life:18,maxLife:18,ring:true,maxR:maxR,color:color,r:2});
+}
+function hitStop(sec){ hitStopTimer=Math.max(hitStopTimer,sec); }
+// 방향성 충격 파티클 (각도 중심으로 부채꼴 분사)
+function impactBurst(x,y,angle,n,color,speed,spread,life,r){
+  for(let i=0;i<n;i++){
+    const a=angle+(Math.random()-0.5)*spread;
+    const v=speed*(0.4+Math.random()*0.9);
+    particles.push({x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:life*(0.6+Math.random()*0.6),maxLife:life,r:r*(0.6+Math.random()*0.8),color:color,drag:0.9});
+  }
+}
+function spawnShell(x,y,angle){
+  const a=angle+Math.PI/2+(Math.random()-0.5)*0.8;
+  particles.push({x:x,y:y,vx:Math.cos(a)*2.6,vy:Math.sin(a)*2.6,life:30,maxLife:30,r:1.6,color:'#e0b84a',drag:0.9});
+}
+function weaponKick(id){
+  const k={pistol:2.5,smg:2,minigun:1.5,crossbow:3,shotgun:7,sniper:8}[id];
+  return k===undefined?2.5:k;
+}
 function triggerKillCam(){
   canvas.style.transform='scale(1.14)';
   screenShake=Math.min(screenShake+3, 12);
@@ -2276,12 +2327,12 @@ let dailyChallengeActive = false;
 document.getElementById('btnHardcoreToggle').addEventListener('click',()=>{
   hardcoreMode = !hardcoreMode;
   const isEn = settings.lang==='en';
-  document.getElementById('btnHardcoreToggle').textContent = '🔥 ' + tr('하드코어 모드: ','Hardcore Mode: ') + (hardcoreMode?'ON':'OFF') + tr(' (체크포인트 없음)',' (no checkpoint)');
+  document.getElementById('btnHardcoreToggle').textContent = '' + tr('하드코어 모드: ','Hardcore Mode: ') + (hardcoreMode?'ON':'OFF') + tr(' (체크포인트 없음)',' (no checkpoint)');
 });
 function isNgPlusUnlocked(){ return localStorage.getItem('stealthOpsStage3Cleared')==='1'; }
 document.getElementById('btnNgPlusToggle').addEventListener('click',()=>{
   ngPlusMode = !ngPlusMode;
-  document.getElementById('btnNgPlusToggle').textContent = '➕ ' + tr('NG+ 모드: ','NG+ Mode: ') + (ngPlusMode?'ON':'OFF') + tr(' (전 스테이지 강화 난이도)',' (all stages enhanced)');
+  document.getElementById('btnNgPlusToggle').textContent = '' + tr('NG+ 모드: ','NG+ Mode: ') + (ngPlusMode?'ON':'OFF') + tr(' (전 스테이지 강화 난이도)',' (all stages enhanced)');
 });
 function updateNgPlusVisibility(){
   document.getElementById('ngPlusRow').style.display = isNgPlusUnlocked() ? 'block' : 'none';
@@ -3059,7 +3110,7 @@ document.getElementById('btnAch').addEventListener('click',()=>{
     const aname = isEn ? (enData.name||a.name) : a.name;
     const adesc = isEn ? (enData.desc||a.desc) : a.desc;
     return '<div style="padding:8px 0;border-bottom:1px solid #333;opacity:'+(got?1:0.4)+'">'+
-      '<b style="color:'+(got?'#ffcf6e':'#999')+'">'+(got?'✓ ':'🔒 ')+aname+'</b>'+
+      '<b style="color:'+(got?'#ffcf6e':'#999')+'">'+(got?'':tr('[잠김] ','[Locked] '))+aname+'</b>'+
       '<div style="font-size:12px;color:#bbb;">'+adesc+'</div></div>';
   }).join('');
   document.getElementById('achModal').style.display='flex';
@@ -3073,7 +3124,7 @@ document.getElementById('btnIntelArchive').addEventListener('click',()=>{
     const doc = INTEL_DOCS[id];
     const got = found.includes(id);
     return '<div style="padding:8px 0;border-bottom:1px solid #333;opacity:'+(got?1:0.4)+'">'+
-      '<b style="color:'+(got?'#c586e8':'#999')+'">'+(got?'📄 ':'🔒 ')+(got?doc.title[lang]:tr('미발견 정보 파일','Undiscovered document'))+'</b>'+
+      '<b style="color:'+(got?'#c586e8':'#999')+'">'+(got?'':tr('[잠김] ','[Locked] '))+(got?doc.title[lang]:tr('미발견 정보 파일','Undiscovered document'))+'</b>'+
       (got?('<div style="font-size:12px;color:#ccc;margin-top:4px;font-style:italic;">'+doc.text[lang]+'</div>'):'')+
       '</div>';
   }).join('') + '<div style="margin-top:10px;text-align:center;font-size:12px;color:#999;">'+found.length+' / '+Object.keys(INTEL_DOCS).length+' '+tr('발견됨','found')+'</div>';
@@ -3135,7 +3186,7 @@ document.getElementById('btnHistory').addEventListener('click',()=>{
       return '<div style="padding:4px 0;font-size:12px;color:#ffd76a;">'+(i+1)+'. '+mm+':'+ss+' · '+'★'.repeat(r.stars)+'☆'.repeat(3-r.stars)+' · S'+r.stage+'</div>';
     }).join('');
   list.innerHTML += '<div style="margin-top:14px;padding-top:10px;border-top:1.5px solid #555;">'+
-    '<b style="color:#ffd76a;">🏆 '+tr('이번 주 랭킹 (로컬)','This Week\'s Ranking (local)')+'</b>'+
+    '<b style="color:#ffd76a;">'+tr('이번 주 랭킹 (로컬)','This Week\'s Ranking (local)')+'</b>'+
     '<div style="margin-top:6px;">'+wkList+'</div></div>';
   document.getElementById('historyModal').style.display='flex';
 });
@@ -3215,7 +3266,7 @@ function applyHowToPlayTranslation(){
 function tr(ko, en){ return settings.lang==='en' ? en : ko; }
 const STATE_LABELS = {
   infil:{ko:'잠입중',en:'Infiltrating'},
-  alert:{ko:'⚠ 경계/수색중',en:'⚠ Alert / Searching'},
+  alert:{ko:'경계/수색중',en:'Alert / Searching'},
   onGuard:{ko:'경계 태세',en:'On Guard'},
   exec:{ko:'처형됨',en:'Executed'}
 };
@@ -3233,7 +3284,7 @@ const STATIC_TEXT = {
   closeDev:{ko:'닫기',en:'Close'},
   h2Intel:{ko:'정보 파일',en:'Intel Files'},
   closeIntel:{ko:'닫기',en:'Close'},
-  btnIntelArchive:{ko:'📁 정보 파일',en:'📁 Intel Files'},
+  btnIntelArchive:{ko:'정보 파일',en:'Intel Files'},
   btnDash:{ko:'대시',en:'Dash'},
   btnSwapWeapon:{ko:'전환',en:'Swap'},
   rotateCloseBtn:{ko:'닫기',en:'Close'},
@@ -3356,17 +3407,17 @@ function applyLanguage(){
     if(el) el.textContent = throwLabel(t);
   });
   const langBtn = document.getElementById('btnLangToggle');
-  if(langBtn) langBtn.textContent = '🌐 ' + (lang==='en' ? 'English / 한국어' : '한국어 / English');
+  if(langBtn) langBtn.textContent = '' + (lang==='en' ? 'English / 한국어' : '한국어 / English');
   const nameInput = document.getElementById('playerNameInput');
   if(nameInput) nameInput.placeholder = lang==='en' ? 'Enter your name' : '이름을 입력하세요';
   const interactEl = document.getElementById('interactBtn');
   if(interactEl) interactEl.innerHTML = lang==='en' ? 'Interact' : '상호<br>작용';
   const hcBtn = document.getElementById('btnHardcoreToggle');
-  if(hcBtn) hcBtn.textContent = '🔥 ' + tr('하드코어 모드: ','Hardcore Mode: ') + (hardcoreMode?'ON':'OFF') + tr(' (체크포인트 없음)',' (no checkpoint)');
+  if(hcBtn) hcBtn.textContent = '' + tr('하드코어 모드: ','Hardcore Mode: ') + (hardcoreMode?'ON':'OFF') + tr(' (체크포인트 없음)',' (no checkpoint)');
   const ngBtn = document.getElementById('btnNgPlusToggle');
-  if(ngBtn) ngBtn.textContent = '➕ ' + tr('NG+ 모드: ','NG+ Mode: ') + (ngPlusMode?'ON':'OFF') + tr(' (전 스테이지 강화 난이도)',' (all stages enhanced)');
+  if(ngBtn) ngBtn.textContent = '' + tr('NG+ 모드: ','NG+ Mode: ') + (ngPlusMode?'ON':'OFF') + tr(' (전 스테이지 강화 난이도)',' (all stages enhanced)');
   const dailyBtn = document.getElementById('btnDailyChallenge');
-  if(dailyBtn) dailyBtn.textContent = tr('📅 데일리 챌린지','📅 Daily Challenge');
+  if(dailyBtn) dailyBtn.textContent = tr('데일리 챌린지','Daily Challenge');
   applyHowToPlayTranslation();
 }
 
@@ -3454,6 +3505,7 @@ function tryDash(){
   if(!gameStarted || caught || puzzleActive || pauseActive || actionLock || player.hiddenIn) return;
   if(dashActive || dashCooldown>0) return;
   dashActive=true; dashTimer=0.25; dashCooldown=8;
+  shockRing(player.x,player.y,40,'#8fd0ff');
   player.dashInvuln=true;
   playDashSound();
   vibrate(20);
@@ -3737,6 +3789,9 @@ function detonateGrenade(x,y){
   }
   playNoise(0.35,0.35,150,'lowpass');
   screenShake=14;
+  shockRing(x,y,blastRadius*1.3,'#ffb050'); shockRing(x,y,blastRadius*0.8,'#fff0c0');
+  flashScreen('#fff2cc',0.35,260); hitStop(0.07);
+  impactBurst(x,y,0,20,'#ffc060',5,6.28,30,3);
   let grenadeKills=0;
   for(const en of enemies){
     if(en.state==='dying')continue;
@@ -3745,6 +3800,7 @@ function detonateGrenade(x,y){
       en.wasSearching=(en.state==='search'); en.state='dying'; en.dieType='shot'; en.dieTimer=0.3; en.dieTotal=0.3; en.screamed=true;
       stats.gunKills++;
       grenadeKills++;
+      bumpStreak();
       checkLeaderDeath(en);
     }
   }
@@ -3895,6 +3951,9 @@ function updatePlayer(dt){
   if(!fireJoy.active && !usingMouseAim){ player.aimAngle = player.angle; }
 
   if(moved>0){
+    if(!crouchHeld && (dashActive || mag>0.8) && Math.random()<(dashActive?0.7:0.18)){
+      particles.push({x:player.x+(Math.random()-0.5)*6,y:player.y+8,vx:(Math.random()-0.5)*0.8,vy:(Math.random()-0.5)*0.8,life:16,maxLife:16,r:2+Math.random()*2,color:'rgba(190,180,160,0.6)',drag:0.92});
+    }
     player.stepAccum += moved;
     const stepDist = player.crouch ? 46 : (running?20:26);
     if(player.stepAccum >= stepDist){
@@ -4346,7 +4405,7 @@ function showResultScreen(){
 
   const newly = checkAchievements(stats, elapsed);
   const toast = document.getElementById('achToast');
-  toast.innerHTML = newly.length ? ('🏆 새 업적: '+newly.map(a=>a.name).join(', ')) : '';
+  toast.innerHTML = newly.length ? ('새 업적: '+newly.map(a=>a.name).join(', ')) : '';
 
   const nextBtn = document.getElementById('btnNextStage');
   const canGoNext = (currentStage===1 && isStage2Unlocked()) || (currentStage===2 && isStage3Unlocked());
@@ -4396,6 +4455,17 @@ function handleFire(angle){
   const spreadRad = (wdef.spread||0)*Math.PI/180;
   const ox=player.x, oy=player.y;
   (SOUND_FN[wdef.sound]||playSuppressedShot)(0.4);
+  if(!wdef.nonLethal && !wdef.empOnly){
+    const sz = player.weapon==='shotgun'?34:(player.weapon==='sniper'?30:20);
+    muzzleFlash={x:ox,y:oy,a:angle,life:4,max:4,size:sz};
+    spawnShell(ox,oy,angle);
+  }
+  screenShake=Math.min(12, screenShake+weaponKick(player.weapon)*0.5);
+  // 반동: 발사 반대 방향으로 살짝 밀림 (벽 충돌 안 하는 경우만)
+  {
+    const kx=player.x-Math.cos(angle)*2, ky=player.y-Math.sin(angle)*2;
+    if(!solidRects.some(w=>circleRectCollide(kx,ky,player.r,w))){ player.x=kx; player.y=ky; }
+  }
 
   const hitSet = new Set();
   let anyNearMiss = false;
@@ -4408,6 +4478,7 @@ function handleFire(angle){
     }
     const {x:tx,y:ty} = rayMarchLanding(ox,oy,pelletAngle,range);
     bullets.push({x:ox,y:oy,tx,ty,t:0,dur:0.1});
+    if(Math.hypot(tx-ox,ty-oy)<range-4) impactBurst(tx,ty,pelletAngle+Math.PI,5,'#ffd890',2.6,1.2,14,1.6);
 
     let best=null, bestDist=Infinity;
     if(!wdef.empOnly){
@@ -4487,7 +4558,11 @@ function handleFire(angle){
           particles.push({x:best.x,y:best.y,vx:(Math.random()-0.5)*(big?5:3.2),vy:(Math.random()-0.5)*(big?5:3.2),
             life: big?42:30, r: big?5:3, color: i%3===0?'#a01818':'#d43030'});
         }
+        impactBurst(best.x,best.y,Math.atan2(best.y-oy,best.x-ox),14,'#c02020',4.2,0.9,28,2.6);
+        hitStop(player.weapon==='shotgun'||player.weapon==='sniper'?0.09:0.06);
+        spawnText(best.x,best.y-34,tr('퍽!','POW!'),'#ffe070');
         stats.gunKills++;
+        bumpStreak();
         addMasteryKill(player.weapon);
         awardGoldenBonus(best.x, best.y);
         if(player.weapon==='sniper') stats.sniperKills=(stats.sniperKills||0)+1;
@@ -4703,6 +4778,9 @@ function performMeleeTakedown(en){
     bumpStreak();
   }
   vibrate(30);
+  hitStop(0.05);
+  if(type==='knife') impactBurst(en.x,en.y,Math.atan2(en.y-player.y,en.x-player.x),10,'#b02020',3.2,0.8,24,2.4);
+  else shockRing(en.x,en.y,26,'#8fd0ff');
   checkLeaderDeath(en);
 }
 
@@ -5170,7 +5248,7 @@ function drawDogSprite(en, alpha){
 
   if(en.state==='search'){
     ctx.font='bold 11px sans-serif';ctx.textAlign='center';
-    ctx.fillText('🐾',0,-r*1.8);
+    ctx.fillText('...',0,-r*1.8);
   }
   ctx.restore();
 }
@@ -5208,11 +5286,11 @@ function drawEnemySprite(en, alpha){
 
   if(en.stunned){
     ctx.font='bold 12px sans-serif';ctx.textAlign='center';
-    ctx.fillText('💫', 0, -18);
+    ctx.fillText('zZ', 0, -18);
   }
   if(en.stuck){
     ctx.font='bold 12px sans-serif';ctx.textAlign='center';
-    ctx.fillText('🍯', 0, -18);
+    ctx.fillText('~', 0, -18);
   }
   if(en.rank==='veteran' && en.state!=='dying'){
     ctx.font='bold 11px sans-serif';ctx.textAlign='center';
@@ -6066,7 +6144,7 @@ function drawWorld(camX,camY){
         const type=getTakedownType(en);
         ctx.font='bold 14px sans-serif';ctx.textAlign='center';
         ctx.fillStyle= type==='knife' ? '#ff6a6a' : '#8fd0ff';
-        ctx.fillText(type==='knife' ? '🗡' : '✊', en.x-camX, en.y-camY-34);
+        ctx.fillText(type==='knife' ? 'X' : 'O', en.x-camX, en.y-camY-34);
       }
     }
   }
@@ -6098,7 +6176,7 @@ function drawWorld(camX,camY){
     if(player.stunnedTimer>0){
       ctx.font='bold 16px sans-serif';ctx.textAlign='center';
       ctx.fillStyle='#8fd0ff';
-      ctx.fillText('⚡', player.x-camX, player.y-camY-24);
+      ctx.fillText('!!', player.x-camX, player.y-camY-24);
     }
   } else {
     ctx.save();
@@ -6151,9 +6229,27 @@ function drawWorld(camX,camY){
     ctx.restore();
   }
 
+  if(muzzleFlash && muzzleFlash.life>0){
+    const m=muzzleFlash, k=m.life/m.max;
+    ctx.save();
+    ctx.translate(m.x-camX,m.y-camY);ctx.rotate(m.a);
+    ctx.globalAlpha=Math.min(1,k*1.4);
+    ctx.fillStyle='#fff3b0';
+    ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(10+m.size*k,-m.size*0.28*k);ctx.lineTo(10+m.size*1.5*k,0);ctx.lineTo(10+m.size*k,m.size*0.28*k);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(255,170,60,0.8)';
+    ctx.beginPath();ctx.arc(12,0,m.size*0.3*k,0,7);ctx.fill();
+    ctx.restore();
+    m.life--;
+  }
   for(const p of particles){
+    if(p.ring){
+      const k=1-p.life/p.maxLife;
+      ctx.save();ctx.globalAlpha=Math.max(0,1-k);ctx.strokeStyle=p.color;ctx.lineWidth=4*(1-k)+1;
+      ctx.beginPath();ctx.arc(p.x-camX,p.y-camY,p.maxR*k,0,7);ctx.stroke();ctx.restore();
+      continue;
+    }
     ctx.fillStyle=p.color;
-    ctx.globalAlpha=Math.max(0,p.life/35);
+    ctx.globalAlpha=Math.max(0,p.life/(p.maxLife||35));
     ctx.beginPath();ctx.arc(p.x-camX,p.y-camY,p.r||3,0,7);ctx.fill();
     ctx.globalAlpha=1;
   }
@@ -6537,7 +6633,10 @@ function loop(now){
     pauseStartedAt = null;
   }
   let dt=Math.min((now-last)/1000, 0.05); last=now;
-  if(slowMoTimer>0){
+  if(hitStopTimer>0){
+    hitStopTimer -= dt;
+    dt = 0;
+  } else if(slowMoTimer>0){
     slowMoTimer -= dt;
     dt *= 0.3;
   }
@@ -6546,7 +6645,7 @@ function loop(now){
     if(debugErrEl.style.display!=='none') debugErrEl.style.display='none';
   }catch(err){
     console.error('game loop error (frame skipped):', err);
-    debugErrEl.textContent = '⚠ 오류: '+(err && err.message ? err.message : err)+'\n'+(err && err.stack ? err.stack.split('\n').slice(0,3).join(' | ') : '');
+    debugErrEl.textContent = '오류: '+(err && err.message ? err.message : err)+'\n'+(err && err.stack ? err.stack.split('\n').slice(0,3).join(' | ') : '');
     debugErrEl.style.display='block';
   }
   requestAnimationFrame(loop);
@@ -6576,6 +6675,7 @@ function loopBody(dt){
   if(gameStarted && !pauseActive && !puzzleActive && !caught){
     if(dashActive){
       dashTimer -= dt;
+      particles.push({x:player.x,y:player.y,vx:0,vy:0,life:12,maxLife:12,r:9,color:'rgba(120,200,255,0.7)'});
       if(dashTimer<=0){ dashActive=false; player.dashInvuln=false; }
     }
     if(dashCooldown>0) dashCooldown -= dt;
@@ -6610,7 +6710,7 @@ function loopBody(dt){
         goldenTimeActive=true;
         goldenTimeTimer=12+Math.random()*6;
         goldenTimeEventTimer=70+Math.random()*60;
-        showMsg(tr('✨ 황금 시간! 포인트 2배!','✨ Golden Time! Points x2!'));
+        showMsg(tr('황금 시간! 포인트 2배!','Golden Time! Points x2!'));
         playNoise(0.15,0.18,2500,'bandpass');
         vibrate([30,20,30,20,60]);
       }
@@ -6718,7 +6818,7 @@ function loopBody(dt){
       }
     }
 
-    particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;return p.life>0;});
+    particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;if(p.drag){p.vx*=p.drag;p.vy*=p.drag;}p.life--;return p.life>0;});
     textParticles=textParticles.filter(t=>{t.y+=t.vy;t.life--;return t.life>0;});
     decoys=decoys.filter(d=>{d.life--;return d.life>0;});
     corpses=corpses.filter(c=>!c.discovered || c.life-- >0);

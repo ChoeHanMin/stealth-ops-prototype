@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stealth-ops-v67';
+const CACHE_NAME = 'stealth-ops-v71';
 const ASSETS = [
   './index.html',
   './manifest.json',
